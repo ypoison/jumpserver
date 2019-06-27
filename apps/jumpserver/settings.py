@@ -62,6 +62,9 @@ INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'terminal.apps.TerminalConfig',
     'audits.apps.AuditsConfig',
+
+    'domain_name.apps.DomainNameConfig',
+
     'authentication.apps.AuthenticationConfig',  # authentication
     'rest_framework',
     'rest_framework_swagger',
@@ -556,3 +559,6 @@ SWAGGER_SETTINGS = {
 # Default email suffix
 EMAIL_SUFFIX = CONFIG.EMAIL_SUFFIX
 TERMINAL_TELNET_REGEX = CONFIG.TERMINAL_TELNET_REGEX
+
+ALIYUN_DOMAIN_ID = "LTAIsqupmY8GlhNG"
+ALIYUN_DOMAIN_SECRET = "YHsR8d6P6ouRP7Vk2kKVDFBUzROlXw"

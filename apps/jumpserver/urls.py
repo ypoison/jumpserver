@@ -21,6 +21,8 @@ api_v1_patterns = [
         path('audits/v1/', include('audits.urls.api_urls', namespace='api-audits')),
         path('orgs/v1/', include('orgs.urls.api_urls', namespace='api-orgs')),
         path('common/v1/', include('common.urls.api_urls', namespace='api-common')),
+
+        path('domain-name/v1/', include('domain_name.urls.api_urls', namespace='api-domain-name')),
    ]))
 ]
 
@@ -40,6 +42,8 @@ app_view_patterns = [
     path('audits/', include('audits.urls.view_urls', namespace='audits')),
     path('orgs/', include('orgs.urls.views_urls', namespace='orgs')),
     path('auth/', include('authentication.urls.view_urls'), name='auth'),
+
+    path('domain-name/', include('domain_name.urls.views_urls', namespace='domain-name')),
 ]
 
 
