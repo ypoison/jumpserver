@@ -263,9 +263,13 @@ function APIUpdateAttr(props) {
     }).done(function(data, textStatue, jqXHR) {
         if (flash_message) {
             var msg = "";
-            if (user_fail_message) {
+            if (user_success_message) {
                 msg = user_success_message;
-            } else {
+            } else if (jqXHR.responseJSON.msg) {
+                msg = jqXHR.responseJSON.msg
+            
+            }
+            if (msg === "") {
                 msg = default_success_message;
             }
             toastr.success(msg);
