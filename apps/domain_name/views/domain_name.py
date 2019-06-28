@@ -15,6 +15,7 @@ from ..forms import DomainNameForm, DomainNameRecordForm, DomainNameAccountForm
 
 from ..domain_name_api import DomainNameApi
 
+
 __all__ = (
     "DomainNameListView", "DomainNameUpdateView",
     "DomainNameDetailView", "DomainNameRecordsListView", "DomainNameRecordCreateView",
@@ -30,23 +31,6 @@ class DomainNameAccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, C
     form_class = DomainNameAccountForm
     success_url = reverse_lazy('domain-name:account-list')
     success_message = create_success_msg
-
-    def form_valid(self, form):
-        test = form.save(commit=False)
-
-        max_date = int((datetime.datetime.now()-datetime.timedelta(days=1)).strftime('%Y%M%S'))
-        print(test.__dict__)
-        print(test.starttime)
-        print(max_date)
-        if int(test.starttime) > max_date:
-
-            form.add_error(
-                "starttime", '值必须小于等于%s' % max_date
-            )
-            return self.form_invalid(form)
-        else:
-            test.save()
-        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = {

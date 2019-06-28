@@ -39,7 +39,6 @@ class beian:
             response = requests.get(url,headers=self.headers)
             data = response.text
             ret = json.loads(data)
-            print(ret)
             result = ret.get('result')
             if result:
                 status = result.get('status')

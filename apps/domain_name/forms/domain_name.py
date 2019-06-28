@@ -34,7 +34,7 @@ class DomainNameForm(OrgModelForm):
             'registration_date':'例:2021-06-02 12:12:12',
             'expiration_date':'例:2021-06-02 12:12:12',
             'dns_high_anti': '高防厂家名称,没有高防不用填。',
-            'ch_lose': '被墙填1，没被墙填2。'
+            #ch_lose': '被墙填0，没被墙填1。'
         }
 
 class DomainNameRecordForm(OrgModelForm):

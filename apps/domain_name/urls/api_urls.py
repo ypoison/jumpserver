@@ -16,6 +16,7 @@ router.register(r'account', api.AccountViewSet, 'account')
 urlpatterns = [
     path('domain-name/netapi-update/',api.DomainNameNetAPIUpdateApi.as_view(), name='domain-name-netapi-update'),
     path('domain-name/beian-check/<uuid:pk>/',api.DomainNameBeiAnCheckApi.as_view(), name='beian-check'),
+    path('domain-name/gfw-check/<uuid:pk>/',api.DomainNameGFWCheckApi.as_view(), name='gfw-check'),
     path('domain-name/record/<uuid:pk>/',api.DomainNameRecordUpdateApi.as_view(), name='record-update-status'),
 ]
 

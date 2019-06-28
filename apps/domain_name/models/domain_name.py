@@ -50,6 +50,10 @@ class DomainName(OrgModelMixin):
         (1, '正常'),
         (2, '未备案'),
     )
+    GFW_CHOICES = (
+        (0, '被墙'),
+        (1, '正常'),
+        )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     account = models.ForeignKey(DomainNameAccount, on_delete=models.CASCADE, verbose_name='所属账号')
     domain_name = models.CharField(max_length=20, verbose_name='域名')
@@ -60,7 +64,7 @@ class DomainName(OrgModelMixin):
     domain_status = models.IntegerField(default=3,verbose_name='状态')
     beian = models.IntegerField(blank=True, null=True, choices=BEIAN_CHOICES, verbose_name='备案状态')
     dns_high_anti = models.CharField(max_length=50, blank=True, null=True, verbose_name='高防')
-    ch_lose = models.IntegerField(default=2, blank=True, null=True, verbose_name='被墙')
+    ch_lose = models.IntegerField(default=1, choices=GFW_CHOICES, blank=True, null=True, verbose_name='被墙')
     comment = models.TextField(max_length=128, default='', blank=True, verbose_name=_('Comment'))
 
     class Meta:

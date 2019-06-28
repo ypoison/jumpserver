@@ -15,14 +15,16 @@ from .. import serializers
 
 from ..domain_name_api import DomainNameApi
 from ..beian import beian
+from ..check_gfw import CheckGFW
 
 
 logger = get_logger(__file__)
 __all__ = ['AccountViewSet', 'DomainNameViewSet', 'RecordsViewSet',
          'DomainNameNetAPIUpdateApi', 'DomainNameRecordUpdateApi', 
-         'DomainNameBeiAnCheckApi',]
+         'DomainNameBeiAnCheckApi', 'DomainNameGFWCheckApi']
 GetDomainName=DomainNameApi()
 BeiAnCheck=beian()
+GFWCheck = CheckGFW()
 
 class AccountViewSet(BulkModelViewSet):
     filter_fields = ("name", "resolver")
@@ -100,9 +102,26 @@ class DomainNameBeiAnCheckApi(generics.UpdateAPIView):
                 return Response({'msg': beian_check.get('msg')}, status=400)
             domain.beian = code
             domain.save()
-            return Response({"msg": "ok"})
+            return Response({"msg": "%s备案状态:%s" % (domain,code)})
         except:
             return Response(status=400)
+
+class DomainNameGFWCheckApi(generics.UpdateAPIView):
+    queryset = DomainName.objects.all()
+    permission_classes = (IsOrgAdmin,)
+
+    def update(self, request, *args, **kwargs):
+        domain = self.get_object()
+        try:
+            gfw_check = GFWCheck.check_gfw(domain.domain_name)
+            code = gfw_check.get('code')
+            if code == -1:
+                return Response({'msg': gfw_check.get('msg')}, status=400)
+            domain.ch_lose = code
+            domain.save()
+            return Response({"msg": "%s被墙状态:%s" % (domain,code)})
+        except Exception as e:
+            return Response({'msg': e}, status=400)
 
 class RecordsViewSet(BulkModelViewSet):
     filter_fields = ("domain_name",)

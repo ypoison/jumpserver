@@ -1,37 +1,67 @@
 # ~*~ coding: utf-8 ~*~
-import json
-import re
-import os
-
 from celery import shared_task
-from django.utils.translation import ugettext as _
-from django.core.cache import cache
-
-from common.utils import (
-    capacity_convert, sum_capacity, encrypt_password, get_logger
-)
+from common.utils import (get_logger)
 from ops.celery.decorator import (
     register_as_period_task, after_app_shutdown_clean_periodic
 )
 
-from .models import SystemUser, AdminUser, Asset
-from . import const
+from .models import DomainName
+from .check_gfw import CheckGFW
+from .beian import beian
 
+import time
 
-FORKS = 10
-TIMEOUT = 60
 logger = get_logger(__file__)
-CACHE_MAX_TIME = 60*60*2
-disk_pattern = re.compile(r'^hd|sd|xvd|vd')
-PERIOD_TASK = os.environ.get("PERIOD_TASK", "on")
-
-
+CheckGFW = CheckGFW()
+BeiAnCheck=beian()
 
 @shared_task
-@register_as_period_task(interval=30)
+@after_app_shutdown_clean_periodic
 def check_GWF():
-    """
-    A period task that update the ansible task period
-    """
-    print(11111111111111111111111)
-    return True
+    pass
+
+@shared_task
+@register_as_period_task(interval=3600)
+def check_GFW():
+    ch_lose_list = []
+    try:
+        DomainNames = DomainName.objects.all()
+        for domain in DomainNames:
+            check = CheckGFW.check_gfw(domain.domain_name)
+            status = check['code'] == 1
+            if status == -1:
+                logger.error(check['msg'])
+                time.sleep(1)
+            else:
+                if not status:
+                    ch_lose_list.append(domain.domain_name)
+                domain.ch_lose = status
+                domain.save()
+                time.sleep(1)
+    except Exception as e:
+        logger.error(check['msg'])
+    return '被墙域名:%s' % ch_lose_list
+
+@shared_task
+@register_as_period_task(interval=3600)
+def check_beian():
+    lose_list = []
+    try:
+        DomainNames = DomainName.objects.all()
+        for domain in DomainNames:
+            beian_check = BeiAnCheck.check_beian(domain.domain_name)
+            code = beian_check.get('code')
+            if code == -1:
+                logger.error(check['msg'])
+                time.sleep(1)
+            else:
+                if not code:
+                    lose_list.append(domain.domain_name)
+                domain.beian = code
+                domain.save()
+                logger.info('task:check_beian:%s' % beian_check)
+                time.sleep(1)
+
+    except Exception as e:
+        logger.error(check['msg'])
+    return '掉备案域名:%s' % lose_list
