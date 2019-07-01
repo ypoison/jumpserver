@@ -21,7 +21,7 @@ def check_GWF():
     pass
 
 @shared_task
-@register_as_period_task(interval=3600)
+@register_as_period_task(interval=86400)
 def check_GFW():
     ch_lose_list = []
     try:
@@ -43,7 +43,7 @@ def check_GFW():
     return '被墙域名:%s' % ch_lose_list
 
 @shared_task
-@register_as_period_task(interval=3600)
+@register_as_period_task(interval=86400)
 def check_beian():
     lose_list = []
     try:

@@ -11,40 +11,33 @@ except Exception:
 
 class CheckGFW:
     def __init__(self):
-        self.headers = {
-        "Content-type": "application/json; charset=UTF-8",
-        "accept": "application/json, text/javascript, */*; q=0.01",
-        "user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
-    }
         self.params = dict(
                 func = 'true',
                 m = 'check',
                 a = 'check',
-                domain = 'google.com',
                 x_post_with = 'fcm-ajax',
         )
-
+        self.proxies = {'http': 'socks5://127.0.0.1:1080', 
+                    'https': 'socks5h://127.0.0.1:1080'}
     def check_gfw(self,domain_name):
         url = 'https://www.checkgfw.com/service.cgi/check'
-        #try:
-        response = requests.post(url,data=self.params, headers=self.headers)
-        data = response.text
-        ret = json.loads(data)
-        return ret
-        #    result = ret.get('result')
-        #    if result:
-        #        status = result.get('status')
-        #        if status == 'ALREADY_BEIAN':
-        #            return {'code':1}
-        #        elif status == 'WAIT_PROCESS':
-        #            return {'code':2}
-        #        else:
-        #            return {'code':0}
-        #    else:
-        #        return {'code':-1, 'msg':ret.get('msg')}
-        #except:
-        #    return {'code':-1, 'msg':'接口调用出错'}
+        self.params.update(dict(domain=domain_name))
+        try:
+            response = requests.post(url, proxies=self.proxies, data=self.params)
+            content = response._content
+            ret = json.loads(content)
+            data = response.text
+            status = ret.get('type')
+            if status:
+                if status == 'success':
+                    return {'code':1}
+                else:
+                    return {'code':0}
+            else:
+                return {'code':-1, 'msg':str(ret.get('msg'))}
+        except Exception as e:
+            return {'code':-1, 'msg':'check gfw 接口调用失败:%s' % e}
 
 if __name__ == '__main__':
     check = CheckGFW()
-    print(check.check_gfw('baidu.com'))
+    print(check.check_gfw('lfzgames.cn'))

@@ -10,7 +10,7 @@ from django.urls import reverse_lazy, reverse
 from common.permissions import AdminUserRequiredMixin
 from common.const import create_success_msg, update_success_msg
 from common.utils import get_object_or_none
-from ..models import DomainName, DomainNameRecords, DomainNameAccount
+from ..models import DomainName, Records, Account
 from ..forms import DomainNameForm, DomainNameRecordForm, DomainNameAccountForm
 
 from ..domain_name_api import DomainNameApi
@@ -26,7 +26,7 @@ GetDomainName=DomainNameApi()
 
 
 class DomainNameAccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
-    model = DomainNameAccount
+    model = Account
     template_name = 'domain_name/account_create_update.html'
     form_class = DomainNameAccountForm
     success_url = reverse_lazy('domain-name:account-list')
@@ -41,7 +41,7 @@ class DomainNameAccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, C
         return super().get_context_data(**kwargs)
 
 class DomainNameAccountUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = DomainNameAccount
+    model = Account
     template_name = 'domain_name/account_create_update.html'
     form_class = DomainNameAccountForm
     success_url = reverse_lazy('domain-name:account-list')
@@ -91,7 +91,7 @@ class DomainNameListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 class DomainNameCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
-    model = DomainNameAccount
+    model = Account
     template_name = 'domain_name/domain_name_create.html'
     form_class = DomainNameForm
     success_url = reverse_lazy('domain-name:domain-name-list')
@@ -208,7 +208,7 @@ class DomainNameRecordsListView(AdminUserRequiredMixin, SingleObjectMixin, Templ
         return super().get_context_data(**kwargs)
 
 class DomainNameRecordCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
-    model = DomainNameRecords
+    model = Records
     template_name = 'domain_name/records_create_update.html'
     form_class = DomainNameRecordForm
     success_message = '"<b>%(domain_name)s</b> 添加记录成功。"'
@@ -249,7 +249,7 @@ class DomainNameRecordCreateView(AdminUserRequiredMixin, SuccessMessageMixin, Cr
         return super().get_context_data(**kwargs)
 
 class DomainNameRecordUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = DomainNameRecords
+    model = Records
     template_name = 'domain_name/records_create_update.html'
     form_class = DomainNameRecordForm
     success_message = "<b>%(domain_name)s</b> 记录修改成功。"

@@ -4,7 +4,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from orgs.mixins import OrgModelForm
-from ..models import DomainName, DomainNameRecords, DomainNameAccount
+from ..models import DomainName, Records, Account
 
 __all__ = ['DomainNameForm','DomainNameRecordForm', 'DomainNameAccountForm']
 
@@ -23,7 +23,7 @@ class DomainNameAccountForm(forms.ModelForm):
         return account
 
     class Meta:
-        model = DomainNameAccount
+        model = Account
         fields = ['name', 'access_id', 'access_key', 'resolver', 'comment']
 
 class DomainNameForm(OrgModelForm):
@@ -39,5 +39,5 @@ class DomainNameForm(OrgModelForm):
 
 class DomainNameRecordForm(OrgModelForm):
     class Meta:
-        model = DomainNameRecords
+        model = Records
         fields = ['domain_name', 'type','rr','line','value','priority','ttl', 'comment']

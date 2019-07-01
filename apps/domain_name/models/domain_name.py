@@ -9,10 +9,10 @@ from orgs.mixins import OrgModelMixin
 
 from common.utils import get_signer
 
-__all__ = ['DomainName', 'DomainNameRecords', 'DomainNameAccount']
+__all__ = ['DomainName', 'Records', 'Account']
 signer = get_signer()
 
-class DomainNameAccount(OrgModelMixin):
+class Account(OrgModelMixin):
     RESOLVER_CHOICES = (
         ('aliyun', '阿里云'),
         ('dnspod', 'DNSPod'),
@@ -55,7 +55,7 @@ class DomainName(OrgModelMixin):
         (1, '正常'),
         )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
-    account = models.ForeignKey(DomainNameAccount, on_delete=models.CASCADE, verbose_name='所属账号')
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name='所属账号')
     domain_name = models.CharField(max_length=20, verbose_name='域名')
     project = models.CharField(max_length=20, blank=True, null=True, verbose_name='所属项目')
     registrar = models.CharField(max_length=50, blank=True, null=True, verbose_name='域名注册商')
@@ -75,7 +75,7 @@ class DomainName(OrgModelMixin):
     def __str__(self):
         return self.domain_name
 
-class DomainNameRecords(OrgModelMixin):
+class Records(OrgModelMixin):
     TYPE_CHOICES = (
         ('A', 'A'),
         ('CNAME', 'CNAME'),

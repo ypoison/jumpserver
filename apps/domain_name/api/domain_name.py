@@ -10,7 +10,7 @@ from django.views.generic.detail import SingleObjectMixin
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin, IsAppUser, IsOrgAdminOrAppUser
 
-from ..models import DomainName, DomainNameRecords, DomainNameAccount
+from ..models import DomainName, Records, Account
 from .. import serializers
 
 from ..domain_name_api import DomainNameApi
@@ -29,7 +29,7 @@ GFWCheck = CheckGFW()
 class AccountViewSet(BulkModelViewSet):
     filter_fields = ("name", "resolver")
     search_fields = filter_fields
-    queryset = DomainNameAccount.objects.all()
+    queryset = Account.objects.all()
     permission_classes = (IsOrgAdmin,)
     serializer_class = serializers.DomainNameAccountSerializer
     pagination_class = LimitOffsetPagination
@@ -54,7 +54,7 @@ class DomainNameNetAPIUpdateApi(APIView):
     permission_classes = (IsOrgAdmin,)
 
     def get(self, request, *args, **kwargs):
-        domain_name_account = DomainNameAccount.objects.all()
+        domain_name_account = Account.objects.all()
         for account in domain_name_account:
             domain_name_data = GetDomainName.domain_name_list(account)
             if domain_name_data['code']:
@@ -126,7 +126,7 @@ class DomainNameGFWCheckApi(generics.UpdateAPIView):
 class RecordsViewSet(BulkModelViewSet):
     filter_fields = ("domain_name",)
     search_fields = ("value", "rr")
-    queryset = DomainNameRecords.objects.all()
+    queryset = Records.objects.all()
     permission_classes = (IsOrgAdmin,)
     serializer_class = serializers.RecordsSerializer
     pagination_class = LimitOffsetPagination
@@ -141,7 +141,7 @@ class RecordsViewSet(BulkModelViewSet):
             return Response({'error': del_record['message']}, status=400)
 
 class DomainNameRecordUpdateApi(generics.UpdateAPIView):
-    queryset = DomainNameRecords.objects.all()
+    queryset = Records.objects.all()
     serializer_class = serializers.RecordStatusUpdateSerializer
     permission_classes = (IsOrgAdmin,)
 
