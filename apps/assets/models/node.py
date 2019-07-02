@@ -20,6 +20,7 @@ class Node(OrgModelMixin):
     key = models.CharField(unique=True, max_length=64, verbose_name=_("Key"))  # '1:1:1:1'
     value = models.CharField(max_length=128, verbose_name=_("Value"))
     child_mark = models.IntegerField(default=0)
+    code = models.CharField(max_length=50, blank=True, null=True, verbose_name='别名')
     date_create = models.DateTimeField(auto_now_add=True)
 
     is_node = True
@@ -281,11 +282,12 @@ class Node(OrgModelMixin):
         from common.tree import TreeNode
         from ..serializers import NodeSerializer
         name = '{} ({})'.format(self.value, self.assets_amount)
+        title = '{} ({})'.format(self.value, self.code)
         node_serializer = NodeSerializer(instance=self)
         data = {
             'id': self.key,
             'name': name,
-            'title': name,
+            'title': title,
             'pId': self.parent_key,
             'isParent': True,
             'open': self.is_root(),
