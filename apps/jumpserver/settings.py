@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'terminal.apps.TerminalConfig',
     'audits.apps.AuditsConfig',
     'authentication.apps.AuthenticationConfig',  # authentication
+    'config.apps.ConfigConfig',
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg',

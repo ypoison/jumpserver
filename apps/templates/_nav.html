@@ -79,6 +79,14 @@
         <li id="command-execution-log"><a href="{% url 'audits:command-execution-log-list' %}">{% trans 'Command execution' %}</a></li>
     </ul>
 </li>
+<li id="config">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">配置管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level active">
+        <li id="high-anti"><a href="{% url 'config:high-anti-list' %}">节点配置</a></li>
+    </ul>
+</li>
 {% if XPACK_PLUGINS %}
 <li id="xpack">
     <a>
