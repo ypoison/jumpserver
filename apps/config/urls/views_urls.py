@@ -5,9 +5,9 @@ from .. import views
 app_name = 'config'
 
 urlpatterns = [
-    path('high-anti/', views.NodeListView.as_view(), name='high-anti-list'),
-    path('high-anti/create/', views.NodeCreateView.as_view(), name='high-anti-create'),
-    path('high-anti/<uuid:pk>/', views.NodeDetailView.as_view(), name='high-anti-detail'),
-    path('high-anti/<uuid:pk>/update/', views.NodeUpdateView.as_view(), name='high-anti-update'),
+    path('node-records/', views.NodeRecordListView.as_view(), name='node-record-list'),
+    path('node-config/create/', views.NodeConfigCreateView.as_view(), name='node-config-create'),
+    path('node-config/<uuid:pk>/', views.NodeDetailView.as_view(), name='node-config-detail'),
+    path('node-config/<uuid:pk>/update/', views.NodeUpdateView.as_view(), name='node-config-update'),
 
 ]

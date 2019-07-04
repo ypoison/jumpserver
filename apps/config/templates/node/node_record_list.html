@@ -4,18 +4,19 @@
 
 {% block table_container %}
 <div class="uc pull-left  m-r-5">
-    <a href="{% url 'config:high-anti-create' %}" class="btn btn-sm btn-primary"> 添加节点信息 </a>
+    <a href="{% url 'config:node-config-create' %}" class="btn btn-sm btn-primary"> 添加平台节点信息 </a>
 </div>
-<table class="table table-striped table-bordered table-hover " id="high_anti_list_table" >
+<table class="table table-striped table-bordered table-hover " id="node_records_list_table" >
     <thead>
     <tr>
         <th class="text-center">
             <input type="checkbox" id="check_all" class="ipt_check_all" >
         </th>
-        <th class="text-center">名称</th>
-        <th class="text-center">IP</th>
         <th class="text-center">平台</th>
-        <th class="text-center">记录</th>
+        <th class="text-center">域名</th>
+        <th class="text-center">端口</th>
+        <th class="text-center">代理IP</th>
+        <th class="text-center">代理端口</th>
         <th class="text-center">备注</th>
         <th class="text-center">操作</th>
     </tr>
@@ -29,22 +30,22 @@
 <script>
 function initTable() {
     var options = {
-        ele: $('#high_anti_list_table'),
+        ele: $('#node_records_list_table'),
         columnDefs: [
             {targets: 1, createdCell: function (td, cellData, rowData) {
-                var detail_btn = '<a href="{% url "config:high-anti-detail" pk=DEFAULT_PK %}">' + cellData + '</a>';
+                var detail_btn = '<a href="{% url "config:node-config-detail" pk=DEFAULT_PK %}">' + cellData + '</a>';
                 $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.id));
              }},
-            {targets: 6, createdCell: function (td, cellData, rowData) {
-                var update_btn = '<a href="{% url "config:high-anti-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+            {targets: 8, createdCell: function (td, cellData, rowData) {
+                var update_btn = '<a href="{% url "config:node-config-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn-delete" data-uid="{{ DEFAULT_PK }}">{% trans "Delete" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 $(td).html(update_btn + del_btn)
              }}
         ],
-        ajax_url: '{% url "api-config:high-anti-list" %}',
+        ajax_url: '{% url "api-config:records-list" %}',
         columns: [
-            {data: "id"}, {data: ""}, {data: "platform_count" }, {data: "record_count" },
-            {data: "comment" }, {data: "id"},
+            {data: "id"}, {data: "platfrom"}, {data: "domain" }, {data: "port" }, {data: "proxy_ip" },
+            {data: "proxy_port" },{data: "comment" }, {data: "id"}
         ],
         op_html: $('#actions').html()
     };

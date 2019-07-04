@@ -2,10 +2,19 @@
 #
 from rest_framework import serializers
 
-from ..models import PlatformNode
+from assets.models import Node, Asset
 
 class NodeSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = PlatformNode
-        fields = '__all__'
+        model = Node
+        fields = fields = [
+            'id', 'value', 'public_node_asset', 'private_node_asset',
+        ]
+
+class PrivateAssetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Asset
+        fields = [
+            'id', 'hostname', 'ip'
+        ]

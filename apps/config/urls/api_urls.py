@@ -8,9 +8,10 @@ app_name = 'config'
 
 router = DefaultRouter()
 
-router.register(r'high-anti', api.NodeViewSet, 'high-anti')
+router.register(r'node', api.NodeRecordsViewSet, 'records')
 
 urlpatterns = [
+    path('node-config/get-private/<uuid:pk>/', api.GetPrivateApi.as_view(), name='node-config-private-get'),
 
 ]
 

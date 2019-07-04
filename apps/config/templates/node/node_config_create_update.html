@@ -1,0 +1,76 @@
+{% extends '_base_create_update.html' %}
+{% load static %}
+{% load bootstrap3 %}
+{% load i18n %}
+
+{% block form %}
+<form id="groupForm" method="post" class="form-horizontal">
+    {% csrf_token %}
+    {% bootstrap_field form.platform layout="horizontal" %}
+    {% bootstrap_field form.public_node_asset layout="horizontal" %}
+    {% bootstrap_field form.private_node_asset layout="horizontal" %}
+    <div class="hr-line-dashed"></div>
+    <div class="form-group">
+        <div class="col-sm-4 col-sm-offset-2">
+            <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
+            <button id="submit_button" class="btn btn-primary" type="submit">{% trans 'Submit' %}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block custom_foot_js %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#id_platform").change(function() {
+        var platform_id = $(this).val();
+        $("#id_platform option[value='" + platform_id + "']").attr("selected", "selected");
+        if (platform_id != "") {
+            var url = '{% url "api-config:node-config-private-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', platform_id);
+            $.ajax({
+                url: url,
+                type: "GET",
+                contentType:"application/json; charset=utf-8",
+                dataType:"json"
+            }).done(function(data, textStatue, jqXHR) {
+                console.log(data.ip)
+                var msg = "";
+                if (jqXHR.responseJSON.msg) {
+                    msg = jqXHR.responseJSON.msg
+
+                }
+                if (msg === "") {
+                    msg = default_success_message;
+                }
+                $data_table.draw(false);
+                toastr.success(msg);
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                var msg = "";
+                if (jqXHR.responseJSON.error) {
+                        msg = jqXHR.responseJSON.error
+                } else if (jqXHR.responseJSON.msg) {
+                     msg = jqXHR.responseJSON.msg
+                }
+                if (msg === "") {
+                    msg = default_failed_message;
+                }
+                $data_table.draw(false);
+                toastr.error(msg);
+            });
+
+            //$.getJSON(url, args, function (data) {
+            //    if (data.length != 0) {
+            //        for (var i = 0; i < data.length; i++) {
+            //            var cabinetID = data[i].pk;
+            //            var cabinetName = data[i].fields.name;
+            //            $("#cabinet").append("<option value =" + cabinetID + ">" + cabinetName + "</option>")
+            //        }
+            //    } else {
+            //        $("#cabinet").append("<option value='' >没有相关信息</option>")
+            //    }
+            //});
+        }
+    })
+})
+</script>
+{% endblock %}
