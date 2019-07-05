@@ -24,7 +24,8 @@
 $(document).ready(function () {
     $("#id_platform").change(function() {
         var platform_id = $(this).val();
-        $("#id_platform option[value='" + platform_id + "']").attr("selected", "selected");
+        $("#id_private_node_asset option:gt(0)").remove();
+        //$("#id_platform option[value='" + platform_id + "']").attr("selected", "selected");
         if (platform_id != "") {
             var url = '{% url "api-config:node-config-private-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', platform_id);
             $.ajax({
@@ -33,42 +34,14 @@ $(document).ready(function () {
                 contentType:"application/json; charset=utf-8",
                 dataType:"json"
             }).done(function(data, textStatue, jqXHR) {
-                console.log(data.ip)
-                var msg = "";
-                if (jqXHR.responseJSON.msg) {
-                    msg = jqXHR.responseJSON.msg
-
+                if (data.length != 0) {
+                    for (var i = 0; i < data.length; i++) {
+                        $("#id_private_node_asset").append("<option value =" + data[i].id + ">" + data[i].hostname + "(" + data[i].ip + ")" + "</option>")
+                    }
+                } else {
+                    $("#id_private_node_asset").append("<option value='' >没有相关信息</option>")
                 }
-                if (msg === "") {
-                    msg = default_success_message;
-                }
-                $data_table.draw(false);
-                toastr.success(msg);
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                var msg = "";
-                if (jqXHR.responseJSON.error) {
-                        msg = jqXHR.responseJSON.error
-                } else if (jqXHR.responseJSON.msg) {
-                     msg = jqXHR.responseJSON.msg
-                }
-                if (msg === "") {
-                    msg = default_failed_message;
-                }
-                $data_table.draw(false);
-                toastr.error(msg);
             });
-
-            //$.getJSON(url, args, function (data) {
-            //    if (data.length != 0) {
-            //        for (var i = 0; i < data.length; i++) {
-            //            var cabinetID = data[i].pk;
-            //            var cabinetName = data[i].fields.name;
-            //            $("#cabinet").append("<option value =" + cabinetID + ">" + cabinetName + "</option>")
-            //        }
-            //    } else {
-            //        $("#cabinet").append("<option value='' >没有相关信息</option>")
-            //    }
-            //});
         }
     })
 })

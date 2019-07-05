@@ -43,6 +43,16 @@ class NodeConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super(NodeConfigCreateView, self).get_form_kwargs()
+        data = {'request': self.request}
+        kwargs.update(data)
+        return kwargs
+
+    #def form_valid(self, form):
+    #    print(self)
+    #    return super().form_valid(form)
+
 class NodeDetailView(AdminUserRequiredMixin, DetailView):
     model = Node
     template_name = 'node/node_detail.html'

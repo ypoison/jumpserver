@@ -1,10 +1,10 @@
 # ~*~ coding: utf-8 ~*~
 
 from rest_framework_bulk import BulkModelViewSet
-from rest_framework.views import APIView, Response
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import generics
-
+from rest_framework.generics import (
+    ListAPIView,
+)
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin
 
@@ -27,13 +27,18 @@ class NodeRecordsViewSet(BulkModelViewSet):
         queryset = super().get_queryset().all()
         return queryset
 
-class GetPrivateApi(generics.RetrieveAPIView):
-    queryset = Node.objects.all()
+class GetPrivateApi(ListAPIView):
     permission_classes = (IsOrgAdmin,)
     serializer_class = serializers.PrivateAssetSerializer
-    def retrieve(self, request, *args, **kwargs):
-        node_id = kwargs.get('pk')
-        private_asset = Node.objects.get(id=node_id).get_children().get(value='other').get_all_assets().list()
-        print(private_asset)
-        serializer = serializers.PrivateAssetSerializer(instance=private_asset)
-        return Response(serializer.data)
+
+    def get_queryset(self):
+        node_id = self.kwargs.get('pk', '')
+        queryset = []
+
+        if not node_id:
+            return queryset
+        try:
+            queryset = list(Node.objects.get(id=node_id).get_children().get(value='other').get_all_assets())
+        except:
+            queryset = []
+        return queryset
