@@ -131,6 +131,28 @@ class RecordsViewSet(BulkModelViewSet):
     serializer_class = serializers.RecordsSerializer
     pagination_class = LimitOffsetPagination
 
+    #def create(self, request, *args, **kwargs):
+    #    print(request.data)
+    #    serializer = self.serializer_class(data=request.data)
+    #    print(serializer)
+    #    #return super().create(request, *args, **kwargs)
+
+    #record = form.save(commit=False)
+#
+    #add_record = GetDomainName.record_create(record)
+#
+    #if add_record['code']:
+    #    add_record = add_record['message']
+    #    record.record_id = add_record['RecordId']
+    #    record.save()
+    #else:
+    #    form.add_error(
+    #        "record_id", add_record['message']
+    #    )
+    #    return self.form_invalid(form)
+    #return super().form_valid(form)
+
+
     def destroy(self, request, *args, **kwargs):
         record = self.get_object()
         del_record = GetDomainName.record_remove(record)
