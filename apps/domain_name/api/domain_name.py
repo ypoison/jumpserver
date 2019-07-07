@@ -132,12 +132,32 @@ class RecordsViewSet(BulkModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            pass
-        else:
-            print(serializer.errors)
+        try:
+            req = request.data
+            domain_name = req.get('domain_name')
+            domain = DomainName.objects.get(domain_name=domain_name)
+            type= req.get('type')
+            rr= req.get('rr')
+            line= req.get('line')
+            value= req.get('value')
+            create_record = Records(domain_name=domain, type=type, rr=rr, line=line, value=value)
+            record = create_record.save(commit=False)
+            add_record = GetDomainName.record_create(record)
+
+            if add_record['code']:
+                add_record = add_record['message']
+                record.record_id = add_record['RecordId']
+                record.save()
+            return Response({'msg': 'success'}, status=200)
+            #serializer = self.serializer_class(data=req)
+#
+            #if serializer.is_valid():
+            #    return Response({'msg': 'success'}, status=200)
+            #    pass
+            #else:
+            #    print(serializer.errors)
+        except Exception as e:
+            return Response({'msg': e}, status=400)
         #return super().create(request, *args, **kwargs)
 
     #record = form.save(commit=False)
