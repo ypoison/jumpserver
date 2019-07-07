@@ -133,48 +133,26 @@ class RecordsViewSet(BulkModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            req = request.data
+            req = request.data.copy()
             domain_name = req.get('domain_name')
             domain = DomainName.objects.get(domain_name=domain_name)
-            type= req.get('type')
-            rr= req.get('rr')
-            line= req.get('line')
-            value= req.get('value')
-            create_record = Records(domain_name=domain, type=type, rr=rr, line=line, value=value)
-            record = create_record.save(commit=False)
-            add_record = GetDomainName.record_create(record)
 
-            if add_record['code']:
-                add_record = add_record['message']
-                record.record_id = add_record['RecordId']
-                record.save()
-            return Response({'msg': 'success'}, status=200)
-            #serializer = self.serializer_class(data=req)
-#
-            #if serializer.is_valid():
-            #    return Response({'msg': 'success'}, status=200)
-            #    pass
-            #else:
-            #    print(serializer.errors)
+            req['domain_name'] = domain.id
+            serializer = self.serializer_class(data=req)
+            if serializer.is_valid():
+                record = serializer.save()
+                add_record = GetDomainName.record_create(record)
+                if add_record['code']:
+                    add_record = add_record['message']
+                    record.record_id = add_record['RecordId']
+                    serializer.save()
+                    return Response({'msg': 'success'}, status=200)
+                else:
+                    return Response({'msg': add_record}, status=400)
+            else:
+                return Response({'msg':serializer.errors}, status=400)
         except Exception as e:
             return Response({'msg': e}, status=400)
-        #return super().create(request, *args, **kwargs)
-
-    #record = form.save(commit=False)
-#
-    #add_record = GetDomainName.record_create(record)
-#
-    #if add_record['code']:
-    #    add_record = add_record['message']
-    #    record.record_id = add_record['RecordId']
-    #    record.save()
-    #else:
-    #    form.add_error(
-    #        "record_id", add_record['message']
-    #    )
-    #    return self.form_invalid(form)
-    #return super().form_valid(form)
-
 
     def destroy(self, request, *args, **kwargs):
         record = self.get_object()
