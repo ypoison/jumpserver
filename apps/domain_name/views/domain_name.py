@@ -166,7 +166,7 @@ class DomainNameRecordsListView(AdminUserRequiredMixin, SingleObjectMixin, Templ
             domain_name_records_data = domain_name_records_data['message']
             for domain_name_records_info in domain_name_records_data:
                 record_id = domain_name_records_info['RecordId']
-                db_records_info = get_object_or_none(DomainNameRecords,record_id=record_id)
+                db_records_info = get_object_or_none(Records,record_id=record_id)
                 if not db_records_info:
                     try:
                         DomainNameRecords.objects.create(

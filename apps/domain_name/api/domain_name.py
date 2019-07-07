@@ -131,11 +131,14 @@ class RecordsViewSet(BulkModelViewSet):
     serializer_class = serializers.RecordsSerializer
     pagination_class = LimitOffsetPagination
 
-    #def create(self, request, *args, **kwargs):
-    #    print(request.data)
-    #    serializer = self.serializer_class(data=request.data)
-    #    print(serializer)
-    #    #return super().create(request, *args, **kwargs)
+    def create(self, request, *args, **kwargs):
+        print(request.data)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            pass
+        else:
+            print(serializer.errors)
+        #return super().create(request, *args, **kwargs)
 
     #record = form.save(commit=False)
 #
