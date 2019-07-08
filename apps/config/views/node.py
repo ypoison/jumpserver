@@ -33,7 +33,7 @@ class NodeConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
     template_name = 'node/node_config_create_update.html'
     form_class = PlatformNodeConfigForm
     success_url = reverse_lazy('config:node-record-list')
-    success_message = create_success_msg
+    success_message = "updated successfully."
 
     def get_context_data(self, **kwargs):
         context = {
@@ -48,10 +48,6 @@ class NodeConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
         data = {'request': self.request}
         kwargs.update(data)
         return kwargs
-
-    #def form_valid(self, form):
-    #    print(self)
-    #    return super().form_valid(form)
 
 class NodeDetailView(AdminUserRequiredMixin, DetailView):
     model = Node
@@ -70,7 +66,8 @@ class NodeUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'node/node_create_update.html'
     form_class = PlatformNodeConfigForm
     success_url = reverse_lazy('config:high-anti-list')
-    success_message = create_success_msg
+    success_message = "<b>%(value)s</b> was updated successfully."
+
 
     def get_context_data(self, **kwargs):
         context = {

@@ -8,7 +8,14 @@
     {% csrf_token %}
     {% bootstrap_field form.platform layout="horizontal" %}
     {% bootstrap_field form.public_node_asset layout="horizontal" %}
-    {% bootstrap_field form.private_node_asset layout="horizontal" %}
+    <div class="form-group">
+        <label class="col-md-2 control-label" for="id_public_node_asset">私有节点</label>
+        <div class="col-md-9">
+            <select name="private_node_asset" class="form-control select2" data-placeholder="选择资产" title="" id="id_private_node_asset">
+                <option value="" selected="">---------</option>
+            </select>
+        </div>
+    </div>
     <div class="hr-line-dashed"></div>
     <div class="form-group">
         <div class="col-sm-4 col-sm-offset-2">

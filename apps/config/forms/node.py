@@ -2,6 +2,7 @@
 #
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from django.shortcuts import get_object_or_404
 from django.db import models
 from orgs.mixins import OrgModelForm
 from assets.models import Node, Asset
@@ -25,15 +26,9 @@ class PlatformNodeConfigForm(forms.ModelForm):
             attrs={'class': 'select2', 'data-placeholder': _('Select assets')}
         )
     )
-    private_node_asset = forms.ModelChoiceField(
-        queryset=Asset.objects.filter(port=1), label='私有节点', required=False,
-        widget=forms.Select(
-            attrs={'class': 'select2', 'data-placeholder': _('Select assets')}
-        )
-    )
     class Meta:
         model = Node
-        fields = ['platform', 'public_node_asset', 'private_node_asset']
+        fields = ['platform', 'public_node_asset']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request", None)
@@ -41,36 +36,12 @@ class PlatformNodeConfigForm(forms.ModelForm):
         self.fields['platform'].queryset = Node.objects.filter(key__regex=r'^1:[0-9]$').exclude(code="GGDLJD")
         self.fields['public_node_asset'].queryset = Node.objects.get(code="GGDLJD").get_all_assets()
 
-    def clean(self):
-        super().clean()
-        #print(self)
-    #    private_node_asset = Asset.objects.get(id=self.request.POST.get('private_node_asset'))
-    #    self.cleaned_data['private_node_asset'] = private_node_asset
-        print(self.cleaned_data)
-    #    return self.cleaned_data
-
-    #def clean_private_node_asset(self):
-    #    private = self.cleaned_data['private_node_asset']
-    #    print(private)
-    #    if private:
-    #        return private
-
     def save(self, commit=True):
-        print(1111111111)
-        #changed_fields = []
-        #for field in self._meta.fields:
-        #    if self.data.get(field) not in [None, '']:
-        #        changed_fields.append(field)
-#
-        #cleaned_data = {k: v for k, v in self.cleaned_data.items()
-        #                if k in changed_fields}
-        #node_id = cleaned_data.pop('id')
-        #print(node_id)
-        #public = cleaned_data.pop('public_node_asset')
-        #print(public)
-        #private = cleaned_data.pop('private_node_asset')
-        #print(private)
-        #assets = Asset.objects.filter(id__in=[asset.id for asset in assets])
-        #assets.update(**cleaned_data)
-#
-        #return assets
+        platform = self.cleaned_data.get('platform')
+        public_node_asset = self.cleaned_data.get('public_node_asset')
+        private_node_asset = self.request.POST.get('private_node_asset')
+        private_node_asset = get_object_or_404(Asset, id=private_node_asset)
+        platform.public_node_asset = public_node_asset
+        platform.private_node_asset = private_node_asset
+        platform.save()
+        return platform
