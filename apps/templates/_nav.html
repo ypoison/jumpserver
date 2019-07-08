@@ -94,6 +94,17 @@
         <li id="command-execution-log"><a href="{% url 'audits:command-execution-log-list' %}">{% trans 'Batch command' %}</a></li>
     </ul>
 </li>
+<li id="domain-name">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">域名管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level active">
+        <li id="domain-name"><a href="{% url 'domain-name:domain-name-list' %}">域名列表</a></li>
+    </ul>
+    <ul class="nav nav-second-level active">
+        <li id="account"><a href="{% url 'domain-name:account-list' %}">账号管理</a></li>
+    </ul>
+</li>
 {% if XPACK_PLUGINS %}
 <li id="xpack">
     <a>

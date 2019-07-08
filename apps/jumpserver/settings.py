@@ -66,6 +66,9 @@ INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'terminal.apps.TerminalConfig',
     'audits.apps.AuditsConfig',
+
+    'domain_name.apps.DomainNameConfig',
+
     'authentication.apps.AuthenticationConfig',  # authentication
     'applications.apps.ApplicationsConfig',
     'rest_framework',

@@ -6202,3 +6202,13 @@ msgstr "创建"
 
 #~ msgid "MFA setting"
 #~ msgstr "MFA 设置"
+
+
+#: assets/views/domain_name.py:27
+msgid "DomainName"
+msgstr "域名管理"
+
+
+#: assets/views/domain_name.py:28
+msgid "Domain Name list"
+msgstr "域名列表"
