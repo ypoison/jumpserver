@@ -57,6 +57,7 @@ class DomainNameNetAPIUpdateApi(APIView):
         domain_name_account = Account.objects.all()
         for account in domain_name_account:
             domain_name_data = GetDomainName.domain_name_list(account)
+
             if domain_name_data['code']:
                 domain_name_data = domain_name_data['message']
                 for domain_name_info in domain_name_data:
@@ -72,7 +73,7 @@ class DomainNameNetAPIUpdateApi(APIView):
                                 domain_status = domain_name_info.get('DomainStatus',3)
                             )
                         except Exception as e:
-                            return Response({"error": str(e)}, status=400)
+                            return Response({"error": '%s:%s' % (account,e)}, status=400)
                     else:
                         db_domain_name.account = account
                         if domain_name_info['RegistrationDate']:
@@ -84,10 +85,10 @@ class DomainNameNetAPIUpdateApi(APIView):
                         try:
                             db_domain_name.save()
                         except Exception as e:
-                            return Response({"error": str(e)}, status=400)
-                return Response({"msg": "ok"})
+                            return Response({"error": '%s:%s' % (account,e)}, status=400)
             else:
-                return Response({'error': str(domain_name_data['message'])}, status=400)
+                return Response({'error': '%s:%s' % (account,domain_name_data['message'])}, status=400)
+        return Response({"msg": "ok"})
 
 class DomainNameBeiAnCheckApi(generics.UpdateAPIView):
     queryset = DomainName.objects.all()
