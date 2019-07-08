@@ -7,6 +7,7 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 
 '''获取域名列表'''
 from aliyunsdkdomain.request.v20180129.QueryDomainListRequest import QueryDomainListRequest
+from aliyunsdkalidns.request.v20150109.DescribeDomainsRequest import DescribeDomainsRequest
 '''获取解析记录列表'''
 from aliyunsdkalidns.request.v20150109.DescribeDomainRecordsRequest import DescribeDomainRecordsRequest
 '''添加记录'''
@@ -39,6 +40,21 @@ class AliyunDomainName:
         try:
             response = self.client.do_action_with_exception(request)
             ret = json.loads(str(response, encoding='utf-8'))['Data']['Domain']
+
+            request = DescribeDomainsRequest()
+            request.set_accept_format('json')
+            
+            request.set_PageSize(100)
+
+            response = self.client.do_action_with_exception(request)
+            DescribeDomains = json.loads(str(response, encoding='utf-8'))['Domains']['Domain']
+            domains = []
+            for r in ret:
+                domains.append(r['DomainName'])
+            for d in DescribeDomains:
+                if d['DomainName'] not in domains:
+                    ret.append(d)
+
             return {'code':1,'message':ret}
         except Exception as e:
             return {'code':0,'message':e}

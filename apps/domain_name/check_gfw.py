@@ -17,13 +17,11 @@ class CheckGFW:
                 a = 'check',
                 x_post_with = 'fcm-ajax',
         )
-        self.proxies = {'http': 'socks5://127.0.0.1:1080', 
-                    'https': 'socks5h://127.0.0.1:1080'}
     def check_gfw(self,domain_name):
         url = 'https://www.checkgfw.com/service.cgi/check'
         self.params.update(dict(domain=domain_name))
         try:
-            response = requests.post(url, proxies=self.proxies, data=self.params)
+            response = requests.post(url, data=self.params)
             content = response._content
             ret = json.loads(content)
             data = response.text

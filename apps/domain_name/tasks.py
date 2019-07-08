@@ -15,10 +15,6 @@ logger = get_logger(__file__)
 CheckGFW = CheckGFW()
 BeiAnCheck=beian()
 
-@shared_task
-@after_app_shutdown_clean_periodic
-def check_GWF():
-    pass
 
 @shared_task
 @register_as_period_task(interval=86400)

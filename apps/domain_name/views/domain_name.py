@@ -103,7 +103,7 @@ class DomainNameCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
         add_domain = GetDomainName.domain_name_create(domain)
 
         if add_domain['code']:
-            record.save()
+            domain.save()
         else:
             form.add_error(
                 "domain_name", add_domain['message']
@@ -169,7 +169,7 @@ class DomainNameRecordsListView(AdminUserRequiredMixin, SingleObjectMixin, Templ
                 db_records_info = get_object_or_none(Records,record_id=record_id)
                 if not db_records_info:
                     try:
-                        DomainNameRecords.objects.create(
+                        Records.objects.create(
                                             record_id = domain_name_records_info['RecordId'],
                                             domain_name = domain_name,
                                             type = domain_name_records_info['Type'],

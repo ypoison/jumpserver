@@ -67,27 +67,27 @@ class DomainNameNetAPIUpdateApi(APIView):
                             DomainName.objects.create(
                                 account = account,
                                 domain_name = domain_name_info['DomainName'],
-                                registrar = account.get_resolver_display,
-                                registration_date = domain_name_info['RegistrationDate'],
-                                expiration_date = domain_name_info['ExpirationDate'],
-                                domain_status = domain_name_info['DomainStatus']
+                                registration_date = domain_name_info.get('RegistrationDate',''),
+                                expiration_date = domain_name_info.get('ExpirationDate',''),
+                                domain_status = domain_name_info.get('DomainStatus',3)
                             )
                         except Exception as e:
-                            return Response({"failed": e}, status=404)
+                            return Response({"error": str(e)}, status=400)
                     else:
                         db_domain_name.account = account
                         if domain_name_info['RegistrationDate']:
                             db_domain_name.registration_date = domain_name_info['RegistrationDate']
                         if domain_name_info['ExpirationDate']:
                             db_domain_name.expiration_date = domain_name_info['ExpirationDate']
-                        db_domain_name.domain_status = domain_name_info['DomainStatus']
+                        if domain_name_info['DomainStatus']:
+                            db_domain_name.domain_status = domain_name_info['DomainStatus']
                         try:
                             db_domain_name.save()
                         except Exception as e:
-                            return Response({"failed": e}, status=404)
+                            return Response({"error": str(e)}, status=400)
                 return Response({"msg": "ok"})
             else:
-                return Response({'error': domain_name_data['message']}, status=400)
+                return Response({'error': str(domain_name_data['message'])}, status=400)
 
 class DomainNameBeiAnCheckApi(generics.UpdateAPIView):
     queryset = DomainName.objects.all()
@@ -121,7 +121,7 @@ class DomainNameGFWCheckApi(generics.UpdateAPIView):
             domain.save()
             return Response({"msg": "%s被墙状态:%s" % (domain,code)})
         except Exception as e:
-            return Response({'msg': e}, status=400)
+            return Response({'msg': str(e)}, status=400)
 
 class RecordsViewSet(BulkModelViewSet):
     filter_fields = ("domain_name",)
@@ -148,11 +148,11 @@ class RecordsViewSet(BulkModelViewSet):
                     serializer.save()
                     return Response({'msg': 'success'}, status=200)
                 else:
-                    return Response({'msg': add_record}, status=400)
+                    return Response({'error': add_record}, status=400)
             else:
-                return Response({'msg':serializer.errors}, status=400)
+                return Response({'error':serializer.errors}, status=400)
         except Exception as e:
-            return Response({'msg': e}, status=400)
+            return Response({'error': str(e)}, status=400)
 
     def destroy(self, request, *args, **kwargs):
         record = self.get_object()
