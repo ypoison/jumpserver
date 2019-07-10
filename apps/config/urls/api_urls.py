@@ -8,10 +8,12 @@ app_name = 'config'
 
 router = DefaultRouter()
 
-router.register(r'node', api.NodeRecordsViewSet, 'records')
+router.register(r'node-config', api.NodeViewSet, 'node-config')
+router.register(r'node-config/web-config', api.WEBConfigViewSet, 'web-config')
 
 urlpatterns = [
     path('node-config/get-private/<uuid:pk>/', api.GetPrivateApi.as_view(), name='node-config-private-get'),
+path('web-config/get-proxy-ip/<uuid:pk>/', api.GetProxyIPApi.as_view(), name='web-config-proxy-ip-get'),
 
 ]
 

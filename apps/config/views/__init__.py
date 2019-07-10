@@ -1,2 +1,2 @@
 # coding:utf-8
-from .node import *
+from .node_config import *

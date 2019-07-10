@@ -6,12 +6,13 @@ from django.shortcuts import get_object_or_404
 from django.db import models
 from orgs.mixins import OrgModelForm
 from assets.models import Node, Asset
+from ..models import WEBConfigRecords
 
-__all__ = ['PlatformNodeConfigForm', ]
+__all__ = ['PlatformNodeConfigForm', 'WEBConfigForm']
 
 class PlatformNodeConfigForm(forms.ModelForm):
     platform = forms.ModelChoiceField(
-        required=False, queryset=Node.objects.filter(code=1),
+        required=True, queryset=Node.objects.filter(code=1),
         label="平台",
         widget=forms.Select(
             attrs={
@@ -21,7 +22,7 @@ class PlatformNodeConfigForm(forms.ModelForm):
         )
     )
     public_node_asset = forms.ModelChoiceField(
-        queryset=Asset.objects.filter(port=1), label='公共节点', required=False,
+        queryset=Asset.objects.filter(port=1), label='公共节点', required=True,
         widget=forms.Select(
             attrs={'class': 'select2', 'data-placeholder': _('Select assets')}
         )
@@ -45,3 +46,22 @@ class PlatformNodeConfigForm(forms.ModelForm):
         platform.private_node_asset = private_node_asset
         platform.save()
         return platform
+
+class WEBConfigForm(forms.ModelForm):
+    platform = forms.ModelChoiceField(
+        required=True, queryset=Node.objects.filter(code=1),
+        label="平台",
+        widget=forms.Select(
+            attrs={
+                'class': 'select2',
+                'data-placeholder': '平台'
+            }
+        )
+    )
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super(WEBConfigForm, self).__init__(*args, **kwargs)
+        self.fields['platform'].queryset = Node.objects.filter(key__regex=r'^1:[0-9]$').exclude(code="GGDLJD")
+    class Meta:
+        model = WEBConfigRecords
+        fields = ['platform', 'domain', 'port', 'proxy_ip','proxy_port','comment']

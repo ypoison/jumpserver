@@ -21,8 +21,8 @@ class Node(OrgModelMixin):
     value = models.CharField(max_length=128, verbose_name=_("Value"))
     child_mark = models.IntegerField(default=0)
     code = models.CharField(max_length=50, blank=True, null=True, verbose_name='别名')
-    public_node_asset = models.ForeignKey("assets.Asset", blank=True, null=True, related_name='public_node_asset', on_delete=models.CASCADE, verbose_name='公共高防节点')
-    private_node_asset = models.ForeignKey("assets.Asset", blank=True, null=True, related_name='private_node_asset', on_delete=models.CASCADE, verbose_name='私有高防节点')
+    public_node_asset = models.ForeignKey("assets.Asset", blank=True, null=True, related_name='public_node_asset', on_delete=models.SET_NULL, verbose_name='公共高防节点')
+    private_node_asset = models.ForeignKey("assets.Asset", blank=True, null=True, related_name='private_node_asset', on_delete=models.SET_NULL, verbose_name='私有高防节点')
     date_create = models.DateTimeField(auto_now_add=True)
 
     is_node = True
@@ -54,6 +54,14 @@ class Node(OrgModelMixin):
     @property
     def name(self):
         return self.value
+
+    @property
+    def public_node_asset_display(self):
+        return str(self.public_node_asset)
+
+    @property
+    def private_node_asset_display(self):
+        return str(self.private_node_asset)
 
     @property
     def assets_amount(self):
