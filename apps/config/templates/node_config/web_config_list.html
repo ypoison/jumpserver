@@ -81,13 +81,13 @@ function initTable() {
         ele: $('#web_config_list_table'),
         columnDefs: [
             {targets: 7, createdCell: function (td, cellData, rowData) {
-                var update_btn = '<a href="{% url "config:node-config-create" %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
-                $(td).html(update_btn)
+                var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn-delete" data-uid="{{ DEFAULT_PK }}">删除</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                $(td).html(del_btn)
              }}
         ],
         ajax_url: '{% url "api-config:web-config-list" %}',
         columns: [
-            {data: "id"}, {data:"platform"}, {data: "domain" }, {data: 'port'},
+            {data: "id"}, {data:"platform_display"}, {data: "domain" }, {data: 'port'},
             {data: 'proxy_ip'}, {data: 'proxy_port'}, {data: 'comment'}, {data: "id"}
         ],
         op_html: $('#actions').html()
@@ -99,24 +99,14 @@ $(document).ready(function(){
 })
 .on('click', '.btn-delete', function () {
     var $this = $(this);
-    var $data_table = $('#domain_list_table').DataTable();
+    var $data_table = $('#web_config_list_table').DataTable();
     var name = $(this).closest("tr").find(":nth-child(2)").children('a').html();
     var uid = $this.data('uid');
-    var the_url = '{% url "api-assets:gateway-detail" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+    var the_url = '{% url "api-config:web-config-detail" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
     objectDelete($this, name, the_url);
     setTimeout( function () {
         $data_table.ajax.reload();
     }, 3000);
-}).on('click', '.btn-test', function () {
-    var $this = $(this);
-    var uid = $this.data('uid');
-    var the_url = '{% url "api-assets:test-gateway-connective" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
-    APIUpdateAttr({
-        url: the_url,
-        method: "GET",
-        success_message: "{% trans 'Can be connected' %}",
-        fail_message: "{% trans 'The connection fails' %}"
-    })
 });
 </script>
 {% endblock %}

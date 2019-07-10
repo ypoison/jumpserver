@@ -25,4 +25,7 @@ class WEBConfigSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WEBConfigRecords
-        fields = '__all__'
+        fields = [
+            'id', 'platform', 'platform_display', 'domain', 'port',
+            'proxy_ip', 'proxy_port', 'comment'
+        ]

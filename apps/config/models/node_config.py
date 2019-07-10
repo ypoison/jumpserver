@@ -23,3 +23,7 @@ class WEBConfigRecords(models.Model):
     class Meta:
         verbose_name = 'WEB配置'
         db_table = 'config_web_config_records'
+
+    @property
+    def platform_display(self):
+        return str(self.platform)
