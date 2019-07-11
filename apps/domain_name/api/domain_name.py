@@ -21,7 +21,7 @@ from ..check_gfw import CheckGFW
 logger = get_logger(__file__)
 __all__ = ['AccountViewSet', 'DomainNameViewSet', 'RecordsViewSet',
          'DomainNameNetAPIUpdateApi', 'DomainNameRecordUpdateApi', 
-         'DomainNameBeiAnCheckApi', 'DomainNameGFWCheckApi']
+         'DomainNameBeiAnCheckApi', 'DomainNameGFWCheckApi', 'RecordsNetAPIUpdateApi']
 GetDomainName=DomainNameApi()
 BeiAnCheck=beian()
 GFWCheck = CheckGFW()
@@ -60,9 +60,11 @@ class DomainNameNetAPIUpdateApi(APIView):
 
             if domain_name_data['code']:
                 domain_name_data = domain_name_data['message']
+                domain_list = []
                 for domain_name_info in domain_name_data:
                     domain_name = domain_name_info['DomainName']
-                    db_domain_name = get_object_or_none(DomainName,domain_name=domain_name)
+                    domain_list.append(domain_name)
+                    db_domain_name = get_object_or_none(DomainName,domain_name=domain_name,account=account)
                     if not db_domain_name:
                         try:
                             DomainName.objects.create(
@@ -76,16 +78,19 @@ class DomainNameNetAPIUpdateApi(APIView):
                             return Response({"error": '%s:%s' % (account,e)}, status=400)
                     else:
                         db_domain_name.account = account
-                        if domain_name_info['RegistrationDate']:
+                        if domain_name_info.get('RegistrationDate',''):
                             db_domain_name.registration_date = domain_name_info['RegistrationDate']
-                        if domain_name_info['ExpirationDate']:
+                        if domain_name_info.get('ExpirationDate',''):
                             db_domain_name.expiration_date = domain_name_info['ExpirationDate']
-                        if domain_name_info['DomainStatus']:
+                        if domain_name_info.get('DomainStatus',''):
                             db_domain_name.domain_status = domain_name_info['DomainStatus']
                         try:
                             db_domain_name.save()
                         except Exception as e:
                             return Response({"error": '%s:%s' % (account,e)}, status=400)
+                for d in DomainName.objects.filter(account=account):
+                    if d.domain_name not in domain_list:
+                        d.delete()
             else:
                 return Response({'error': '%s:%s' % (account,domain_name_data['message'])}, status=400)
         return Response({"msg": "ok"})
@@ -183,3 +188,52 @@ class DomainNameRecordUpdateApi(generics.UpdateAPIView):
                 return Response({'error': del_record['message']}, status=400)
         else:
             return Response({'error': serializer.errors}, status=400)
+
+class RecordsNetAPIUpdateApi(APIView):
+    permission_classes = (IsOrgAdmin,)
+
+    def get(self, request, *args, **kwargs):
+        domain_name_id = self.kwargs.get('pk')
+        domain_name = DomainName.objects.get(id=domain_name_id)
+
+        domain_name_records_data = GetDomainName.domain_name_records(domain_name)
+        if domain_name_records_data['code']:
+            domain_name_records_data = domain_name_records_data['message']
+            domain_name_records_data_list = []
+            for domain_name_records_info in domain_name_records_data:
+                record_id = domain_name_records_info['RecordId']
+                domain_name_records_data_list.append(record_id)
+                db_records_info = get_object_or_none(Records,record_id=record_id)
+                if not db_records_info:
+                    try:
+                        Records.objects.create(
+                                            record_id = domain_name_records_info['RecordId'],
+                                            domain_name = domain_name,
+                                            type = domain_name_records_info['Type'],
+                                            rr = domain_name_records_info['RR'],
+                                            line = domain_name_records_info['Line'],
+                                            value = domain_name_records_info['Value'],
+                                            ttl = domain_name_records_info['TTL'],
+                                            status = domain_name_records_info['Status'],
+                                            locked = domain_name_records_info['Locked']
+                                            )
+                    except Exception as e:
+                        return Response({"error": '%s' % (e)}, status=400)
+                else:
+                    try:
+                        db_records_info.rr = domain_name_records_info['RR']
+                        db_records_info.status = domain_name_records_info['Status']
+                        db_records_info.value = domain_name_records_info['Value']
+                        db_records_info.type = domain_name_records_info['Type']
+                        db_records_info.locked = domain_name_records_info['Locked']
+                        db_records_info.line = domain_name_records_info['Line']
+                        db_records_info.ttl = domain_name_records_info['TTL']
+                        db_records_info.save()
+                    except Exception as e:
+                        return Response({"error": '%s' % (e)}, status=400)
+            for r in Records.objects.filter(domain_name=domain_name):
+                if r.record_id not in domain_name_records_data_list:
+                    r.delete()
+            return Response({"msg": "ok"})
+        else:
+            return Response({'error': '%s' % (domain_name_records_data['message'])}, status=400)

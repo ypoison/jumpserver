@@ -95,7 +95,7 @@ class DomainNameCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
     template_name = 'domain_name/domain_name_create.html'
     form_class = DomainNameForm
     success_url = reverse_lazy('domain-name:domain-name-list')
-    success_message = create_success_msg
+    success_message = "<b>%(domain_name)s</b> was updated successfully."
 
     def form_valid(self, form):
         domain = form.save(commit=False)
@@ -157,46 +157,6 @@ class DomainNameRecordsListView(AdminUserRequiredMixin, SingleObjectMixin, Templ
     template_name = 'domain_name/records_list.html'
     model = DomainName
     object = None
-
-    def get(self, request, *args, **kwargs):
-        domain_name = self.get_object(queryset=self.model.objects.all())
-
-        domain_name_records_data = GetDomainName.domain_name_records(domain_name)
-        if domain_name_records_data['code']:
-            domain_name_records_data = domain_name_records_data['message']
-            for domain_name_records_info in domain_name_records_data:
-                record_id = domain_name_records_info['RecordId']
-                db_records_info = get_object_or_none(Records,record_id=record_id)
-                if not db_records_info:
-                    try:
-                        Records.objects.create(
-                                            record_id = domain_name_records_info['RecordId'],
-                                            domain_name = domain_name,
-                                            type = domain_name_records_info['Type'],
-                                            rr = domain_name_records_info['RR'],
-                                            line = domain_name_records_info['Line'],
-                                            value = domain_name_records_info['Value'],
-                                            ttl = domain_name_records_info['TTL'],
-                                            status = domain_name_records_info['Status'],
-                                            locked = domain_name_records_info['Locked']
-                                            )
-                    except Exception as e:
-                        print(e)
-                else:
-                    try:
-                        db_records_info.rr = domain_name_records_info['RR']
-                        db_records_info.status = domain_name_records_info['Status']
-                        db_records_info.value = domain_name_records_info['Value']
-                        db_records_info.type = domain_name_records_info['Type']
-                        db_records_info.locked = domain_name_records_info['Locked']
-                        db_records_info.line = domain_name_records_info['Line']
-                        db_records_info.ttl = domain_name_records_info['TTL']
-                        db_records_info.save()
-                    except Exception as e:
-                        print(e)
-
-        self.object = self.get_object(queryset=self.model.objects.all())
-        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = {
