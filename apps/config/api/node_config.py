@@ -1,5 +1,5 @@
 # ~*~ coding: utf-8 ~*~
-
+from rest_framework.views import Response
 from rest_framework_bulk import BulkModelViewSet
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import (
@@ -11,11 +11,13 @@ from common.permissions import IsOrgAdmin
 from assets.models import Node
 from ..models import WEBConfigRecords
 from .. import serializers
+from ..webconfig import WEBConfig
 
 logger = get_logger(__file__)
 __all__ = ['NodeViewSet','WEBConfigViewSet','GetPrivateApi',
            'GetProxyIPApi',
            ]
+webconfig = WEBConfig()
 
 class NodeViewSet(BulkModelViewSet):
     filter_fields = ("value", "public_node_asset", "private_node_asset")
@@ -36,10 +38,17 @@ class WEBConfigViewSet(BulkModelViewSet):
     serializer_class = serializers.WEBConfigSerializer
     pagination_class = LimitOffsetPagination
 
-    def get_queryset(self):
-        queryset = super().get_queryset().all()
-        print(queryset)
-        return queryset
+    def destroy(self, request, *args, **kwargs):
+        web_config = self.get_object()
+        kw= (web_config.__dict__)
+        platform = web_config.platform.code
+        kw.update(platform=platform)
+        del_web_config = webconfig.remove(**kw)
+        if del_web_config['code']:
+            web_config.delete()
+            return Response({"msg": "ok"})
+        else:
+            return Response({'error': del_web_config['msg']}, status=400)
 
 class GetPrivateApi(ListAPIView):
     permission_classes = (IsOrgAdmin,)

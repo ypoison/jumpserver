@@ -2,11 +2,6 @@
 {% load static %}
 {% load i18n %}
 
-{% block custom_head_css_js %}
-    <link href='{% static "css/plugins/select2/select2.min.css" %}' rel="stylesheet">
-    <script src='{% static "js/plugins/select2/select2.full.min.js" %}'></script>
-{% endblock %}
-
 {% block content %}
     <div class="wrapper wrapper-content animated fadeInRight">
         <div class="row">
@@ -78,7 +73,7 @@ function initTable() {
         ele: $('#domain_list_table'),
         columnDefs: [
             {targets: 4, createdCell: function (td, cellData, rowData) {
-                var update_btn = '<a href="{% url "assets:domain-gateway-update" pk=DEFAULT_PK %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                var update_btn = '<a href="{% url "config:node-config-create" %}" class="btn btn-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 $(td).html(update_btn)
              }}
         ],

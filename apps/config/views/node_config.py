@@ -46,12 +46,6 @@ class NodeConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-    def get_form_kwargs(self):
-        kwargs = super(NodeConfigCreateView, self).get_form_kwargs()
-        data = {'request': self.request}
-        kwargs.update(data)
-        return kwargs
-
 class NodeConfigWEBConfigListView(AdminUserRequiredMixin, TemplateView):
     template_name = 'node_config/web_config_list.html'
 
@@ -72,17 +66,17 @@ class NodeConfigWEBConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin,
 
     def form_valid(self, form):
         web_config = form.save(commit=False)
-        print(web_config.__dict__)
-        #add_web_config = webconfig.add(record)
-        #if add_record['code']:
-        #    add_record = add_record['message']
-        #    record.record_id = add_record['RecordId']
-        #    record.save()
-        #else:
-        #    form.add_error(
-        #        "record_id", add_record['message']
-        #    )
-        #    return self.form_invalid(form)
+        kwargs = (web_config.__dict__)
+        platform = web_config.platform.code
+        kwargs.update(platform=platform)
+        add_web_config = webconfig.add(**kwargs)
+        if add_web_config['code']:
+            web_config.save()
+        else:
+            form.add_error(
+                "domain", add_web_config['msg']
+            )
+            return self.form_invalid(form)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
