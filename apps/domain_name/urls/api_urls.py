@@ -18,6 +18,8 @@ urlpatterns = [
     path('domain-name/beian-check/<uuid:pk>/',api.DomainNameBeiAnCheckApi.as_view(), name='beian-check'),
     path('domain-name/gfw-check/<uuid:pk>/',api.DomainNameGFWCheckApi.as_view(), name='gfw-check'),
     path('domain-name/record/<uuid:pk>/',api.DomainNameRecordUpdateApi.as_view(), name='record-update-status'),
+
+    path('domain-name-records/netapi-update/<uuid:pk>/',api.RecordsNetAPIUpdateApi.as_view(), name='records-netapi-update'),
 ]
 
 urlpatterns += router.urls
