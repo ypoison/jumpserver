@@ -20,6 +20,9 @@ class Node(OrgModelMixin):
     key = models.CharField(unique=True, max_length=64, verbose_name=_("Key"))  # '1:1:1:1'
     value = models.CharField(max_length=128, verbose_name=_("Value"))
     child_mark = models.IntegerField(default=0)
+    code = models.CharField(max_length=50, blank=True, null=True, verbose_name='别名')
+    public_node_asset = models.ForeignKey("assets.Asset", blank=True, null=True, related_name='public_node_asset', on_delete=models.SET_NULL, verbose_name='公共高防节点')
+    private_node_asset = models.ForeignKey("assets.Asset", blank=True, null=True, related_name='private_node_asset', on_delete=models.SET_NULL, verbose_name='私有高防节点')
     date_create = models.DateTimeField(auto_now_add=True)
 
     is_node = True
@@ -51,6 +54,14 @@ class Node(OrgModelMixin):
     @property
     def name(self):
         return self.value
+
+    @property
+    def public_node_asset_display(self):
+        return str(self.public_node_asset)
+
+    @property
+    def private_node_asset_display(self):
+        return str(self.private_node_asset)
 
     @property
     def assets_amount(self):
@@ -281,11 +292,12 @@ class Node(OrgModelMixin):
         from common.tree import TreeNode
         from ..serializers import NodeSerializer
         name = '{} ({})'.format(self.value, self.assets_amount)
+        title = '{} ({})'.format(self.value, self.code)
         node_serializer = NodeSerializer(instance=self)
         data = {
             'id': self.key,
             'name': name,
-            'title': name,
+            'title': title,
             'pId': self.parent_key,
             'isParent': True,
             'open': self.is_root(),

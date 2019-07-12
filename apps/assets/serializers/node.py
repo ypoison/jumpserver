@@ -19,7 +19,7 @@ class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Node
         fields = [
-            'id', 'key', 'value', 'assets_amount', 'org_id',
+            'id', 'key', 'value', 'assets_amount', 'org_id', 'code',
         ]
         read_only_fields = [
             'id', 'key', 'assets_amount', 'org_id',

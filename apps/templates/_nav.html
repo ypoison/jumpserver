@@ -88,6 +88,12 @@
     </ul>
     <ul class="nav nav-second-level active">
         <li id="account"><a href="{% url 'domain-name:account-list' %}">账号管理</a></li>
+<li id="config">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">配置管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="node-config"><a href="{% url 'config:node-config-list' %}">节点配置</a></li>
     </ul>
 </li>
 {% if XPACK_PLUGINS %}

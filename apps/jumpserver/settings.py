@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'domain_name.apps.DomainNameConfig',
 
     'authentication.apps.AuthenticationConfig',  # authentication
+    'config.apps.ConfigConfig',
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg',
