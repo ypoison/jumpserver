@@ -22,11 +22,8 @@ api_v1_patterns = [
         path('orgs/v1/', include('orgs.urls.api_urls', namespace='api-orgs')),
         path('common/v1/', include('common.urls.api_urls', namespace='api-common')),
 
-<<<<<<< HEAD
         path('domain-name/v1/', include('domain_name.urls.api_urls', namespace='api-domain-name')),
-=======
         path('config/v1/', include('config.urls.api_urls', namespace='api-config')),
->>>>>>> config
    ]))
 ]
 

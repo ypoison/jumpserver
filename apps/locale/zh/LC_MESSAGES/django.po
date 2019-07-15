@@ -2812,7 +2812,8 @@ msgstr "资产授权资产列表"
 
 #: templates/_copyright.html:2 templates/_footer.html:8
 msgid " Beijing Duizhan Tech, Inc. "
-msgstr " 北京堆栈科技有限公司 "
+#msgstr " 北京堆栈科技有限公司 "
+msgstr ""
 
 #: templates/_header_bar.html:31
 msgid "Help"
@@ -3000,7 +3001,8 @@ msgstr "验证码"
 #: users/templates/users/reset_password.html:25
 #: xpack/plugins/interface/models.py:36
 msgid "Welcome to the Jumpserver open source fortress"
-msgstr "欢迎使用Jumpserver开源堡垒机"
+#msgstr "欢迎使用Jumpserver开源堡垒机"
+msgstr "欢迎使用DaLi堡垒机"
 
 #: templates/flash_message_standalone.html:56
 msgid "Return"
@@ -3742,7 +3744,8 @@ msgstr "下一步"
 
 #: users/templates/users/first_login_done.html:31
 msgid "Welcome to use jumpserver, visit "
-msgstr "欢迎使用Jumpserver开源跳板机系统"
+#msgstr "欢迎使用Jumpserver开源跳板机系统"
+msgstr "欢迎使用DaLi跳板机系统"
 
 #: users/templates/users/first_login_done.html:32
 msgid "Use guide"
@@ -4721,7 +4724,8 @@ msgstr "登录页面标题"
 msgid ""
 "Tips: This will be displayed on the enterprise user login page. (eg: Welcome "
 "to the Jumpserver open source fortress)"
-msgstr "提示：将会显示在企业版用户登录页面（eg: 欢迎使用Jumpserver开源堡垒机）"
+#msgstr "提示：将会显示在企业版用户登录页面（eg: 欢迎使用Jumpserver开源堡垒机）"
+msgstr "提示：将会显示在企业版用户登录页面（eg: 欢迎使用堡垒机）"
 
 #: xpack/plugins/interface/forms.py:24 xpack/plugins/interface/models.py:19
 msgid "Image of login page"
@@ -5031,13 +5035,3 @@ msgstr "更新组织"
 
 #~ msgid "MFA setting"
 #~ msgstr "MFA 设置"
-
-
-#: assets/views/domain_name.py:27
-msgid "DomainName"
-msgstr "域名管理"
-
-
-#: assets/views/domain_name.py:28
-msgid "Domain Name list"
-msgstr "域名列表"

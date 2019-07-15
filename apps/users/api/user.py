@@ -44,7 +44,6 @@ class UserViewSet(IDInFilterMixin, BulkModelViewSet):
 
     def get_queryset(self):
         queryset = current_org.get_org_users()
-        print(queryset)
         return queryset
 
     def get_permissions(self):
