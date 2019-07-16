@@ -11,12 +11,11 @@ from common.const import create_success_msg, update_success_msg
 from common.utils import get_object_or_none
 from assets.models import Node
 from ..models import WEBConfigRecords
-from ..forms import PlatformNodeConfigForm, WEBConfigForm
+from ..forms import WEBConfigForm
 from ..webconfig import WEBConfig
 
 __all__ = (
-    "NodeConfigListView", "NodeConfigCreateView",
-    "NodeConfigWEBConfigListView", "NodeConfigWEBConfigCreateView"
+    "NodeConfigListView", "NodeConfigWEBConfigListView", "NodeConfigWEBConfigCreateView"
 )
 webconfig = WEBConfig()
 
@@ -27,21 +26,6 @@ class NodeConfigListView(AdminUserRequiredMixin, TemplateView):
         context = {
             'app': '配置管理',
             'action': '节点信息列表',
-        }
-        kwargs.update(context)
-        return super().get_context_data(**kwargs)
-
-class NodeConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Node
-    template_name = 'node_config/node_config_create_update.html'
-    form_class = PlatformNodeConfigForm
-    success_url = reverse_lazy('config:node-config-list')
-    success_message = "updated successfully."
-
-    def get_context_data(self, **kwargs):
-        context = {
-            'app': '配置管理',
-            'action': '添加节点信息',
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -67,6 +51,8 @@ class NodeConfigWEBConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin,
     def form_valid(self, form):
         web_config = form.save(commit=False)
         kwargs = (web_config.__dict__)
+        node_ip = web_config.node_asset.ip
+        kwargs.update(node_ip=node_ip)
         platform = web_config.platform.code
         kwargs.update(platform=platform)
         add_web_config = webconfig.add(**kwargs)

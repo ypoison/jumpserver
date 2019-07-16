@@ -8,27 +8,38 @@ from rest_framework.generics import (
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin
 
-from assets.models import Node
+from assets.models import Node, Asset
 from ..models import WEBConfigRecords
 from .. import serializers
 from ..webconfig import WEBConfig
 
 logger = get_logger(__file__)
-__all__ = ['NodeViewSet','WEBConfigViewSet','GetPrivateApi',
-           'GetProxyIPApi',
+__all__ = ['NodeViewSet','NodeReloadApi', 'WEBConfigViewSet','GetApi',
            ]
 webconfig = WEBConfig()
 
 class NodeViewSet(BulkModelViewSet):
-    filter_fields = ("value", "public_node_asset", "private_node_asset")
-    search_fields = filter_fields
+    filter_fields = ("platform", "node_asset")
+    search_fields = ("platform__value", "node_asset__ip")
     permission_classes = (IsOrgAdmin,)
     serializer_class = serializers.NodeConfigSerializer
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        self.queryset = Node.objects.filter(key__regex=r'^1:[0-9]$').exclude(code="GGDLJD").exclude(public_node_asset__isnull=True)
+        self.queryset = WEBConfigRecords.objects.values('platform','node_asset').distinct()
         return self.queryset
+
+class NodeReloadApi(ListAPIView):
+    permission_classes = (IsOrgAdmin,)
+    serializer_class = serializers.PrivateAssetSerializer
+
+    def post(self, request, *args, **kwargs):
+        print(1111)
+        action = self.request.POST.get('action')
+        print(action)
+        node_ip = self.request.POST.get('node')
+        print(node_ip)
+        return Response({"msg": "ok"})
 
 class WEBConfigViewSet(BulkModelViewSet):
     filter_fields = ('domain', 'port', 'proxy_ip', 'proxy_port', 'comment')
@@ -41,6 +52,8 @@ class WEBConfigViewSet(BulkModelViewSet):
     def destroy(self, request, *args, **kwargs):
         web_config = self.get_object()
         kw= (web_config.__dict__)
+        node_ip = web_config.node_asset.ip
+        kw.update(node_ip=node_ip)
         platform = web_config.platform.code
         kw.update(platform=platform)
         del_web_config = webconfig.remove(**kw)
@@ -50,39 +63,25 @@ class WEBConfigViewSet(BulkModelViewSet):
         else:
             return Response({'error': del_web_config['msg']}, status=400)
 
-class GetPrivateApi(ListAPIView):
+class GetApi(ListAPIView):
     permission_classes = (IsOrgAdmin,)
     serializer_class = serializers.PrivateAssetSerializer
 
     def get_queryset(self):
-        node_id = self.kwargs.get('pk', '')
+        action = self.request.GET.get('action')
+        id = self.kwargs.get('pk', '')
         queryset = []
-
-        if not node_id:
+        if not id:
             return queryset
-        try:
-            queryset = list(Node.objects.get(id=node_id).get_children().get(value='other').get_all_assets())
-        except:
-            queryset = []
-        return queryset
-
-class GetProxyIPApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
-    serializer_class = serializers.PrivateAssetSerializer
-
-    def get_queryset(self):
-        node_id = self.kwargs.get('pk', '')
-        queryset = []
-
-        if not node_id:
-            return queryset
-        try:
-            queryset = []
-            asset = Node.objects.get(id=node_id).private_node_asset
-            if asset.ip:
-                queryset.append({'hostname':asset.hostname,'ip':asset.ip})
+        if action == "getnode":
+            queryset = list(Node.objects.get(code="GGDLJD").get_all_assets())
+            asset =  list(Node.objects.get(id=id).get_children().get(value='other').get_all_assets())
+            queryset.extend(asset)
+        elif action == "getproxy":
+            queryset =  list(Node.objects.get(id=id).get_all_assets())
+        elif action == "getip":
+            asset = get_object_or_none(Asset,id=id)
+            queryset.append({'id':asset.ip,'ip':asset.ip,'hostname':asset.hostname})
             if asset.public_ip:
-                queryset.append({'hostname':asset.hostname,'ip':asset.public_ip})
-        except:
-            queryset = []
+                queryset.append({'id':asset.ip,'ip':asset.public_ip,'hostname':asset.hostname})
         return queryset

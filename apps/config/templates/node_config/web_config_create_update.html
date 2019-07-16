@@ -42,8 +42,24 @@
                                     <form id="groupForm" method="post" class="form-horizontal">
                                         {% csrf_token %}
                                         {% bootstrap_field form.platform layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_node_asset">节点主机</labe>
+                                            <div class="col-md-9">
+                                                <select name="node_asset" class="form-control select2" data-placeholder="节点主机" title="" required id="id_node_asset">
+                                                    <option value="">---------</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                         {% bootstrap_field form.domain layout="horizontal" %}
                                         {% bootstrap_field form.port layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_proxy_asset">代理主机</labe>
+                                            <div class="col-md-9">
+                                                <select name="proxy_asset" class="form-control select2" data-placeholder="代理主机" title="" required id="id_proxy_asset">
+                                                    <option value="">---------</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="form-group required">
                                             <labe class="col-md-2 control-label" for="id_proxy_ip">代理IP</labe>
                                             <div class="col-md-9">
@@ -75,28 +91,36 @@
 
 {% block custom_foot_js %}
 <script type="text/javascript">
+function GetInfo (id, action, to) {
+    $("#"+ to +" option:gt(0)").remove();
+    if (id != "") {
+        var url = '{% url "api-config:web-config-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', id);
+        $.ajax({
+            url: url,
+            data: {"action":action},
+            type: "GET",
+            contentType:"application/json; charset=utf-8",
+            dataType:"json"
+        }).done(function(data, textStatue, jqXHR) {
+            if (data.length != 0) {
+                for (var i = 0; i < data.length; i++) {
+                    $("#"+ to).append("<option value =" + data[i].id + ">" + data[i].hostname + "(" + data[i].ip + ")" + "</option>")
+                }
+            } else {
+                $("#" + to).append("<option value='' >没有相关信息</option>")
+            }
+        });
+    }
+}
 $(document).ready(function () {
     $("#id_platform").change(function() {
         var platform_id = $(this).val();
-        $("#id_proxy_ip option:gt(0)").remove();
-        //$("#id_platform option[value='" + platform_id + "']").attr("selected", "selected");
-        if (platform_id != "") {
-            var url = '{% url "api-config:web-config-proxy-ip-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', platform_id);
-            $.ajax({
-                url: url,
-                type: "GET",
-                contentType:"application/json; charset=utf-8",
-                dataType:"json"
-            }).done(function(data, textStatue, jqXHR) {
-                if (data.length != 0) {
-                    for (var i = 0; i < data.length; i++) {
-                        $("#id_proxy_ip").append("<option value =" + data[i].ip + ">" + data[i].hostname + "(" + data[i].ip + ")" + "</option>")
-                    }
-                } else {
-                    $("#id_proxy_ip").append("<option value='' >没有相关信息</option>")
-                }
-            });
-        }
+        GetInfo(platform_id, "getnode", "id_node_asset")
+        GetInfo(platform_id, "getproxy", "id_proxy_asset")
+    });
+    $("#id_proxy_asset").change(function() {
+        var asset_id = $(this).val();
+        GetInfo(asset_id, "getip", "id_proxy_ip")
     })
 })
 </script>
