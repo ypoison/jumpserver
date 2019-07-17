@@ -746,7 +746,6 @@ $(document).ready(function(){
     var treeNode = zTree.getSelectedNodes()[0];
     var url = "{% url 'api-assets:node-detail' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", current_node_id);
     var code = $("#id_code").val();
-    console.log(code)
     if (!current_node_id) {
         return
     }
@@ -760,7 +759,6 @@ $(document).ready(function(){
         success: function () {
             $("#node_code_update").modal('hide');
             treeNode.title = treeNode.meta.node.value + ' (' + code + ')'
-            console.log(treeNode)
             zTree.updateNode(treeNode);
             console.log("Success: " + treeNode.name)
         }

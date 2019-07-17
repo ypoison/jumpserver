@@ -24,7 +24,7 @@ def check_GFW():
         DomainNames = DomainName.objects.all()
         for domain in DomainNames:
             check = CheckGFW.check_gfw(domain.domain_name)
-            status = check['code'] == 1
+            status = check['code']
             if status == -1:
                 logger.error(check['msg'])
                 time.sleep(1)
@@ -53,10 +53,11 @@ def check_beian():
             else:
                 if not code:
                     lose_list.append(domain.domain_name)
-                domain.beian = code
-                domain.save()
-                logger.info('task:check_beian:%s' % beian_check)
-                time.sleep(1)
+                if domain.beian != 2:
+                    domain.beian = code
+                    domain.save()
+                    logger.info('task:check_beian:%s' % beian_check)
+                    time.sleep(1)
 
     except Exception as e:
         logger.error(check['msg'])

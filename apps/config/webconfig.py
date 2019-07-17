@@ -49,6 +49,26 @@ class WEBConfig:
             except Exception as e:
                 ret = {'code':0, 'msg':'调用接口失败%s' % e}
             return  ret
+
+        def reload(self,**kwargs):
+            node_ip = kwargs['node']
+            url = 'http://%s:10125/webconf/api/v1.0/reload' % (node_ip)
+            query_args = {
+                'nodeip': node_ip,
+            }
+            try:
+                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers)
+                if dresponse.status_code == 200:
+                    data = json.loads(dresponse.text)
+                    if data['status'] == 2000:
+                        ret = {'code': 1}
+                    else:
+                        ret = {'code': 0, 'msg': data['resultInfo']}
+                else:
+                    ret = {'code': 0, 'msg': '调用接口失败:status_code:%s' % dresponse.status_code}
+            except Exception as e:
+                ret = {'code': 0, 'msg': '调用接口失败%s' % e}
+            return ret
 if __name__ == '__main__':
     webconfig = WEBConfig()
     kwargs = {'_state': '<django.db.models.base.ModelState object at 0x7fb29170c400>',

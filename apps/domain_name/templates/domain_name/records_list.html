@@ -121,14 +121,15 @@ $(document).ready(function(){
 .on('click', '#records_update', function () {
     var $data_table = $('#records_list_table').DataTable();
     var the_url = '{% url "api-domain-name:records-netapi-update" pk=object.id %}'
-    APIUpdateAttr({
+    var success = function () {
+        $data_table.ajax.reload();
+    }
+    DyAPIUpdateAttr({
         url: the_url,
         method: "GET",
         success_message: "更新成功",
-    })
-    setTimeout( function () {
-        $data_table.ajax.reload();
-    }, 3000);
+        success:success
+    });
 })
 .on('click', '.btn-delete', function () {
     var $this = $(this);
@@ -136,66 +137,28 @@ $(document).ready(function(){
     var name = $(this).closest("tr").find(":nth-child(3)").html();
     var uid = $this.data('uid');
     var the_url = '{% url "api-domain-name:records-detail" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
-    objectDelete($this, name, the_url);
-    function objectDelete($this, name, the_url, redirectTo) {
-        function doDelete() {
-            var body = {};
-            var success = function() {
-                // swal('Deleted!', "[ "+name+"]"+" has been deleted ", "success");
-                if (!redirectTo) {
-                    $(obj).parent().parent().remove();
-                } else {
-                    window.location.href=redirectTo;
-                }
-            };
-            var fail = function() {
-                 swal("错误", "删除"+"[ "+name+" ]"+"遇到错误", "error");
-                //swal(gettext('Error'), "[ "+name+" ]" + gettext("Being used by the asset, please unbind the asset first."), "error");
-            };
-            APIUpdateAttr({
-                url: url,
-                body: JSON.stringify(body),
-                method: 'DELETE',
-                success_message: gettext("Delete the success"),
-                success: success,
-                error: fail
-            });
-        }
-        swal({
-            title: gettext('Are you sure about deleting it?'),
-            text: " [" + name + "] ",
-            type: "warning",
-            showCancelButton: true,
-            cancelButtonText: gettext('Cancel'),
-            confirmButtonColor: "#ed5565",
-            confirmButtonText: gettext('Confirm'),
-            closeOnConfirm: true,
-        }, function () {
-            doDelete()
-        });
-        setTimeout( function () {
-            $data_table.draw(false);
-        }, 3000);
-    }
+
+    DySwalAjax($this, name, the_url,'DELETE');
 })
 .on('click', '.btn-status', function () {
     var $data_table = $('#records_list_table').DataTable();
     var $this = $(this);
     var uid = $this.data('uid');
     var status = $this.attr('value');
+    var success = function () {
+        $data_table.draw(false);
+    }
     var body = {
-        'status': status
+        'status': status,
     };
     var the_url = '{% url "api-domain-name:record-update-status" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
-    APIUpdateAttr({
+    DyAPIUpdateAttr({
         url: the_url,
         body: JSON.stringify(body),
         success_message: "设置成功",
-        fail_message: "设置失败"
+        fail_message: "设置失败",
+        success:success
     });
-    setTimeout( function () {
-        $data_table.draw(false);
-    }, 3000);
 });
 </script>
 {% endblock %}

@@ -84,92 +84,52 @@ function initTable() {
     jumpserver.initServerSideDataTable(options);
 }
 $(document).ready(function(){
+
     initTable();
 })
 .on('click', '#domain_name_update', function () {
     var $data_table = $('#domain_name_list_table').DataTable();
     var the_url = '{% url "api-domain-name:domain-name-netapi-update" %}'
-    APIUpdateAttr({
+    var success = function () {
+        $data_table.draw(false);
+    }
+    DyAPIUpdateAttr({
         url: the_url,
         method: "GET",
-        success_message: "更新成功",
-    })
-    setTimeout( function () {
-        $data_table.ajax.reload();
-    }, 3000);
+        success_message: "设置成功",
+        fail_message: "设置失败",
+        success:success
+    });
 })
 .on('click', '.beian-btn', function () {
     var $this = $(this);
     var uid = $this.closest("tr").find(":nth-child(1)").children('input').attr('id');
     var $data_table = $('#domain_name_list_table').DataTable();
     var the_url = '{% url "api-domain-name:beian-check" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
-    $.ajax({
-            url: the_url,
-            type: "PATCH",
-            data: "",
-            contentType:"application/json; charset=utf-8",
-            dataType:"json"
-        }).done(function(data, textStatue, jqXHR) {
-            var msg = "";
-            if (jqXHR.responseJSON.msg) {
-                msg = jqXHR.responseJSON.msg
-            
-            }
-            if (msg === "") {
-                msg = default_success_message;
-            }
-            $data_table.draw(false);
-            toastr.success(msg);
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            var msg = "";
-            if (jqXHR.responseJSON.error) {
-                    msg = jqXHR.responseJSON.error
-            } else if (jqXHR.responseJSON.msg) {
-                 msg = jqXHR.responseJSON.msg
-            }
-            if (msg === "") {
-                msg = default_failed_message;
-            }
-            $data_table.draw(false);
-            toastr.error(msg);
-            
-        });
+    var success = function () {
+        $data_table.draw(false);
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        success_message: "设置成功",
+        fail_message: "设置失败",
+        success:success
+    });
 })
 .on('click', '.gfw-btn', function () {
     var $this = $(this);
     var uid = $this.closest("tr").find(":nth-child(1)").children('input').attr('id');
     var $data_table = $('#domain_name_list_table').DataTable();
     var the_url = '{% url "api-domain-name:gfw-check" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
-    $.ajax({
-            url: the_url,
-            type: "PATCH",
-            data: "",
-            contentType:"application/json; charset=utf-8",
-            dataType:"json"
-        }).done(function(data, textStatue, jqXHR) {
-            var msg = "";
-            if (jqXHR.responseJSON.msg) {
-                msg = jqXHR.responseJSON.msg
-            
-            }
-            if (msg === "") {
-                msg = default_success_message;
-            }
-            $data_table.draw(false);
-            toastr.success(msg);
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            var msg = "";
-            if (jqXHR.responseJSON.error) {
-                    msg = jqXHR.responseJSON.error
-            } else if (jqXHR.responseJSON.msg) {
-                 msg = jqXHR.responseJSON.msg
-            }
-            if (msg === "") {
-                msg = default_failed_message;
-            }
-            $data_table.draw(false);
-            toastr.error(msg);
-        });
+    var success = function () {
+        $data_table.draw(false);
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        success_message: "设置成功",
+        fail_message: "设置失败",
+        success:success
+    });
 });
 </script>
 {% endblock %}

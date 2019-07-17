@@ -76,7 +76,7 @@ function initTable() {
         ],
         ajax_url: '{% url "api-config:node-config-list" %}',
         columns: [
-            {data: "platform"}, {data:"platform_display"}, {data: "node_asset_display" }, {data: 'record_count'}, {data: "platform"}
+            {data: "node_asset"}, {data:"platform_display"}, {data: "node_asset_display" }, {data: 'record_count'}, {data: "node_asset"}
         ],
         op_html: $('#actions').html()
     };
@@ -87,18 +87,14 @@ $(document).ready(function(){
 })
 .on('click', '.btn-reload', function () {
     var $this = $(this);
-    var $data_table = $('#node_list_table').DataTable();
     var name = $(this).closest("tr").find(":nth-child(3)").html();
     var node = $(this).closest("tr").find(":nth-child(1)").children('input').attr('id');
     var the_url = '{% url "api-config:node-config-reload" %}';
-    var success = function () {
-        $data_table.ajax.reload();
-    };
-    var body = {
+    var data = {
         action : 'reload',
         node : node,
     }
-    DySwalAjax($this, name, the_url,'POST',body, success);
+    DySwalAjax($this, name, the_url,'POST',data);
 
 });
 </script>

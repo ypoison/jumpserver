@@ -34,12 +34,27 @@ class NodeReloadApi(ListAPIView):
     serializer_class = serializers.PrivateAssetSerializer
 
     def post(self, request, *args, **kwargs):
-        print(1111)
-        action = self.request.POST.get('action')
-        print(action)
-        node_ip = self.request.POST.get('node')
-        print(node_ip)
-        return Response({"msg": "ok"})
+        action = self.request.data.get('action')
+        node_asset_id = self.request.data.get('node')
+        node_asset = get_object_or_none(Asset, id=node_asset_id)
+        if node_asset:
+            try:
+                node_asset_ip = node_asset.ip
+                kw = self.request.data
+                kw['node'] = node_asset_ip
+                if action == 'reload':
+                    res = webconfig.reload(**kw)
+                elif action == 'restart':
+                    res = webconfig.restart(**kw)
+                if res['code']:
+                    return Response({"msg": "ok"})
+                else:
+                    return Response({'error': res['msg']}, status=400)
+            except Exception as e:
+                Response({"error":  e}, status=400)
+        else:
+            return Response({"error": '获取节点主机信息失败'}, status=400)
+
 
 class WEBConfigViewSet(BulkModelViewSet):
     filter_fields = ('domain', 'port', 'proxy_ip', 'proxy_port', 'comment')

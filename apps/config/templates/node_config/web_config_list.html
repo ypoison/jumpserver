@@ -100,10 +100,8 @@ $(document).ready(function(){
     var name = $(this).closest("tr").find(":nth-child(3)").html();
     var uid = $this.data('uid');
     var the_url = '{% url "api-config:web-config-detail" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
-    objectDelete($this, name, the_url);
-    setTimeout( function () {
-        $data_table.ajax.reload();
-    }, 3000);
+    
+    DySwalAjax($this, name, the_url,'DELETE');
 });
 </script>
 {% endblock %}
