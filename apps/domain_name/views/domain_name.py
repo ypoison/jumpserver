@@ -195,7 +195,7 @@ class DomainNameRecordCreateView(AdminUserRequiredMixin, SuccessMessageMixin, Cr
             record.save()
         else:
             form.add_error(
-                "record_id", add_record['message']
+                "rr", add_record['message']
             )
             return self.form_invalid(form)
         return super().form_valid(form)
