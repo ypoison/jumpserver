@@ -5,10 +5,8 @@ from rest_framework.views import APIView, Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import generics
 
-from django.views.generic.detail import SingleObjectMixin
-
 from common.utils import get_logger, get_object_or_none
-from common.permissions import IsOrgAdmin, IsAppUser, IsOrgAdminOrAppUser
+from common.permissions import IsOrgAdmin
 
 from ..models import DomainName, Records, Account
 from .. import serializers
@@ -185,7 +183,7 @@ class DomainNameRecordUpdateApi(generics.UpdateAPIView):
                 record.save()
                 return Response({"msg": "ok"})
             else:
-                return Response({'error': del_record['message']}, status=400)
+                return Response({'error': set_status['message']}, status=400)
         else:
             return Response({'error': serializer.errors}, status=400)
 

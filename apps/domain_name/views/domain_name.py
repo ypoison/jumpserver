@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 #
 from django.views.generic import TemplateView, CreateView, \
-    UpdateView, DeleteView, DetailView, ListView
+    UpdateView, DetailView
 from django.views.generic.detail import SingleObjectMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy, reverse
 
 from common.permissions import AdminUserRequiredMixin
-from common.const import create_success_msg, update_success_msg
+from common.const import create_success_msg
 from common.utils import get_object_or_none
 from ..models import DomainName, Records, Account
 from ..forms import DomainNameForm, DomainNameRecordForm, DomainNameAccountForm
@@ -91,7 +91,7 @@ class DomainNameListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 class DomainNameCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Account
+    model = DomainName
     template_name = 'domain_name/domain_name_create.html'
     form_class = DomainNameForm
     success_url = reverse_lazy('domain-name:domain-name-list')

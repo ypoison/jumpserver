@@ -25,6 +25,7 @@ class Account(OrgModelMixin):
     comment = models.TextField(max_length=128, default='', blank=True, verbose_name=_('Comment'))
     
     class Meta:
+        verbose_name = "域名管理账号"
         unique_together = [('name')]
         db_table = "domain_name_account"
 
@@ -69,7 +70,7 @@ class DomainName(OrgModelMixin):
 
     class Meta:
         unique_together = [('domain_name')]
-        verbose_name = "DomainName"
+        verbose_name = "域名"
         db_table = "domain_name"
 
     def __str__(self):
@@ -114,7 +115,7 @@ class Records(OrgModelMixin):
     comment = models.TextField(max_length=128, default='', blank=True, verbose_name=_('Comment'))
 
     class Meta:
-        verbose_name = "DomainNameRecords"
+        verbose_name = "域名记录"
         db_table = "domain_name_records"
 
     def __str__(self):

@@ -24,7 +24,7 @@ class WEBConfigRecords(models.Model):
         return self.domain
 
     class Meta:
-        verbose_name = 'config_web_config'
+        verbose_name = '节点配置'
         db_table = 'config_web_config_records'
 
     @property

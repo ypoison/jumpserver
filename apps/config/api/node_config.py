@@ -5,13 +5,15 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import (
     ListAPIView,
 )
-from common.utils import get_logger, get_object_or_none
+from common.utils import get_request_ip, get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin
 
 from assets.models import Node, Asset
 from ..models import WEBConfigRecords
 from .. import serializers
 from ..webconfig import WEBConfig
+
+from ..tasks import write_log_async
 
 logger = get_logger(__file__)
 __all__ = ['NodeViewSet','NodeReloadApi', 'WEBConfigViewSet','GetApi',
@@ -47,6 +49,18 @@ class NodeReloadApi(ListAPIView):
                 elif action == 'restart':
                     res = webconfig.restart(**kw)
                 if res['code']:
+
+                    login_ip = get_request_ip(self.request)
+                    user_agent = self.request.user
+                    data = {
+                        'action': action,
+                        'resource_type': '节点操作',
+                        'remote_addr': login_ip,
+                        'user': user_agent,
+                        'resource':  str(node_asset)
+                    }
+
+                    write_log_async.delay(**data)
                     return Response({"msg": "ok"})
                 else:
                     return Response({'error': res['msg']}, status=400)
