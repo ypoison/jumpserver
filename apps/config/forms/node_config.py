@@ -27,7 +27,14 @@ class WEBConfigForm(forms.ModelForm):
     class Meta:
         model = WEBConfigRecords
         fields = ['platform', 'node_asset', 'domain', 'port', 'proxy_asset', 'proxy_ip', 'proxy_port','comment']
-
+        widgets = {
+            'port': forms.Select(attrs={
+                'class': 'select2', 'data-placeholder': '端口'
+            }),
+            'proxy_ip': forms.Select(attrs={
+                'class': 'select2', 'data-placeholder': '代理端口'
+            }),
+        }
     def clean_node_asset(self):
         node_asset_id = self.cleaned_data['node_asset']
         node_asset = get_object_or_404(Asset, id=node_asset_id)

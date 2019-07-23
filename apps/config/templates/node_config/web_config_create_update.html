@@ -113,6 +113,9 @@ function GetInfo (id, action, to) {
     }
 }
 $(document).ready(function () {
+    $('.select2').select2({
+        allowClear: true
+    });
     $("#id_platform").change(function() {
         var platform_id = $(this).val();
         GetInfo(platform_id, "getnode", "id_node_asset");
