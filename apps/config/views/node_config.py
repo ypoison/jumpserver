@@ -37,6 +37,7 @@ class NodeConfigWEBConfigListView(AdminUserRequiredMixin, TemplateView):
         context = {
             'app': '配置管理',
             'action': '节点WEB配置',
+            'platforms': Node.objects.filter(key__regex=r'^1:[0-9]$|[0-9][0-9]$|[0-9][0-9][0-9]$').exclude(code="GGDLJD")
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

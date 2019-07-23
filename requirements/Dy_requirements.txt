@@ -1,0 +1,4 @@
+aliyun-python-sdk-alidns==2.0.7
+aliyun-python-sdk-domain==3.14.0
+
+ucloud-sdk-python3==0.3.0

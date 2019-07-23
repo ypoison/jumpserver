@@ -9,7 +9,7 @@ function DyAPIUpdateAttr(props) {
     if (props.flash_message === false){
         flash_message = false;
     }
-
+    $(".splash").show();
     $.ajax({
         url: props.url,
         type: props.method || "PATCH",
@@ -21,9 +21,13 @@ function DyAPIUpdateAttr(props) {
             var msg = "";
             if (user_success_message) {
                 msg = user_success_message;
-            } else {
+            } else if (jqXHR.responseJSON.msg) {
+                msg = jqXHR.responseJSON.msg
+            }
+            if (msg === "") {
                 msg = default_success_message;
             }
+            $(".splash").hide();
             toastr.success(msg);
         }
         if (typeof props.success === 'function') {
@@ -44,9 +48,11 @@ function DyAPIUpdateAttr(props) {
             if (msg === "") {
                 msg = default_failed_message;
             }
+            $(".splash").hide();
             toastr.error(msg);
         }
         if (typeof props.error === 'function') {
+            $(".splash").hide();
             console.log(jqXHR);
             return props.error(jqXHR.responseText, jqXHR.status);
         }
@@ -54,8 +60,9 @@ function DyAPIUpdateAttr(props) {
   // return true;
 }
 
-function DySwalAjax(obj, name, url, method, body, redirectTo) {
-    function doDelete() {
+function DySwalAjax(obj, name, url, method, data, redirectTo) {
+    function doMethod() {
+        var body = data
         if (!body){
             var body = {};
         }
@@ -91,6 +98,6 @@ function DySwalAjax(obj, name, url, method, body, redirectTo) {
         confirmButtonText: gettext('Confirm'),
         closeOnConfirm: true,
     }, function () {
-        doDelete()
+        doMethod()
     });
 }

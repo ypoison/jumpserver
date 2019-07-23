@@ -115,13 +115,18 @@ function GetInfo (id, action, to) {
 $(document).ready(function () {
     $("#id_platform").change(function() {
         var platform_id = $(this).val();
-        GetInfo(platform_id, "getnode", "id_node_asset")
-        GetInfo(platform_id, "getproxy", "id_proxy_asset")
+        GetInfo(platform_id, "getnode", "id_node_asset");
+        GetInfo(platform_id, "getproxy", "id_proxy_asset");
+        var domain_form_group = $("#id_domain").closest('.form-group');
+        if (domain_form_group.hasClass('has-error')) {
+            domain_form_group.removeClass('has-error');
+            domain_form_group.find('.help-block').hide();
+        }
     });
     $("#id_proxy_asset").change(function() {
         var asset_id = $(this).val();
-        GetInfo(asset_id, "getip", "id_proxy_ip")
-    })
-})
+        GetInfo(asset_id, "getip", "id_proxy_ip");
+    });
+});
 </script>
 {% endblock %}

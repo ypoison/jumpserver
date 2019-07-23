@@ -71,7 +71,7 @@ class NodeReloadApi(ListAPIView):
 
 
 class WEBConfigViewSet(BulkModelViewSet):
-    filter_fields = ('domain', 'port', 'proxy_ip', 'proxy_port', 'comment')
+    filter_fields = ('platform__value', 'domain', 'port', 'proxy_ip', 'proxy_port', 'comment')
     search_fields = filter_fields
     queryset = WEBConfigRecords.objects.all()
     permission_classes = (IsOrgAdmin,)
@@ -104,7 +104,7 @@ class GetApi(ListAPIView):
             return queryset
         if action == "getnode":
             queryset = list(Node.objects.get(code="GGDLJD").get_all_assets())
-            asset =  list(Node.objects.get(id=id).get_children().get(value='other').get_all_assets())
+            asset = list(Node.objects.get(id=id).get_children().get(value='other').get_all_assets().filter(hostname__contains='Proxy'))
             queryset.extend(asset)
         elif action == "getproxy":
             queryset =  list(Node.objects.get(id=id).get_all_assets())
@@ -112,5 +112,5 @@ class GetApi(ListAPIView):
             asset = get_object_or_none(Asset,id=id)
             queryset.append({'id':asset.ip,'ip':asset.ip,'hostname':asset.hostname})
             if asset.public_ip:
-                queryset.append({'id':asset.ip,'ip':asset.public_ip,'hostname':asset.hostname})
+                queryset.append({'id':asset.public_ip,'ip':asset.public_ip,'hostname':asset.hostname})
         return queryset

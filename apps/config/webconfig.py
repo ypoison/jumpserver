@@ -16,7 +16,7 @@ class WEBConfig:
                   'notes':kwargs['comment'],
                   }
             try:
-                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers)
+                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers, timeout=20)
                 if dresponse.status_code == 200:
                     data = json.loads(dresponse.text)
                     if data['status'] == 2000:
@@ -34,10 +34,11 @@ class WEBConfig:
             url = 'http://%s:10125/webconf/api/v1.0/del' % (node_ip)
             query_args = {
                 'domain':kwargs['domain'],
-                'platform':kwargs['platform']
+                'platform':kwargs['platform'],
+                'port': kwargs['port']
             }
             try:
-                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers)
+                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers, timeout=20)
                 if dresponse.status_code == 200:
                     data = json.loads(dresponse.text)
                     if data['status'] == 2000:
@@ -57,7 +58,7 @@ class WEBConfig:
                 'nodeip': node_ip,
             }
             try:
-                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers)
+                dresponse = requests.post(url, data=json.dumps(query_args), headers=self.headers, timeout=20)
                 if dresponse.status_code == 200:
                     data = json.loads(dresponse.text)
                     if data['status'] == 2000:
