@@ -67,6 +67,7 @@ INSTALLED_APPS = [
 
     'authentication.apps.AuthenticationConfig',  # authentication
     'config.apps.ConfigConfig',
+    'cmis.apps.CMisConfig',
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg',

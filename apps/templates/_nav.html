@@ -36,6 +36,15 @@
         <li id="cmd-filter"><a href="{% url 'assets:cmd-filter-list' %}">{% trans 'Command filters' %}</a></li>
     </ul>
 </li>
+<li id="cmis">
+    <a>
+        <i class="fa fa-inbox" style="width: 14px"></i> <span class="nav-label">云管中心</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="account"><a href="{% url 'cmis:account-list' %}">账号管理</a></li>
+        <li id="chost"><a href="{% url 'cmis:chost-create' %}">采购云主机</a></li>
+    </ul>
+</li>
 <li id="perms">
     <a href="#"><i class="fa fa-edit" style="width: 14px"></i> <span class="nav-label">{% trans 'Perms' %}</span><span class="fa arrow"></span></a>
     <ul class="nav nav-second-level">
