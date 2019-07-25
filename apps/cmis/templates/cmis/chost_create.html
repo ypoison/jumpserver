@@ -16,17 +16,28 @@
     {% bootstrap_field form.zone layout="horizontal" %}
     <div class="hr-line-dashed"></div>
     <h3>基础配置</h3>
-    {% bootstrap_field form.name layout="horizontal" %}
-    {% bootstrap_field form.images layout="horizontal" %}
-    {% bootstrap_field form.passwd layout="horizontal" %}
+    {% bootstrap_field form.host_type layout="horizontal" %}
+    {% bootstrap_field form.net_capability layout="horizontal" %}
     {% bootstrap_field form.cpu layout="horizontal" %}
     {% bootstrap_field form.memory layout="horizontal" %}
     {% bootstrap_field form.disks0_type layout="horizontal" %}
     {% bootstrap_field form.disks0_size layout="horizontal" %}
     {% bootstrap_field form.disks1_type layout="horizontal" %}
     {% bootstrap_field form.disks1_size layout="horizontal" %}
+    {% bootstrap_field form.os_type layout="horizontal" %}
+    {% bootstrap_field form.image_type layout="horizontal" %}
+    {% bootstrap_field form.image layout="horizontal" %}
     <div class="hr-line-dashed"></div>
     <h3>网络配置</h3>
+    {% bootstrap_field form.vpc layout="horizontal" %}
+    {% bootstrap_field form.subnet layout="horizontal" %}
+    {% bootstrap_field form.eip layout="horizontal" %}
+    {% bootstrap_field form.eip_pay_mode layout="horizontal" %}
+    {% bootstrap_field form.eip_bandwidth layout="horizontal" %}
+    <div class="hr-line-dashed"></div>
+    <h3>管理设置</h3>
+    {% bootstrap_field form.name layout="horizontal" %}
+    {% bootstrap_field form.passwd layout="horizontal" %}
     <div class="hr-line-dashed"></div>
     <div class="form-group">
         <div class="col-sm-4 col-sm-offset-2">
@@ -39,6 +50,108 @@
 
 {% block custom_foot_js %}
 <script type="text/javascript">
+function GetInfo (id, action, regionid) {
+    $(".splash").show();
+    if (id != "") {
+        var url = '{% url "api-cmis:chost-get-info" %}';
+        $.ajax({
+            url: url,
+            data: JSON.stringify({ "action":action,"account_id":id, "region":regionid }),
+            type: "POST",
+            contentType:"application/json; charset=utf-8",
+            dataType:"json"
+        }).done(function(ret) {
+            if (ret.code != 0) {
+                var data = ret['msg'];
+                if (action == 'getproject') {
+                    $("#id_project option").remove();
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].IsDefault) {
+                            $("#id_project").append("<option value =" + data[i].ProjectId + " selected>" + data[i].ProjectName + "</option>")
+                            GetInfo(id, "getregion")
+                        } else {
+                            $("#id_project").append("<option value =" + data[i].ProjectId + ">" + data[i].ProjectName + "</option>")
+                        }
+                    }
+                }
+                if (action == 'getregion'){
+                    $("#id_region option").remove();
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].IsDefault) {
+                            $("#id_region").append("<option value =" + data[i].Region + " selected>" + data[i].Region + "</option>")
+                            GetInfo(id, "getzone", data[i].Region)
+                        } else {
+                            $("#id_region").append("<option value =" + data[i].Region + ">" + data[i].Region + "</option>")
+                        }
+                    }
+                }
+                if (action == 'getzone'){
+                    $("#id_zone option").remove();
+                    for (var i = 0; i < data.length; i++) {
+                        $("#id_zone").append("<option value =" + data[i].Zone + ">" + data[i].Zone + "</option>")
+                    }
+                }
+                $(".splash").hide();
+            } else {
+                $("#id_project option").remove();
+                $("#id_region option").remove();
+                $("#id_zone option").remove();
+                $("#id_project").append("<option value='' >没有相关信息</option>")
+                $(".splash").hide();
+            }
+        });
+    }
+}
+$(document).ready(function () {
+    $("#id_account").change(function() {
+        var id = $(this).val();
+        GetInfo(id, "getproject")
+    });
 
+    $("#id_project").change(function() {
+        var id = $("#id_account").val();
+        GetInfo(id, "getregion")
+    });
+    $("#id_region").change(function() {
+        var id = $("#id_account").val();
+        var regionid = $(this).val();
+        GetInfo(id, "getzone", regionid)
+    });
+
+    $("#id_image_type").change(function() {
+        var id = $("#id_account").val();
+        var projectid = $("#id_project").val();
+        var regionid = $("#id_region").val();
+        var zoneid = $("#id_zone").val();
+        var ostype = $("#id_os_type").val();
+        var imagetype = $("#id_image_type").val();
+        $(".splash").show();
+        if (id != "") {
+            var url = '{% url "api-cmis:chost-get-info" %}';
+            $.ajax({
+                url: url,
+                data: JSON.stringify({ "action":"getimage","account_id":id,"project_id":projectid,
+                            "region":regionid,"zone":zoneid, "os_type":ostype, "image_type":imagetype
+                    }),
+                type: "POST",
+                contentType:"application/json; charset=utf-8",
+                dataType:"json"
+            }).done(function(ret) {
+                if (ret.code != 0) {
+                    var data = ret['msg'];
+                    $("#id_image option").remove();
+                    for (var i = 0; i < data.length; i++) {
+                        $("#id_project").append("<option value =" + data[i].ImageId + " selected>" + data[i].ImageName + "</option>")
+                    }
+                    $(".splash").hide();
+                } else {
+                    $("#id_image option").remove();
+                    $("#id_image").append("<option value='' >没有相关信息</option>")
+                    $(".splash").hide();
+                }
+            });
+         }
+    });
+});
 </script>
 {% endblock %}

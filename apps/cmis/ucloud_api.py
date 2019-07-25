@@ -6,43 +6,81 @@
 from ucloud.core import exc
 from ucloud.client import Client
 
-def GetProjectList(**kwargs):
-    client = Client({
-        "region": "cn-bj2",
-        "project_id": "org-mdspst",
-        "public_key": "uikwBtgRRKbTyBh6WGZVH9oqLf7VGZMgJbVALie/y4sxhUVoFV4ktA==",
-        "private_key": "u5IOOxOwQSFib5deoSdGxvKm5INFInDeKpmv+e+adexx4/2MTRqC8WXV8iKaWh0Y",
-    })
+import hashlib
+import requests
+import json
+class UcloudAPI:
+    def __init__(self):
+        self.url = 'https://api.ucloud.cn'
+    def _verfy_ac(self, private_key, params):
+        items = list(params.items())
+        items.sort()
+        params_data = ""
+        for key, value in items:
+            params_data = params_data + str(key) + str(value)
+        params_data = params_data + private_key
+        sign = hashlib.sha1()
+        sign.update(params_data.encode("utf8"))
+        signature = sign.hexdigest()
+        return signature
 
-    try:
-        resp = client.uhost().describe_image({
-            'ImageType': 'Base',
-            'Zone': 'cn-bj2-02',
-            'OsType': 'Windows'
+    def response(self, **kwargs):
+        private_key = kwargs.pop('PrivateKey')
+        signature = self._verfy_ac(private_key, kwargs)
+        kwargs['Signature'] = signature
+        res = requests.post(self.url, data=kwargs)
+        content = res._content
+        ret = json.loads(content)
+        return ret
+    def GetProjectList(self, **kwargs):
+        kwargs['Action'] = 'GetProjectList'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            return {'code':1, 'msg':ret['ProjectSet']}
+        else:
+            return {'code':ret['RetCode'], 'msg':ret['Message']}
+
+    def GetRegion(self, **kwargs):
+        kwargs['Action'] = 'GetRegion'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            region_list = []
+            for r in ret['Regions']:
+                region = {'IsDefault':r['IsDefault'],'Region':r['Region']}
+                if region not in region_list:
+                    region_list.append(region)
+            return {'code':1, 'msg':region_list}
+        else:
+            return {'code':0, 'msg':ret['Message']}
+
+    def GetZone(self, **kwargs):
+        kwargs['Action'] = 'GetRegion'
+        region = kwargs.pop('Region')
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            zone_list = []
+            for z in ret['Regions']:
+                if z['Region'] == region:
+                    zone = {'Region':z['Region'], 'Zone':z['Zone']}
+                    zone_list.append(zone)
+            return {'code':1, 'msg':zone_list}
+        else:
+            return {'code':0, 'msg':ret['Message']}
+
+    def GetImageList(self, **kwargs):
+        client = Client({
+            "region": kwargs.pop('Region'),
+            "project_id": kwargs.pop('project_id'),
+            "public_key": kwargs.pop('PublicKey'),
+            "private_key": kwargs.pop('PrivateKey'),
         })
-    except exc.UCloudException as e:
-        return e
-    else:
-        return resp
 
-def DescribeImage(**kwargs):
-    client = Client({
-        "region": "cn-bj2",
-        "project_id": "org-mdspst",
-        "public_key": "uikwBtgRRKbTyBh6WGZVH9oqLf7VGZMgJbVALie/y4sxhUVoFV4ktA==",
-        "private_key": "u5IOOxOwQSFib5deoSdGxvKm5INFInDeKpmv+e+adexx4/2MTRqC8WXV8iKaWh0Y",
-    })
-
-    try:
-        resp = client.uhost().describe_image({
-            'ImageType': 'Base',
-            'Zone': 'cn-bj2-02',
-            'OsType': 'Windows'
-        })
-    except exc.UCloudException as e:
-        return e
-    else:
-        return resp
+        try:
+            resp = client.uhost().describe_image(kwargs)
+        except exc.UCloudException as e:
+            return {'code':0, 'msg':e}
+        else:
+            return {'code':1, 'msg':resp['ImageSet']}
 
 def CreateUhostInstance(**kwargs):
     client = Client({
@@ -73,5 +111,12 @@ def CreateUhostInstance(**kwargs):
         print(resp)
 
 if __name__ == '__main__':
-
-    CreateUhostInstance()
+    data = {
+        'PrivateKey' : 'u5IOOxOwQSFib5deoSdGxvKm5INFInDeKpmv+e+adexx4/2MTRqC8WXV8iKaWh0Y',
+        "Action": "GetRegion",
+        #"Action": "GetProjectList",
+        "PublicKey": "uikwBtgRRKbTyBh6WGZVH9oqLf7VGZMgJbVALie/y4sxhUVoFV4ktA==",
+    }
+    api = UcloudAPI()
+    #print(api.GetProjectList(**data))
+    print(DescribeImage())
