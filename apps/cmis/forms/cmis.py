@@ -70,7 +70,7 @@ class CreateCHostForm(forms.Form):
         ('Business', '行业镜像'),
     )
     OS_TYPE_CHOICES = (
-        ('Liunx', 'Liunx'),
+        ('Linux', 'Linux'),
         ('Windows', 'Windows'),
     )
 
@@ -115,11 +115,11 @@ class CreateCHostForm(forms.Form):
     image_type = forms.ChoiceField(choices=IMAGE_TYPE_CHOICES, label='镜像类型')
     image = forms.ChoiceField(label='镜像')
 
-    vpc = forms.CharField(max_length=50, required=False, label='所属VPC')
-    subnet = forms.CharField(max_length=50, required=False, label='所属子网')
-    eip = forms.BooleanField(label='外网弹性IP')
+    vpc = forms.ChoiceField(label='所属VPC')
+    subnet = forms.ChoiceField(label='所属子网')
+    eip = forms.BooleanField(required=False, label='外网弹性IP')
     eip_pay_mode = forms.ChoiceField(initial='Bandwidth', choices=EIP_PAY_MODE_CHOICES, required=False, label='计费方式')
-    eip_bandwidth = forms.IntegerField(label='带宽')
+    eip_bandwidth = forms.IntegerField(required=False, label='带宽')
     name = forms.CharField(max_length=50, label='实例名称')
     passwd = forms.CharField(
         widget=forms.PasswordInput, max_length=128,

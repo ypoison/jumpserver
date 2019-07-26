@@ -5,11 +5,14 @@ from django.views.generic import TemplateView, CreateView, \
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 
 from common.permissions import AdminUserRequiredMixin
 from common.const import create_success_msg
 from ..models import Account
 from ..forms import AccountForm, CreateCHostForm
+
+import base64
 
 __all__ = (
     "AccountListView", "AccountDetailView","AccountCreateView", "AccountUpdateView",
@@ -73,7 +76,7 @@ class AccountDetailView(AdminUserRequiredMixin, DetailView):
 class CHostCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
     template_name = 'cmis/chost_create.html'
     form_class = CreateCHostForm
-    success_url = reverse_lazy('cmis:account-list')
+    success_url = reverse_lazy('cmis:chost-create')
     success_message = create_success_msg
 
     def get_context_data(self, **kwargs):
@@ -83,3 +86,56 @@ class CHostCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        req = request.POST
+        account_id = req.get('account')
+        try:
+            account = Account.objects.get(id=account_id)
+        except Exception as e:
+            return redirect(reverse_lazy('cmis:chost-create'))
+
+        passwd = base64.b64encode(req.get('passwd').encode('utf-8')).decode('utf-8')
+
+        data = {
+            'PrivateKey': account.access_key,
+            "PublicKey": account.access_id,
+
+            'Region': req.get('region'),
+            'Zone':  req.get('zone'),
+            'ProjectId':  req.get('project'),
+            'ImageId': req.get('image'),
+            'Name': req.get('name'),
+            'LoginMode': 'Password',
+            'Password': passwd,
+
+            'CPU': req.get('cpu'),
+            'Memory': req.get('memory'),
+            'Disks.0.Type': req.get('disks0_type'),
+            'Disks.0.IsBoot':True,
+            'Disks.0.Size': req.get('disks0_size'),
+
+            'ChargeType': req.get('charge_type'),
+            'UHostType': req.get('host_type'),
+            'NetCapability': req.get('net_capability'),
+            'VPCId': req.get('vpc'),
+            'SubnetId': req.get('subnet'),
+
+
+        }
+        if req.get('disks1_type'):
+            data['Disks.1.Type'] = req.get('disks1_type')
+            data['Disks.1.IsBoot'] = False
+            data['Disks.1.Size'] = req.get('disks1_size')
+
+        eip = req.get('eip', '')
+        if eip == 'on':
+            if req.get('region')[:2] == 'cn':
+                data['NetworkInterface.0.EIP.OperatorName'] = 'Bgp'
+            else:
+                data['NetworkInterface.0.EIP.OperatorName'] = 'International'
+            data['NetworkInterface.N.EIP.Bandwidth'] = req.get('eip_bandwidth')
+            data['NetworkInterface.N.EIP.PayMode'] = req.get('eip_pay_mode')
+
+        print(data)
+        return redirect(self.success_url)

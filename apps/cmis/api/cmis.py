@@ -33,11 +33,15 @@ class CloudInfoAPI(ListAPIView):
     serializer_class = serializers.AccountSerializer
 
     def post(self, request, *args, **kwargs):
+        queryset = []
         action = self.request.data.get('action')
         account_id = self.request.data.get('account_id')
-        if not id:
-            return queryset
-        account = Account.objects.get(id=account_id)
+        try:
+            account = get_object_or_none(Account, id=account_id)
+        except Exception as e:
+            return Response({'code':0, 'msg':e})
+        if not account:
+            return Response({'code':0, 'msg':queryset})
         data = {
             'PrivateKey': account.access_key,
             "Action": action,
@@ -52,18 +56,29 @@ class CloudInfoAPI(ListAPIView):
             data['Region'] = region
             queryset = cloud_api.GetZone(**data)
         elif action == 'getimage':
-            project_id = self.request.data.get('project_id')
             region = self.request.data.get('region')
-            zone  = self.request.data.get('zone')
+            zone = self.request.data.get('zone')
             os_type = self.request.data.get('os_type')
             image_type = self.request.data.get('image_type')
-            data['project_id'] = project_id
             data['Region'] = region
             data['Zone'] = zone
             data['OsType'] = os_type
             data['ImageType'] = image_type
             queryset = cloud_api.GetImageList(**data)
+        elif action == 'getVPC':
+            project_id = self.request.data.get('project_id')
+            region = self.request.data.get('region')
+            data['Region'] = region
+            data['ProjectId'] = project_id
+            queryset = cloud_api.GetVPC(**data)
+        elif action == 'getsubnet':
+            project_id = self.request.data.get('project_id')
+            region = self.request.data.get('region')
+            vpc_id = self.request.data.get('vpc_id')
+            data['Region'] = region
+            data['ProjectId'] = project_id
+            data['vpc_id'] = vpc_id
+            queryset = cloud_api.GetSubnet(**data)
         else:
             queryset = []
-        print(queryset)
         return Response(queryset)

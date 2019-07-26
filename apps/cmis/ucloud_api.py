@@ -9,6 +9,8 @@ from ucloud.client import Client
 import hashlib
 import requests
 import json
+import operator
+
 class UcloudAPI:
     def __init__(self):
         self.url = 'https://api.ucloud.cn'
@@ -36,9 +38,12 @@ class UcloudAPI:
         kwargs['Action'] = 'GetProjectList'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
-            return {'code':1, 'msg':ret['ProjectSet']}
+            project_list = []
+            for p in ret['ProjectSet']:
+                project_list.append({'id':p['ProjectId'],'name':p['ProjectName'],'IsDefault':p['IsDefault']})
+            return {'code':1, 'msg':project_list}
         else:
-            return {'code':ret['RetCode'], 'msg':ret['Message']}
+            return {'code':0, 'msg':ret['Message']}
 
     def GetRegion(self, **kwargs):
         kwargs['Action'] = 'GetRegion'
@@ -46,7 +51,7 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             region_list = []
             for r in ret['Regions']:
-                region = {'IsDefault':r['IsDefault'],'Region':r['Region']}
+                region = {'IsDefault':r['IsDefault'],'id':r['Region'],'name':r['Region']}
                 if region not in region_list:
                     region_list.append(region)
             return {'code':1, 'msg':region_list}
@@ -61,26 +66,51 @@ class UcloudAPI:
             zone_list = []
             for z in ret['Regions']:
                 if z['Region'] == region:
-                    zone = {'Region':z['Region'], 'Zone':z['Zone']}
+                    zone = {'Region':z['Region'], 'name':z['Zone'],'id':z['Zone']}
                     zone_list.append(zone)
             return {'code':1, 'msg':zone_list}
         else:
             return {'code':0, 'msg':ret['Message']}
 
     def GetImageList(self, **kwargs):
-        client = Client({
-            "region": kwargs.pop('Region'),
-            "project_id": kwargs.pop('project_id'),
-            "public_key": kwargs.pop('PublicKey'),
-            "private_key": kwargs.pop('PrivateKey'),
-        })
-
-        try:
-            resp = client.uhost().describe_image(kwargs)
-        except exc.UCloudException as e:
-            return {'code':0, 'msg':e}
+        kwargs['Action'] = 'DescribeImage'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            image_list = []
+            for i in ret['ImageSet']:
+                image_list.append({'id':i['ImageId'], 'name':i['ImageName']})
+            if image_list:
+                image_list = sorted(image_list, key=operator.itemgetter('name'))
+            return {'code': 1, 'msg': image_list}
         else:
-            return {'code':1, 'msg':resp['ImageSet']}
+            return {'code': 0, 'msg': ret['Message']}
+
+    def GetVPC(self, **kwargs):
+        kwargs['Action'] = 'DescribeVPC'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            vpc_list = []
+            for v in ret['DataSet']:
+                vpc = { 'name':v['Name'],'id':v['VPCId']}
+                vpc_list.append(vpc)
+            return {'code': 1, 'msg': vpc_list}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
+
+    def GetSubnet(self, **kwargs):
+        vpc_id = kwargs.pop('vpc_id')
+        kwargs['Action'] = 'DescribeSubnet'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            subnet_list = []
+            for s in ret['DataSet']:
+                if s['VPCId'] == vpc_id:
+                    subnet = { 'name':s['Subnet'],'id':s['SubnetId']}
+                    subnet_list.append(subnet)
+            return {'code': 1, 'msg': subnet_list}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
+
 
 def CreateUhostInstance(**kwargs):
     client = Client({

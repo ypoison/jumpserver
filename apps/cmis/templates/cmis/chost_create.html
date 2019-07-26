@@ -2,7 +2,6 @@
 {% load static %}
 {% load bootstrap3 %}
 {% load i18n %}
-
 {% block form %}
 <form id="groupForm" method="post" class="form-horizontal">
     {% csrf_token %}
@@ -32,8 +31,10 @@
     {% bootstrap_field form.vpc layout="horizontal" %}
     {% bootstrap_field form.subnet layout="horizontal" %}
     {% bootstrap_field form.eip layout="horizontal" %}
-    {% bootstrap_field form.eip_pay_mode layout="horizontal" %}
-    {% bootstrap_field form.eip_bandwidth layout="horizontal" %}
+    <div class="vpc" style="display:none">
+        {% bootstrap_field form.eip_pay_mode layout="horizontal" %}
+        {% bootstrap_field form.eip_bandwidth layout="horizontal" %}
+    </div>
     <div class="hr-line-dashed"></div>
     <h3>管理设置</h3>
     {% bootstrap_field form.name layout="horizontal" %}
@@ -50,72 +51,111 @@
 
 {% block custom_foot_js %}
 <script type="text/javascript">
-function GetInfo (id, action, regionid) {
-    $(".splash").show();
-    if (id != "") {
-        var url = '{% url "api-cmis:chost-get-info" %}';
-        $.ajax({
-            url: url,
-            data: JSON.stringify({ "action":action,"account_id":id, "region":regionid }),
-            type: "POST",
-            contentType:"application/json; charset=utf-8",
-            dataType:"json"
-        }).done(function(ret) {
-            if (ret.code != 0) {
-                var data = ret['msg'];
-                if (action == 'getproject') {
-                    $("#id_project option").remove();
-                    for (var i = 0; i < data.length; i++) {
-                        if (data[i].IsDefault) {
-                            $("#id_project").append("<option value =" + data[i].ProjectId + " selected>" + data[i].ProjectName + "</option>")
-                            GetInfo(id, "getregion")
-                        } else {
-                            $("#id_project").append("<option value =" + data[i].ProjectId + ">" + data[i].ProjectName + "</option>")
-                        }
-                    }
-                }
-                if (action == 'getregion'){
-                    $("#id_region option").remove();
-                    for (var i = 0; i < data.length; i++) {
-                        if (data[i].IsDefault) {
-                            $("#id_region").append("<option value =" + data[i].Region + " selected>" + data[i].Region + "</option>")
-                            GetInfo(id, "getzone", data[i].Region)
-                        } else {
-                            $("#id_region").append("<option value =" + data[i].Region + ">" + data[i].Region + "</option>")
-                        }
-                    }
-                }
-                if (action == 'getzone'){
-                    $("#id_zone option").remove();
-                    for (var i = 0; i < data.length; i++) {
-                        $("#id_zone").append("<option value =" + data[i].Zone + ">" + data[i].Zone + "</option>")
-                    }
-                }
-                $(".splash").hide();
-            } else {
-                $("#id_project option").remove();
-                $("#id_region option").remove();
-                $("#id_zone option").remove();
-                $("#id_project").append("<option value='' >没有相关信息</option>")
-                $(".splash").hide();
-            }
-        });
+function hideHasError() {
+    var domain_form_group = $("#id_domain").closest('.form-group');
+    if (domain_form_group.hasClass('has-error')) {
+        domain_form_group.removeClass('has-error');
+        domain_form_group.find('.help-block').hide();
     }
 }
+
+function getInfo(props) {
+    console.log(props)
+    var url = '{% url "api-cmis:chost-get-info" %}';
+    $(".splash").show();
+    $.ajax({
+        url: url,
+        data: JSON.stringify(props.data),
+        type: "POST",
+        contentType:"application/json; charset=utf-8",
+        dataType:"json"
+    }).done(function(ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            $("#" + props.to + " option").remove();
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].IsDefault) {
+                    $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
+                } else {
+                    $("#" + props.to).append("<option value =" + data[i].id + ">" + data[i].name + "</option>")
+                }
+            }
+            if (typeof props.success === 'function') {
+                return props.success(props.data);
+            }
+            $(".splash").hide();
+        } else {
+            $("#" + props.to + " option").remove();
+            $("#" + props.to).append("<option value='' >没有相关信息</option>")
+            $(".splash").hide();
+        }
+    });
+}
+function getZone(id, region) {
+    getInfo({
+        to: 'id_zone',
+        data: {'action': 'getzone','account_id': id, 'region':region}
+    })
+}
+function getSubnet(id, region, projectID) {
+    var vpcID = $("#id_vpc").val();
+    getInfo({
+        to: 'id_subnet',
+        data: {'action': 'getsubnet','account_id': id, 'region':region, 'project_id':projectID, vpc_id:vpcID}
+    })
+}
+function getVPC(id, region, projectID) {
+    var subnet = function () {
+        getSubnet(id, region, projectID)
+    }
+    getInfo({
+        to: 'id_vpc',
+        data: {'action': 'getVPC','account_id': id, 'region':region, 'project_id':projectID},
+        success: subnet
+    })
+}
+function getRegion(id) {
+    var getOther = function () {
+        //get zone
+        var region = $("#id_region").val();
+        getZone(id, region)
+        var projectid = $("#id_project").val();
+        getVPC(id, region, projectid)
+    }
+    getInfo({
+        //get region
+        to: 'id_region',
+        data: {'action': 'getregion','account_id': id},
+        success: getOther
+    })
+}
+function getProject(id) {
+    var getOther = function () {
+        getRegion(id)
+    }
+    getInfo({
+        // get project
+        to: 'id_project',
+        data: {'action': 'getproject','account_id': id},
+        success: getOther
+    })
+}
+
 $(document).ready(function () {
     $("#id_account").change(function() {
-        var id = $(this).val();
-        GetInfo(id, "getproject")
+        var id = $("#id_account").val();
+        getProject(id)
     });
 
     $("#id_project").change(function() {
         var id = $("#id_account").val();
-        GetInfo(id, "getregion")
+        getRegion(id)
     });
+
     $("#id_region").change(function() {
         var id = $("#id_account").val();
-        var regionid = $(this).val();
-        GetInfo(id, "getzone", regionid)
+        var region = $(this).val();
+        getZone(id, region)
     });
 
     $("#id_image_type").change(function() {
@@ -125,32 +165,29 @@ $(document).ready(function () {
         var zoneid = $("#id_zone").val();
         var ostype = $("#id_os_type").val();
         var imagetype = $("#id_image_type").val();
-        $(".splash").show();
-        if (id != "") {
-            var url = '{% url "api-cmis:chost-get-info" %}';
-            $.ajax({
-                url: url,
-                data: JSON.stringify({ "action":"getimage","account_id":id,"project_id":projectid,
-                            "region":regionid,"zone":zoneid, "os_type":ostype, "image_type":imagetype
-                    }),
-                type: "POST",
-                contentType:"application/json; charset=utf-8",
-                dataType:"json"
-            }).done(function(ret) {
-                if (ret.code != 0) {
-                    var data = ret['msg'];
-                    $("#id_image option").remove();
-                    for (var i = 0; i < data.length; i++) {
-                        $("#id_project").append("<option value =" + data[i].ImageId + " selected>" + data[i].ImageName + "</option>")
-                    }
-                    $(".splash").hide();
-                } else {
-                    $("#id_image option").remove();
-                    $("#id_image").append("<option value='' >没有相关信息</option>")
-                    $(".splash").hide();
-                }
-            });
-         }
+        getInfo({
+            //get region
+            to: 'id_image',
+            data: { "action":"getimage","account_id":id,"project_id":projectid,
+                    "region":regionid,"zone":zoneid, "os_type":ostype, "image_type":imagetype
+                    },
+        });
+    });
+
+    $("#id_vpc").change(function() {
+        var id = $("#id_account").val();
+        var projectID = $("#id_project").val();
+        var region = $("#id_region").val();
+        getSubnet(id, region, projectID)
+    });
+
+    $("#id_eip").click(function () {
+        console.log($(this).is(':checked'))
+        if ($(this).is(':checked')){
+            $('.vpc').css("display", "block");
+        } else {
+            $('.vpc').css("display","none");
+        }
     });
 });
 </script>
