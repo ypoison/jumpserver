@@ -3,6 +3,7 @@
 from django import forms
 
 from ..models import Account
+from assets.models import Node
 
 __all__ = ['AccountForm', 'CreateCHostForm']
 
@@ -88,6 +89,12 @@ class CreateCHostForm(forms.Form):
     region = forms.ChoiceField(required=True, label='地域')
     zone = forms.ChoiceField(required=True, label='可用区')
     project = forms.ChoiceField(required=True, label='项目')
+    nodes = forms.ModelMultipleChoiceField(
+        queryset=Node.objects.all(), label='节点', required=False,
+        widget=forms.SelectMultiple(
+            attrs={'class': 'select2', 'data-placeholder': '节点'}
+        )
+    )
 
     host_type = forms.ChoiceField(choices=HOST_TYPE_CHOICES,required=True, label='机型',
         widget=forms.Select(

@@ -8,6 +8,7 @@
     <h3>账号</h3>
     {% bootstrap_field form.account layout="horizontal" %}
     {% bootstrap_field form.project layout="horizontal" %}
+    {% bootstrap_field form.nodes layout="horizontal" %}
     {% bootstrap_field form.charge_type layout="horizontal" %}
     <div class="hr-line-dashed"></div>
     <h3>地域</h3>
@@ -142,6 +143,16 @@ function getProject(id) {
 }
 
 $(document).ready(function () {
+    $('.select2').select2({
+        allowClear: true
+    });
+    $(".labels").select2({
+        allowClear: true,
+        templateSelection: format
+    });
+    $('#id_nodes.select2').select2({
+        closeOnSelect: false
+    });
     $("#id_account").change(function() {
         var id = $("#id_account").val();
         getProject(id)

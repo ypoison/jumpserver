@@ -9,8 +9,12 @@ from django.shortcuts import redirect
 
 from common.permissions import AdminUserRequiredMixin
 from common.const import create_success_msg
+
+from assets.models import Asset
+
 from ..models import Account
 from ..forms import AccountForm, CreateCHostForm
+from .. import ucloud_api
 
 import base64
 
@@ -18,6 +22,7 @@ __all__ = (
     "AccountListView", "AccountDetailView","AccountCreateView", "AccountUpdateView",
     "CHostCreateView",
 )
+cloud_api = ucloud_api.UcloudAPI()
 
 
 class AccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
@@ -138,4 +143,9 @@ class CHostCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
             data['NetworkInterface.N.EIP.PayMode'] = req.get('eip_pay_mode')
 
         print(data)
+        queryset = cloud_api.CreateUhostInstance(**data)
+        if queryset['code']:
+            data = queryset['msg']
+            public_ip = data['IPs'][0]
+            cid = data['UHostIds'][0]
         return redirect(self.success_url)
