@@ -14,6 +14,7 @@ signer = get_signer()
 class Account(models.Model):
     RESOLVER_CHOICES = (
         ('ucloud', 'UCloud'),
+        ('aliyun', '阿里云'),
     )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     name = models.CharField(max_length=50, verbose_name='名称')

@@ -37,7 +37,7 @@ function initTable() {
         ],
         ajax_url: '{% url "api-cmis:account-list" %}',
         columns: [
-            {data: "id"}, {data: "name"}, {data: "access_id" },
+            {data: "id"}, {data: "name"}, {data: "cloud_service_providers" },
             {data: "comment"}, {data: "id"}
         ],
         op_html: $('#actions').html()

@@ -11,4 +11,8 @@ urlpatterns = [
     path('account/<uuid:pk>/', views.AccountDetailView.as_view(), name='account-detail'),
 
     path('chost/create/', views.CHostCreateView.as_view(), name='chost-create'),
+
+    path('cdn/', views.CDNDomainListView.as_view(), name='cdn-list'),
+    path('cdn/create/', views.CDNDomainCreateView.as_view(), name='cdn-create'),
+    path('cdn/<uuid:pk>/', views.CDNDomainDetailView.as_view(), name='cdn-detail'),
 ]
