@@ -7,6 +7,7 @@
 <form id="groupForm" method="post" class="form-horizontal">
     {% csrf_token %}
     {% bootstrap_field form.name layout="horizontal" %}
+    {% bootstrap_field form.auth layout="horizontal" %}
     {% bootstrap_field form.cloud_service_providers layout="horizontal" %}
     {% bootstrap_field form.access_id layout="horizontal" %}
     {% bootstrap_field form.access_key layout="horizontal" %}
@@ -24,6 +25,10 @@
 
 {% block custom_foot_js %}
 <script type="text/javascript">
-
+$(document).ready(function () {
+    $('.select2').select2({
+        allowClear: true
+    });
+});
 </script>
 {% endblock %}

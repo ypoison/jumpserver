@@ -13,7 +13,11 @@ router.register(r'cdn', api.CDNDomainViewSet, 'cdn')
 
 urlpatterns = [
     path('cmis-chost/get-info/', api.CloudInfoAPI.as_view(), name='chost-get-info'),
+
     path('cdn/<uuid:pk>/update/', api.CDNDomainUpdateApi.as_view(), name='cdn-update'),
+    path('cdn/<uuid:pk>/set/', api.CDNDomainSetApi.as_view(), name='cdn-set'),
+
+    path('cdn/fresh/', api.CDNFreshSetApi.as_view(), name='cdn-fresh-list'),
 ]
 
 urlpatterns += router.urls

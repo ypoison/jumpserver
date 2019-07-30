@@ -16,8 +16,10 @@ class Account(models.Model):
         ('ucloud', 'UCloud'),
         ('aliyun', '阿里云'),
     )
+
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     name = models.CharField(max_length=50, verbose_name='名称')
+    auth = models.CharField(max_length=128,verbose_name='操作权限')
     access_id = models.CharField(max_length=128, verbose_name='Access Key ID')
     _access_key = models.TextField(verbose_name='Access Key Secret')
     cloud_service_providers = models.CharField(max_length=50, choices=RESOLVER_CHOICES, verbose_name='云服务商')

@@ -7,6 +7,11 @@ from aliyunsdkcore.acs_exception.exceptions import ServerException
 
 from aliyunsdkcdn.request.v20180510.DescribeUserDomainsRequest import DescribeUserDomainsRequest
 from aliyunsdkcdn.request.v20180510.AddCdnDomainRequest import AddCdnDomainRequest
+from aliyunsdkcdn.request.v20180510.SetDomainServerCertificateRequest import SetDomainServerCertificateRequest
+from aliyunsdkcdn.request.v20180510.DescribeDomainCertificateInfoRequest import DescribeDomainCertificateInfoRequest
+from aliyunsdkcdn.request.v20180510.RefreshObjectCachesRequest import RefreshObjectCachesRequest
+from aliyunsdkcdn.request.v20180510.PushObjectCacheRequest import PushObjectCacheRequest
+from aliyunsdkcdn.request.v20180510.DescribeRefreshTasksRequest import DescribeRefreshTasksRequest
 
 
 import json
@@ -67,25 +72,107 @@ class AliyunCDN:
         except Exception as e:
             return {'code':0,'msg':e}
 
+    def set_https(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = SetDomainServerCertificateRequest()
+        request.set_accept_format('json')
+
+        request.set_DomainName(kwargs['domain_name'])
+        request.set_ServerCertificateStatus(kwargs['https'])
+        request.set_CertType("free")
+
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1,'msg':ret['RequestId']}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
+    def cert_check(self,**kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = DescribeDomainCertificateInfoRequest()
+        request.set_accept_format('json')
+
+        request.set_DomainName(kwargs['domain_name'])
+
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            ret = ret["CertInfos"]["CertInfo"][0]
+            status = {'success': '已生效。',
+                    'checking': '检测域名是否在阿里云CDN。',
+                    'cname_error': '域名没有切到阿里云CDN。',
+                    'top_domain_cname_error': '顶级域名没有切到阿里云CDN。',
+                    'domain_invalid': '域名包含非法字符。',
+                    'unsupport_wildcard': '不支持泛域名。',
+                    'applying': '证书申请中。',
+                    'get_token_timeout': '证书申请超时。',
+                    'check_token_timeout': '校验超时。',
+                    'get_cert_timeout': '获取证书超时。',
+                    'failed': '证书申请失败。',
+            }
+            if ret['Status']:
+                ret_status = status[str(ret['Status'])]
+            else:
+                ret_status = ''
+            msg = {'ServerCertificateStatus':ret['ServerCertificateStatus'],'Status':ret_status}
+            return {'code':1,'msg':msg}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
+    def fresh_set(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        if kwargs['action'] == 'PushCache':
+            request = PushObjectCacheRequest()
+        elif kwargs['action'] == 'RefreshCaches':
+            request = RefreshObjectCachesRequest()
+        else:
+            return {'code': 0, 'msg': 'action?'}
+        print(kwargs)
+        request.set_accept_format('json')
+        request.set_ObjectPath(kwargs['ObjectPath'])
+        request.set_ObjectType(kwargs['ObjectType'])
+        #try:
+        response = self.client.do_action_with_exception(request)
+        ret = json.loads(str(response, encoding='utf-8'))
+        return {'code':1}
+        #except Exception as e:
+        #    return {'code':0,'msg':e}
+
+    def fresh_get(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = DescribeRefreshTasksRequest()
+        request.set_accept_format('json')
+
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1,'msg':ret['Tasks']['CDNTask']}
+        except Exception as e:
+            return {'code':0,'msg':e}
 
 if __name__ == '__main__':
     a=AliyunCDN()
     data = {
         'access_id':'LTAIsqupmY8GlhNG',
-        'access_key':'YHsR8d6P6ouRP7Vk2kKVDFBUzROlXw'
+        'access_key':'YHsR8d6P6ouRP7Vk2kKVDFBUzROlXw',
+        'domain_name': 'image1.vivi.com',
+        'https': 'on'
     }
-    print(a.get_cdn_list(**data))
-    #[{“content”:”1.1.1.1”, ”type”:”ipaddr”, ”priority”:”20”, ”port”:80,”weight”:”15”}]
-    #{'domain_name': 'vvvi.com',  'scope': 'domestic', 'source_port': 80, 'source_type': 'ipaddr', 'sources': '1.1.1.1:20,2.1.1.1:30', 'domain_status': None, 'comment': ''}
-
-    #print(a.ali_get_domain_name_dns('yvnwq.cn'))
-    #b=a.update_record(
-    #    RecordId='17838107624944640',
-    #    ttl=600,
-    #    line='default',
-    #    value='192.168.11.169',
-    #    type='A',
-    #    rr='dytest',
-    #    priority=''
-    #    )
-    #print(b)
+    print(a. set_https(**data))

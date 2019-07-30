@@ -7,7 +7,7 @@ from django.db import models
 from ..models import Account
 from common.utils import get_signer
 
-__all__ = ['CDNDomain']
+__all__ = ['CDNDomain',]
 signer = get_signer()
 
 class CDNDomain(models.Model):

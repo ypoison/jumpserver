@@ -8,9 +8,19 @@ from assets.models import Node
 __all__ = ['AccountForm', 'CreateCHostForm']
 
 class AccountForm(forms.ModelForm):
+    AUTH_CHOICES = (
+        ('chost', '云主机'),
+        ('cdn', 'CDN'),
+    )
     access_key = forms.CharField(
         widget=forms.PasswordInput, max_length=128,
         strip=True
+    )
+    auth = forms.MultipleChoiceField(
+        label='操作权限', choices=AUTH_CHOICES,
+        widget=forms.SelectMultiple(
+            attrs={'class': 'select2', 'data-placeholder': '操作权限'}
+        )
     )
 
     def save(self, commit=True):
@@ -23,7 +33,7 @@ class AccountForm(forms.ModelForm):
 
     class Meta:
         model = Account
-        fields = ['name', 'access_id', 'access_key', 'cloud_service_providers', 'comment']
+        fields = ['name', 'auth', 'access_id', 'access_key', 'cloud_service_providers', 'comment']
 
 class CreateCHostForm(forms.Form):
     CHARGE_TYPE_CHOICES = (

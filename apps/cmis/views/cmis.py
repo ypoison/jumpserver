@@ -142,7 +142,6 @@ class CHostCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
             data['NetworkInterface.N.EIP.Bandwidth'] = req.get('eip_bandwidth')
             data['NetworkInterface.N.EIP.PayMode'] = req.get('eip_pay_mode')
 
-        print(data)
         queryset = cloud_api.CreateUhostInstance(**data)
         if queryset['code']:
             data = queryset['msg']

@@ -15,4 +15,7 @@ urlpatterns = [
     path('cdn/', views.CDNDomainListView.as_view(), name='cdn-list'),
     path('cdn/create/', views.CDNDomainCreateView.as_view(), name='cdn-create'),
     path('cdn/<uuid:pk>/', views.CDNDomainDetailView.as_view(), name='cdn-detail'),
+
+    path('cdn/fresh/', views.CDNFreshListView.as_view(), name='cdn-fresh-list'),
+    path('cdn/fresh/create/', views.CDNFreshCreateView.as_view(), name='cdn-fresh-create'),
 ]
