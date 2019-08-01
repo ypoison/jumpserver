@@ -1,5 +1,6 @@
-{% extends 'base.html' %}
+{% extends '_base_create_update.html' %}
 {% load static %}
+{% load bootstrap3 %}
 {% load i18n %}
 
 {% block custom_head_css_js %}
@@ -19,16 +20,6 @@
                             <li class="active">
                                 <a href="#" class="text-center"><i class="fa fa-laptop"></i> CDN配置 </a>
                             </li>
-                            {% if user.is_superuser %}
-                            <li class="pull-right">
-                                <a class="btn btn-outline btn-default" href="{% url 'assets:asset-update' pk=cdn.id %}"><i class="fa fa-edit"></i>{% trans 'Update' %}</a>
-                            </li>
-                            <li class="pull-right">
-                                <a class="btn btn-outline btn-danger btn-delete-asset">
-                                    <i class="fa fa-trash-o"></i>{% trans 'Delete' %}
-                                </a>
-                            </li>
-                            {% endif %}
                         </ul>
                     </div>
                     <div class="tab-content">
@@ -51,31 +42,25 @@
                                     </div>
                                 </div>
                                 <div class="ibox-content">
-                                    <table class="table">
-                                        <tbody>
-                                        <tr>
-                                            <td>加速区域:</td>
-                                            <td><b>{{ cdn.get_scope_display }}</b></td>
-                                        </tr>
-                                        <tr>
-                                            <td>源站类型:</td>
-                                            <td><b>{{ cdn.get_source_type_display }}</b></td>
-                                        </tr>
-                                        <tr>
-                                            <td>回源地址:</td>
-                                            <td><b>{{ cdn.sources }}</b></td>
-                                        </tr>
-                                        <tr>
-                                            <td>端口:</td>
-                                            <td><b>{{ cdn.source_port }}</b></td>
-                                        </tr>
-                                        <tr>
-                                            <td>备注:</td>
-                                            <td><b>{{ cdn.comment }}</b></td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                    {% block form %}
+                                    <form id="groupForm" method="post" class="form-horizontal">
+                                        {% csrf_token %}
+                                        {% bootstrap_field form.source_type layout="horizontal" %}
+                                        {% bootstrap_field form.source_port layout="horizontal" %}
+                                        {% bootstrap_field form.sources layout="horizontal" %}
+                                        {% bootstrap_field form.comment layout="horizontal" %}
+
+                                        <div class="hr-line-dashed"></div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2">
+                                                <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
+                                                <a id="modify" class="btn btn-primary" type="button">{% trans 'Submit' %}</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {% endblock %}
                                 </div>
+
                             </div>
                         </div>
                         {% if user.is_superuser or user.is_org_admin %}
@@ -104,6 +89,52 @@
                                               </span>
                                           </td>
                                         </tr>
+                                        </tbody>
+                                    </table>
+                                    <div id="cert" style="display:none">
+                                        <form id="certGroupForm" method="post" class="form-horizontal">
+                                            {% csrf_token %}
+                                            <div class="form-group required">
+                                                <label class="col-md-2 control-label" for="id_cert_type">证书类型</label>
+                                                <div class="col-md-9">
+                                                    <select name="source_type" class="form-control" title="" required="" id="id_cert_type">
+                                                        <option value="">---------</option>
+                                                        <option value="upload">自定义</option>
+                                                        <option value="free">免费证书</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div id="upload" style="display:none">
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label" for="id_name">证书名称</label>
+                                                    <div class="col-md-9"><input type="text" name="name"  maxlength="128" class="form-control" id="id_name">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label" for="id_content">内容</label>
+                                                    <div class="col-md-9">
+                                                        <textarea name="content" class="form-control" id="id_content"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label" for="id_key">私钥</label>
+                                                    <div class="col-md-9">
+                                                        <textarea name="key" class="form-control" id="id_key"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="hr-line-dashed"></div>
+                                            <div class="form-group">
+                                                <div class="col-sm-4 col-sm-offset-2">
+                                                    <a id="btn-cert" class="btn btn-primary" type="button">提交</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    </div>
+                                    <table class="table">
+                                        <tbody>
                                         <tr class="no-borders-tr">
                                             <td width="50%">证书状态:</td>
                                             <td id="cert_status" class="pull-left"></td>
@@ -125,18 +156,63 @@
 {% endblock %}
 {% block custom_foot_js %}
 <script>
-
 $(document).ready(function () {
+    uid = "{{ cdn.account.id }}"
+    url =  '{% url "api-cmis:oss-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+    selected_source = "{{ cdn.sources }}"
+    GetOss(url,selected_source)
+    $("#id_source_type").change(function () {
+        GetOss(url,selected_source)
+    });
+
+    $("#modify").click(function () {
+        var the_url = '{% url "api-cmis:cdn-modify" pk=cdn.id %}';
+        var body = {
+            'source_type': $("#id_source_type").val(),
+            'source_port': $("#id_source_port").val(),
+            'sources': $("#id_sources").val(),
+        }
+        var success = function () {
+           window.location.reload()
+        };
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: 'POST',
+            body: JSON.stringify(body),
+            success: success
+        });
+    });
+
     $("#is_active").click(function () {
-        var the_url = '{% url "api-cmis:cdn-set" pk=cdn.id %}';
         var checked = $(this).prop('checked');
+        if (checked){
+            $('#cert').css("display", "block");
+        } else{
+            $('#cert').css("display", "none");
+        }
+    });
+    $("#id_cert_type").change(function(){
+        var type = $(this).val()
+        if ( type === 'upload' ){
+           $('#upload').css("display", "block");
+        } else {
+           $('#upload').css("display", "none");
+        }
+    });
+
+    $("#btn-cert").click(function () {
+        var the_url = '{% url "api-cmis:cdn-set" pk=cdn.id %}';
+        var checked = $("#is_active").prop('checked');
         var body = {
             'action': 'https',
-            'https': checked
+            'https': checked,
+            'CertType': $("#id_cert_type").val(),
+            'CertName': $("#id_name").val(),
+            'ServerCertificate': $("#id_content").val(),
+            'PrivateKey': $("#id_key").val(),
         };
         var success = function (data) {
             $("#cert_status").html(data['msg']['Status']);
-            console.log(data['msg']['ServerCertificateStatus'])
             if (data['msg']['ServerCertificateStatus'] === 'on'){
                 $("#is_active").prop("checked", true);
             } else {
@@ -147,10 +223,11 @@ $(document).ready(function () {
             url: the_url,
             method: 'POST',
             body: JSON.stringify(body),
-            success_message:'检查操作成功',
+            success_message:'操作成功',
             success: success
         });
     });
+
     $("#btn-check").click(function () {
         var the_url = '{% url "api-cmis:cdn-set" pk=cdn.id %}';
         var checked = $(this).prop('checked');
@@ -159,7 +236,6 @@ $(document).ready(function () {
         };
         var success = function (data) {
             $("#cert_status").html(data['msg']['Status']);
-            console.log(data['msg']['ServerCertificateStatus'])
             if (data['msg']['ServerCertificateStatus'] === 'on'){
                 $("#is_active").prop("checked", true);
             } else {

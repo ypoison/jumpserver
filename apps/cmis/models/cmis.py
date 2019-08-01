@@ -44,5 +44,11 @@ class Account(models.Model):
 
     @access_key.setter
     def access_key(self, password):
-        print(signer.sign(password))
         self._access_key = signer.sign(password)
+
+    @property
+    def auth_list(self):
+        try:
+            return eval(self.auth)
+        except:
+            return self.auth.split(' ')

@@ -14,7 +14,9 @@
     {% bootstrap_field form.scope layout="horizontal" %}
     {% bootstrap_field form.source_port layout="horizontal" %}
     {% bootstrap_field form.source_type layout="horizontal" %}
-    {% bootstrap_field form.sources layout="horizontal" %}
+    <div id="sources">
+        {% bootstrap_field form.sources layout="horizontal" %}
+    </div>
     {% bootstrap_field form.comment layout="horizontal" %}
 
     <div class="hr-line-dashed"></div>
@@ -29,6 +31,13 @@
 
 {% block custom_foot_js %}
 <script type="text/javascript">
+$(document).ready(function(){
+    $("#id_source_type").change(function() {
+        var uid = $("#id_account").val()
+        var url =  '{% url "api-cmis:oss-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+        GetOss(url)
+    });
 
+});
 </script>
 {% endblock %}

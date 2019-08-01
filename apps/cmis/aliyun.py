@@ -12,6 +12,12 @@ from aliyunsdkcdn.request.v20180510.DescribeDomainCertificateInfoRequest import 
 from aliyunsdkcdn.request.v20180510.RefreshObjectCachesRequest import RefreshObjectCachesRequest
 from aliyunsdkcdn.request.v20180510.PushObjectCacheRequest import PushObjectCacheRequest
 from aliyunsdkcdn.request.v20180510.DescribeRefreshTasksRequest import DescribeRefreshTasksRequest
+from aliyunsdkcdn.request.v20180510.DeleteCdnDomainRequest import DeleteCdnDomainRequest
+from aliyunsdkcdn.request.v20180510.StartCdnDomainRequest import StartCdnDomainRequest
+from aliyunsdkcdn.request.v20180510.StopCdnDomainRequest import StopCdnDomainRequest
+from aliyunsdkcdn.request.v20180510.ModifyCdnDomainRequest import ModifyCdnDomainRequest
+
+import oss2
 
 
 import json
@@ -72,6 +78,35 @@ class AliyunCDN:
         except Exception as e:
             return {'code':0,'msg':e}
 
+    def cdn_modify(self, **kwargs):
+        self.client = AcsClient(
+            kwargs['access_id'],
+            kwargs['access_key'],
+            'cn-hangzhou')
+        request = ModifyCdnDomainRequest()
+        request.set_accept_format('json')
+        sources = kwargs['sources'].split(',')
+        source_list = []
+        for source in sources:
+            source = source.split(':')
+            content = source[0]
+            priority = source[1]
+            source_dict = {
+                'content': content,
+                'type': kwargs['source_type'],
+                'priority':priority,
+            }
+            source_list.append(source_dict)
+        request.set_DomainName(kwargs['domain_name'])
+        request.set_Sources(source_list)
+
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1,'msg':ret}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
     def set_https(self, **kwargs):
         self.client = AcsClient(
         kwargs['access_id'],
@@ -83,11 +118,16 @@ class AliyunCDN:
 
         request.set_DomainName(kwargs['domain_name'])
         request.set_ServerCertificateStatus(kwargs['https'])
-        request.set_CertType("free")
+        request.set_CertType(kwargs['CertType'])
+        if kwargs['CertType'] == 'upload':
+            request.set_CertName(kwargs['CertName'])
+            request.set_ServerCertificate(kwargs['ServerCertificate'])
+            request.set_PrivateKey(kwargs['PrivateKey'])
 
         try:
             response = self.client.do_action_with_exception(request)
             ret = json.loads(str(response, encoding='utf-8'))
+            print(ret)
             return {'code':1,'msg':ret['RequestId']}
         except Exception as e:
             return {'code':0,'msg':e}
@@ -167,6 +207,69 @@ class AliyunCDN:
         except Exception as e:
             return {'code':0,'msg':e}
 
+    def delete(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = DeleteCdnDomainRequest()
+        request.set_accept_format('json')
+        request.set_DomainName(kwargs['domain_name'])
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
+    def start(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = StartCdnDomainRequest()
+        request.set_accept_format('json')
+        request.set_DomainName(kwargs['domain_name'])
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
+    def stop(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = StopCdnDomainRequest()
+        request.set_accept_format('json')
+        request.set_DomainName(kwargs['domain_name'])
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
+    def oss_get(self, **kwargs):
+        auth = oss2.Auth(kwargs['access_id'], kwargs['access_key'])
+
+        try:
+            service = oss2.Service(auth, 'http://oss-cn-hangzhou.aliyuncs.com')
+            ret = oss2.BucketIterator(service)
+            bucket_list = []
+            for b in ret:
+                bucket = oss2.Bucket(auth, 'http://oss-cn-hangzhou.aliyuncs.com', b.name)
+                bucket_info = bucket.get_bucket_info()
+                bucket_list.append('%s.%s:20' % (b.name, bucket_info.extranet_endpoint))
+            return {'code': 1, 'msg': bucket_list}
+        except Exception as e:
+            return {'code': 0, 'msg':e}
+
 if __name__ == '__main__':
     a=AliyunCDN()
     data = {
@@ -175,4 +278,4 @@ if __name__ == '__main__':
         'domain_name': 'image1.vivi.com',
         'https': 'on'
     }
-    print(a. set_https(**data))
+    print(a. oss_get(**data))

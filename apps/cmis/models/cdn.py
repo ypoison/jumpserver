@@ -46,7 +46,7 @@ class CDNDomain(models.Model):
 
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name='所属账号')
-    domain_name = models.CharField(max_length=20, verbose_name='域名')
+    domain_name = models.CharField(max_length=50, verbose_name='域名')
     cname = models.CharField(max_length=128, blank=True, null=True, verbose_name='CNAME域名')
     cdn_type = models.CharField(max_length=20, choices=TYPE_CHOICES,verbose_name='业务类型')
     check_url = models.CharField(max_length=128, blank=True, null=True,  verbose_name='检测url')

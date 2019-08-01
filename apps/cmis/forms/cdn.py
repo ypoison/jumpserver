@@ -6,13 +6,26 @@ from ..models import CDNDomain, Account
 __all__ = ['CDNDomainForm','CDNFreshForm']
 
 class CDNDomainForm(forms.ModelForm):
+    account = forms.ModelChoiceField(
+        required=True, queryset=Account.objects.filter(auth__contains='cdn'),
+        label="账号",
+        widget=forms.Select(
+            attrs={
+                'class': 'select2',
+                'data-placeholder': '账号'
+            }
+        )
+    )
     class Meta:
         model = CDNDomain
         fields = ['account', 'domain_name', 'cdn_type', 'check_url', 'owner_account',
                   'resource_group_id', 'scope', 'source_port', 'source_type',
                   'sources', 'comment']
+        widgets = {
+            'sources': forms.TextInput(attrs={'placeholder': '1.1.1.1:20,2.1.1.1:30'}),
+        }
         help_texts = {
-            'sources':'1.1.1.1:20,2.1.1.1:30',
+            'sources':'20为主，30为备；如：1.1.1.1:20,2.1.1.1:30；source1.dymis.com:20,source2.dymis.com:30',
         }
 
 class CDNFreshForm(forms.Form):
@@ -25,7 +38,7 @@ class CDNFreshForm(forms.Form):
         ('Directory', '目录'),
         )
     account = forms.ModelChoiceField(
-        required=True, queryset=Account.objects.all(),
+        required=True, queryset=Account.objects.filter(auth__contains='cdn'),
         label="账号",
         widget=forms.Select(
             attrs={

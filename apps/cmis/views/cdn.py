@@ -66,15 +66,16 @@ class CDNDomainCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVie
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class CDNDomainDetailView(AdminUserRequiredMixin, DetailView):
+class CDNDomainDetailView(AdminUserRequiredMixin, UpdateView):
     model = CDNDomain
     context_object_name = 'cdn'
     template_name = 'cmis/cdn_detail.html'
+    form_class = CDNDomainForm
 
     def get_context_data(self, **kwargs):
         context = {
-            'app': _('Assets'),
-            'action': _('Asset detail'),
+            'app': '云管中心',
+            'action': 'CDN详情',
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
