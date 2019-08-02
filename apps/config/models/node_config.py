@@ -24,6 +24,7 @@ class WEBConfigRecords(models.Model):
         (8903, 'benzbmw(8903)'),
         (8033, 'pay(8033)'),
         (8049, 'h5(8049)'),
+        (8010, 'hall(8010)'),
     )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     platform = models.ForeignKey(Node, on_delete=models.CASCADE, verbose_name='平台')

@@ -65,7 +65,7 @@ class NodeReloadApi(ListAPIView):
                 else:
                     return Response({'error': res['msg']}, status=400)
             except Exception as e:
-                Response({"error":  e}, status=400)
+                return Response({"error":  e}, status=400)
         else:
             return Response({"error": '获取节点主机信息失败'}, status=400)
 

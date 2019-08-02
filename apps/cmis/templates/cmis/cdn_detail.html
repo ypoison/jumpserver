@@ -160,9 +160,14 @@ $(document).ready(function () {
     uid = "{{ cdn.account.id }}"
     url =  '{% url "api-cmis:oss-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
     selected_source = "{{ cdn.sources }}"
-    GetOss(url,selected_source)
+    source_type = $("#id_source_type").val()
+    console.log(source_type)
+    selected_source_type = "{{ cdn.source_type }}"
+    GetOss(url,selected_source, source_type, selected_source_type)
+
     $("#id_source_type").change(function () {
-        GetOss(url,selected_source)
+        var source_type = $("#id_source_type").val()
+        GetOss(url,selected_source, source_type, selected_source_type)
     });
 
     $("#modify").click(function () {

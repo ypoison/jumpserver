@@ -63,7 +63,7 @@ class CDNDomain(models.Model):
 
     class Meta:
         unique_together = [('domain_name')]
-        verbose_name = "域名"
+        verbose_name = "cdn"
         db_table = "cmis_cdn_domain"
 
     def __str__(self):

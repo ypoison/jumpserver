@@ -119,18 +119,18 @@ class CDNDomainUpdateApi(APIView):
                                 source_list = []
                                 for s in source:
                                     source_list.append('%s:%s' % (s['Content'], s['Priority']))
-                                    CDNDomain.objects.create(
-                                        account=account,
-                                        cname = req['Cname'],
-                                        cdn_type = req['CdnType'],
-                                        domain_status = req['DomainStatus'],
-                                        https = req['SslProtocol'],
-                                        domain_name = domain_name,
-                                        source_type = source[0]['Type'],
-                                        source_port = source[0]['Port'],
-                                        gmt_created = req['GmtCreated'],
-                                        sources = str(source_list)
-                                    )
+                                CDNDomain.objects.create(
+                                    account=account,
+                                    cname = req['Cname'],
+                                    cdn_type = req['CdnType'],
+                                    domain_status = req['DomainStatus'],
+                                    https = req['SslProtocol'],
+                                    domain_name = domain_name,
+                                    source_type = source[0]['Type'],
+                                    source_port = source[0]['Port'],
+                                    gmt_created = req['GmtCreated'],
+                                    sources = ','.join(source_list)
+                                )
                         for r in CDNDomain.objects.filter(account=account):
                             if r.domain_name not in domain_name_list:
                                 r.delete()
