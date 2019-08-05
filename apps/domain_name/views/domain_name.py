@@ -228,16 +228,23 @@ class DomainNameRecordUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, Up
 
     def form_valid(self, form):
         record = form.save(commit=False)
-
         update_record = GetDomainName.record_modify(record)
-
         if update_record['code']:
             update_record = update_record['message']
-            record.record_id = update_record['RecordId']
+            RecordId = update_record.get('RecordId','')
+            if RecordId:
+                record.record_id = RecordId
             record.save()
         else:
+            if record.comment:
+                save_comment = Records.objects.get(id=record.id)
+                save_comment.comment = record.comment
+                save_comment.save()
+                form.add_error(
+                    "comment", '备注已添加成功'
+                )
             form.add_error(
-                "record_id", update_record['message']
+                "rr", update_record['message']
             )
             return self.form_invalid(form)
         return super().form_valid(form)
