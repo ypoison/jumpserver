@@ -6,7 +6,7 @@ from rest_framework.generics import (
     ListAPIView,
 )
 from common.utils import get_request_ip, get_logger, get_object_or_none
-from common.permissions import IsOrgAdmin
+from common.permissions import IsOrgAdmin, IsValidUser
 
 from assets.models import Node, Asset
 from ..models import WEBConfigRecords
@@ -23,7 +23,7 @@ webconfig = WEBConfig()
 class NodeViewSet(BulkModelViewSet):
     filter_fields = ("platform", "node_asset")
     search_fields = ("platform__value", "node_asset__ip")
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeConfigSerializer
     pagination_class = LimitOffsetPagination
 
@@ -32,7 +32,7 @@ class NodeViewSet(BulkModelViewSet):
         return self.queryset
 
 class NodeReloadApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.PrivateAssetSerializer
 
     def post(self, request, *args, **kwargs):
@@ -74,7 +74,7 @@ class WEBConfigViewSet(BulkModelViewSet):
     filter_fields = ('platform__value', 'domain', 'port', 'proxy_ip', 'proxy_port', 'comment')
     search_fields = filter_fields
     queryset = WEBConfigRecords.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.WEBConfigSerializer
     pagination_class = LimitOffsetPagination
 
@@ -93,7 +93,7 @@ class WEBConfigViewSet(BulkModelViewSet):
             return Response({'error': del_web_config['msg']}, status=400)
 
 class GetApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.PrivateAssetSerializer
 
     def get_queryset(self):

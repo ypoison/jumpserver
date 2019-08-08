@@ -3,9 +3,6 @@
 # author:Matt Hsu
 # date :2019/07/24
 
-from ucloud.core import exc
-from ucloud.client import Client
-
 import hashlib
 import requests
 import json
@@ -35,7 +32,6 @@ class UcloudAPI:
         ret = json.loads(content)
         return ret
     def GetProjectList(self, **kwargs):
-        kwargs['Action'] = 'GetProjectList'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             project_list = []
@@ -46,7 +42,6 @@ class UcloudAPI:
             return {'code':0, 'msg':ret['Message']}
 
     def GetRegion(self, **kwargs):
-        kwargs['Action'] = 'GetRegion'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             region_list = []
@@ -73,7 +68,6 @@ class UcloudAPI:
             return {'code':0, 'msg':ret['Message']}
 
     def GetImageList(self, **kwargs):
-        kwargs['Action'] = 'DescribeImage'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             image_list = []
@@ -86,7 +80,6 @@ class UcloudAPI:
             return {'code': 0, 'msg': ret['Message']}
 
     def GetVPC(self, **kwargs):
-        kwargs['Action'] = 'DescribeVPC'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             vpc_list = []
@@ -98,28 +91,43 @@ class UcloudAPI:
             return {'code': 0, 'msg': ret['Message']}
 
     def GetSubnet(self, **kwargs):
-        vpc_id = kwargs.pop('vpc_id')
-        kwargs['Action'] = 'DescribeSubnet'
+        VPCId = kwargs.pop('VPCId')
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             subnet_list = []
             for s in ret['DataSet']:
-                if s['VPCId'] == vpc_id:
+                if s['VPCId'] == VPCId:
                     subnet = { 'name':s['Subnet'],'id':s['SubnetId']}
                     subnet_list.append(subnet)
             return {'code': 1, 'msg': subnet_list}
         else:
             return {'code': 0, 'msg': ret['Message']}
 
+    def CreateUhostInstance(self, **kwargs):
+        #ret = self.response(**kwargs)
+        ret = {
+            "RetCode": 0,
+            "Action": "CreateUHostInstanceResponse",
+            "UHostIds": [
+                "uhost-222"
+            ],
+            "IPs": [
+                "10.19.10.2"
+            ]
+        }
+        print(ret)
+        if ret.get('RetCode', '') == 0:
+            return {'code': 1, 'msg': ret}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
 
-def CreateUhostInstance(**kwargs):
-    kwargs['Action'] = 'CreateUHostInstance'
-    ret = self.response(**kwargs)
-    print(ret)
-    if ret.get('RetCode', '') == 0:
-        return {'code': 1, 'msg': ret}
-    else:
-        return {'code': 0, 'msg': ret['Message']}
+    def GetUHostInstance(self, **kwargs):
+        kwargs['Action'] = 'DescribeUHostInstance'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            return {'code': 1, 'msg': ret['UHostSet'][0]}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
 
 
 if __name__ == '__main__':

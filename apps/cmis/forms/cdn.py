@@ -30,8 +30,8 @@ class CDNDomainForm(forms.ModelForm):
 
 class CDNFreshForm(forms.Form):
     ACTION_CHOICES = (
-        ('PushCache', '预热'),
         ('RefreshCaches', '刷新'),
+        ('PushCache', '预热'),
     )
     OBJECT_TYPE_CHOICES = (
         ('File', 'URL'),
@@ -49,4 +49,6 @@ class CDNFreshForm(forms.Form):
     )
     action = forms.ChoiceField(choices=ACTION_CHOICES, label='操作类型')
     object_type = forms.ChoiceField(initial='File', choices=OBJECT_TYPE_CHOICES, label='源站类型')
-    object_path = forms.CharField(label='URL', widget=forms.Textarea)
+    object_path = forms.CharField(label='URL', widget=forms.Textarea,
+                                  help_text='目录刷新需以"/"结尾, 如: img.dy.com/dir/',
+                                  )

@@ -58,7 +58,7 @@ class CDNDomain(models.Model):
     sources = models.CharField(max_length=128, verbose_name='回源地址')
     domain_status = models.CharField(max_length=20, blank=True, null=True, choices=SOURCE_PORT_CHOICES, verbose_name='资源组ID')
     https = models.CharField(max_length=5,default='off', choices=HTTPS_CHOICES, verbose_name='https')
-    gmt_created = models.CharField(max_length=20, choices=HTTPS_CHOICES, blank=True, null=True, verbose_name='创建时间')
+    gmt_created = models.CharField(max_length=20, blank=True, null=True, verbose_name='创建时间')
     comment = models.TextField(max_length=128, default='', blank=True, verbose_name='备注')
 
     class Meta:

@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 #
 from django.views.generic import TemplateView, CreateView, \
-    UpdateView, DetailView, FormView
-from django.views.generic.detail import SingleObjectMixin
+    UpdateView, FormView
+
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.shortcuts import redirect
-from common.permissions import AdminUserRequiredMixin
-from common.const import create_success_msg
-from common.utils import get_object_or_none
-from rest_framework.views import Response
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 from ..models import CDNDomain, Account
 from ..forms import CDNDomainForm, CDNFreshForm
 
@@ -23,7 +22,7 @@ __all__ = (
 )
 SetCDN = AliyunCDN()
 
-class CDNDomainListView(AdminUserRequiredMixin, TemplateView):
+class CDNDomainListView(LoginRequiredMixin, TemplateView):
     template_name = 'cmis/cdn_list.html'
 
     def get_context_data(self, **kwargs):
@@ -34,7 +33,7 @@ class CDNDomainListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class CDNDomainCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class CDNDomainCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = CDNDomain
     template_name = 'cmis/cdn_create.html'
     form_class = CDNDomainForm
@@ -66,7 +65,7 @@ class CDNDomainCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVie
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class CDNDomainDetailView(AdminUserRequiredMixin, UpdateView):
+class CDNDomainDetailView(LoginRequiredMixin, UpdateView):
     model = CDNDomain
     context_object_name = 'cdn'
     template_name = 'cmis/cdn_detail.html'
@@ -80,7 +79,7 @@ class CDNDomainDetailView(AdminUserRequiredMixin, UpdateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class CDNFreshListView(AdminUserRequiredMixin, TemplateView):
+class CDNFreshListView(LoginRequiredMixin, TemplateView):
     template_name = 'cmis/cdn_fresh_list.html'
 
     def get_context_data(self, **kwargs):
@@ -91,8 +90,7 @@ class CDNFreshListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-
-class CDNFreshCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
+class CDNFreshCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
     template_name = 'cmis/cdn_fresh_create.html'
     form_class = CDNFreshForm
     success_url = reverse_lazy('cmis:cdn-fresh-list')
@@ -125,8 +123,8 @@ class CDNFreshCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
 
         }
         fresh = SetCDN.fresh_set(**kw)
-        print(fresh)
         if not fresh['code']:
             self.success_message = fresh['msg']
+            print(self.success_message)
             return redirect(reverse_lazy('cmis:cdn-fresh-create'))
         return redirect(self.success_url)

@@ -7,6 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy, reverse
 
 from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg, update_success_msg
 from common.utils import get_object_or_none
 from assets.models import Node
@@ -19,7 +20,7 @@ __all__ = (
 )
 webconfig = WEBConfig()
 
-class NodeConfigListView(AdminUserRequiredMixin, TemplateView):
+class NodeConfigListView(LoginRequiredMixin, TemplateView):
     template_name = 'node_config/node_config_list.html'
 
     def get_context_data(self, **kwargs):
@@ -30,7 +31,7 @@ class NodeConfigListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class NodeConfigWEBConfigListView(AdminUserRequiredMixin, TemplateView):
+class NodeConfigWEBConfigListView(LoginRequiredMixin, TemplateView):
     template_name = 'node_config/web_config_list.html'
 
     def get_context_data(self, **kwargs):
@@ -42,7 +43,7 @@ class NodeConfigWEBConfigListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class NodeConfigWEBConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class NodeConfigWEBConfigCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = WEBConfigRecords
     template_name = 'node_config/web_config_create_update.html'
     form_class = WEBConfigForm

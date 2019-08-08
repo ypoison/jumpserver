@@ -70,6 +70,10 @@ function initTable() {
                     $(td).html('URL预热')
                 }
             }},
+            {targets: 3, createdCell: function (td, cellData) {
+                $(td).html(formatUTC(cellData))
+            }},
+
             {targets: 4, createdCell: function (td, cellData) {
                 if (cellData === "Complete"){
                     $(td).html('完成')

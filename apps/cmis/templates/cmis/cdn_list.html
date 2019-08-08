@@ -90,6 +90,9 @@ function initTable() {
                     $(td).html('<i class="fa fa-circle text-danger btn"></i>')
                 }
             }},
+            {targets: 5, createdCell: function (td, cellData) {
+                $(td).html(formatUTC(cellData))
+            }},
             {targets: 7, createdCell: function (td, cellData, rowData) {
                 var update_btn = '<a class="btn btn-xs btn-info btn-update" data-uid="{{ DEFAULT_PK }}" data-action="update">刷新</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 var detail_btn = '<a href="{% url "cmis:cdn-detail" pk=DEFAULT_PK %}" class="btn btn-xs btn-primary m-l-xs">管理</a>'.replace('{{ DEFAULT_PK }}', cellData);

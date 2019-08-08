@@ -29,6 +29,16 @@
                                 <div class="ibox-content">
                                     <form id="groupForm" method="post" class="form-horizontal">
                                         {% csrf_token %}
+                                        <div style="text-align: center; display:none" id="remain">
+                                            <p>
+                                                <span>剩余url刷新数量:</span>
+                                                <span style="color:red;" id="UrlRemain"></span>
+                                                <span>; 剩余目录刷新数量:</span>
+                                                <span style="color:red;" id="DirRemain"></span>
+                                                <span>; 剩余预热数量:</span>
+                                                <span style="color:red;" id="PreloadRemain"></span>
+                                            </p>
+                                        </div>
                                         {% bootstrap_field form.account layout="horizontal" %}
                                         {% bootstrap_field form.action layout="horizontal" %}
                                         {% bootstrap_field form.object_type layout="horizontal" %}
@@ -54,6 +64,37 @@
 
 {% block custom_foot_js %}
 <script type="text/javascript">
-
+    $("#id_account").change(function() {
+        var uid = $("#id_account").val()
+        if (uid) {
+            var the_url =  '{% url "api-cmis:cdn-fresh-remain-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+            var success = function (ret) {
+                if (ret.code === 1) {
+                    var data = ret['msg'];
+                    $.each(data, function(key, val){
+                        $("#" + key).html(val)
+                    })
+                    $("#remain").css("display", "block");
+                }
+            }
+            DyAPIUpdateAttr({
+            url: the_url,
+            method: 'GET',
+            flash_message: false,
+            success: success
+            })
+        }
+    });
+    $("#id_action").change(function() {
+        var type_change = $(this).val()
+        if ( type_change === 'PushCache'  ){
+            $("#id_object_type option[value=Directory]").remove();
+        } else{
+            directory_type = $("#id_object_type option[value=Directory]").val()
+            if (!directory_type){
+                $("#id_object_type").append("<option value =Directory>目录</option>")
+            }
+        }
+    });
 </script>
 {% endblock %}

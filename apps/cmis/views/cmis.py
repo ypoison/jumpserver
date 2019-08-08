@@ -20,10 +20,7 @@ import base64
 
 __all__ = (
     "AccountListView", "AccountDetailView","AccountCreateView", "AccountUpdateView",
-    "CHostCreateView",
 )
-cloud_api = ucloud_api.UcloudAPI()
-
 
 class AccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
     model = Account
@@ -78,73 +75,3 @@ class AccountDetailView(AdminUserRequiredMixin, DetailView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class CHostCreateView(AdminUserRequiredMixin, SuccessMessageMixin, FormView):
-    template_name = 'cmis/chost_create.html'
-    form_class = CreateCHostForm
-    success_url = reverse_lazy('cmis:chost-create')
-    success_message = create_success_msg
-
-    def get_context_data(self, **kwargs):
-        context = {
-            'app': '云管中心',
-            'action': '采购云主机',
-        }
-        kwargs.update(context)
-        return super().get_context_data(**kwargs)
-
-    def post(self, request, *args, **kwargs):
-        req = request.POST
-        account_id = req.get('account')
-        try:
-            account = Account.objects.get(id=account_id)
-        except Exception as e:
-            return redirect(reverse_lazy('cmis:chost-create'))
-
-        passwd = base64.b64encode(req.get('passwd').encode('utf-8')).decode('utf-8')
-
-        data = {
-            'PrivateKey': account.access_key,
-            "PublicKey": account.access_id,
-
-            'Region': req.get('region'),
-            'Zone':  req.get('zone'),
-            'ProjectId':  req.get('project'),
-            'ImageId': req.get('image'),
-            'Name': req.get('name'),
-            'LoginMode': 'Password',
-            'Password': passwd,
-
-            'CPU': req.get('cpu'),
-            'Memory': req.get('memory'),
-            'Disks.0.Type': req.get('disks0_type'),
-            'Disks.0.IsBoot':True,
-            'Disks.0.Size': req.get('disks0_size'),
-
-            'ChargeType': req.get('charge_type'),
-            'UHostType': req.get('host_type'),
-            'NetCapability': req.get('net_capability'),
-            'VPCId': req.get('vpc'),
-            'SubnetId': req.get('subnet'),
-
-
-        }
-        if req.get('disks1_type'):
-            data['Disks.1.Type'] = req.get('disks1_type')
-            data['Disks.1.IsBoot'] = False
-            data['Disks.1.Size'] = req.get('disks1_size')
-
-        eip = req.get('eip', '')
-        if eip == 'on':
-            if req.get('region')[:2] == 'cn':
-                data['NetworkInterface.0.EIP.OperatorName'] = 'Bgp'
-            else:
-                data['NetworkInterface.0.EIP.OperatorName'] = 'International'
-            data['NetworkInterface.N.EIP.Bandwidth'] = req.get('eip_bandwidth')
-            data['NetworkInterface.N.EIP.PayMode'] = req.get('eip_pay_mode')
-
-        queryset = cloud_api.CreateUhostInstance(**data)
-        if queryset['code']:
-            data = queryset['msg']
-            public_ip = data['IPs'][0]
-            cid = data['UHostIds'][0]
-        return redirect(self.success_url)

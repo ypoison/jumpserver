@@ -16,6 +16,7 @@ from aliyunsdkcdn.request.v20180510.DeleteCdnDomainRequest import DeleteCdnDomai
 from aliyunsdkcdn.request.v20180510.StartCdnDomainRequest import StartCdnDomainRequest
 from aliyunsdkcdn.request.v20180510.StopCdnDomainRequest import StopCdnDomainRequest
 from aliyunsdkcdn.request.v20180510.ModifyCdnDomainRequest import ModifyCdnDomainRequest
+from aliyunsdkcdn.request.v20180510.DescribeRefreshQuotaRequest import DescribeRefreshQuotaRequest
 
 import oss2
 
@@ -127,7 +128,6 @@ class AliyunCDN:
         try:
             response = self.client.do_action_with_exception(request)
             ret = json.loads(str(response, encoding='utf-8'))
-            print(ret)
             return {'code':1,'msg':ret['RequestId']}
         except Exception as e:
             return {'code':0,'msg':e}
@@ -178,18 +178,17 @@ class AliyunCDN:
             request = PushObjectCacheRequest()
         elif kwargs['action'] == 'RefreshCaches':
             request = RefreshObjectCachesRequest()
+            request.set_ObjectType(kwargs['ObjectType'])
         else:
             return {'code': 0, 'msg': 'action?'}
-        print(kwargs)
         request.set_accept_format('json')
         request.set_ObjectPath(kwargs['ObjectPath'])
-        request.set_ObjectType(kwargs['ObjectType'])
-        #try:
-        response = self.client.do_action_with_exception(request)
-        ret = json.loads(str(response, encoding='utf-8'))
-        return {'code':1}
-        #except Exception as e:
-        #    return {'code':0,'msg':e}
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1}
+        except Exception as e:
+            return {'code':0,'msg':e}
 
     def fresh_get(self, **kwargs):
         self.client = AcsClient(
@@ -252,6 +251,21 @@ class AliyunCDN:
             response = self.client.do_action_with_exception(request)
             ret = json.loads(str(response, encoding='utf-8'))
             return {'code':1}
+        except Exception as e:
+            return {'code':0,'msg':e}
+
+    def remain_get(self, **kwargs):
+        self.client = AcsClient(
+        kwargs['access_id'],
+        kwargs['access_key'],
+        'cn-hangzhou')
+
+        request = DescribeRefreshQuotaRequest()
+        request.set_accept_format('json')
+        try:
+            response = self.client.do_action_with_exception(request)
+            ret = json.loads(str(response, encoding='utf-8'))
+            return {'code':1, 'msg':ret}
         except Exception as e:
             return {'code':0,'msg':e}
 

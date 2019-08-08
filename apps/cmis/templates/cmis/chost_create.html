@@ -2,66 +2,86 @@
 {% load static %}
 {% load bootstrap3 %}
 {% load i18n %}
-{% block form %}
-<form id="groupForm" method="post" class="form-horizontal">
-    {% csrf_token %}
-    <h3>账号</h3>
-    {% bootstrap_field form.account layout="horizontal" %}
-    {% bootstrap_field form.project layout="horizontal" %}
-    {% bootstrap_field form.nodes layout="horizontal" %}
-    {% bootstrap_field form.charge_type layout="horizontal" %}
-    <div class="hr-line-dashed"></div>
-    <h3>地域</h3>
-    {% bootstrap_field form.region layout="horizontal" %}
-    {% bootstrap_field form.zone layout="horizontal" %}
-    <div class="hr-line-dashed"></div>
-    <h3>基础配置</h3>
-    {% bootstrap_field form.host_type layout="horizontal" %}
-    {% bootstrap_field form.net_capability layout="horizontal" %}
-    {% bootstrap_field form.cpu layout="horizontal" %}
-    {% bootstrap_field form.memory layout="horizontal" %}
-    {% bootstrap_field form.disks0_type layout="horizontal" %}
-    {% bootstrap_field form.disks0_size layout="horizontal" %}
-    {% bootstrap_field form.disks1_type layout="horizontal" %}
-    {% bootstrap_field form.disks1_size layout="horizontal" %}
-    {% bootstrap_field form.os_type layout="horizontal" %}
-    {% bootstrap_field form.image_type layout="horizontal" %}
-    {% bootstrap_field form.image layout="horizontal" %}
-    <div class="hr-line-dashed"></div>
-    <h3>网络配置</h3>
-    {% bootstrap_field form.vpc layout="horizontal" %}
-    {% bootstrap_field form.subnet layout="horizontal" %}
-    {% bootstrap_field form.eip layout="horizontal" %}
-    <div class="vpc" style="display:none">
-        {% bootstrap_field form.eip_pay_mode layout="horizontal" %}
-        {% bootstrap_field form.eip_bandwidth layout="horizontal" %}
-    </div>
-    <div class="hr-line-dashed"></div>
-    <h3>管理设置</h3>
-    {% bootstrap_field form.name layout="horizontal" %}
-    {% bootstrap_field form.passwd layout="horizontal" %}
-    <div class="hr-line-dashed"></div>
-    <div class="form-group">
-        <div class="col-sm-4 col-sm-offset-2">
-            <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
-            <button id="submit_button" class="btn btn-primary" type="submit">{% trans 'Submit' %}</button>
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a href="{% url 'cmis:chost-create' %}" class="text-center"><i class="fa fa-laptop"></i> 采购云主机 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'cmis:chost-create-record-list' %}" class="text-center"><i class="fa fa-laptop"></i> 采购记录 </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-12" style="padding-left: 0;">
+                            <div class="" id="content_start">
+                            </div>
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-content">
+                                    <form id="groupForm" method="post" class="form-horizontal">
+                                        {% csrf_token %}
+                                        <h3>账号</h3>
+                                        {% bootstrap_field form.account layout="horizontal" %}
+                                        {% bootstrap_field form.ProjectId layout="horizontal" %}
+                                        {% bootstrap_field form.nodes layout="horizontal" %}
+                                        {% bootstrap_field form.admin_user layout="horizontal" %}
+                                        {% bootstrap_field form.ChargeType layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>地域</h3>
+                                        {% bootstrap_field form.Region layout="horizontal" %}
+                                        {% bootstrap_field form.Zone layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>基础配置</h3>
+                                        {% bootstrap_field form.HostType layout="horizontal" %}
+                                        {% bootstrap_field form.NetCapability layout="horizontal" %}
+                                        {% bootstrap_field form.CPU layout="horizontal" %}
+                                        {% bootstrap_field form.Memory layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Size layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Size layout="horizontal" %}
+                                        {% bootstrap_field form.OSType layout="horizontal" %}
+                                        {% bootstrap_field form.ImageType layout="horizontal" %}
+                                        {% bootstrap_field form.ImageId layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>网络配置</h3>
+                                        {% bootstrap_field form.VPCId layout="horizontal" %}
+                                        {% bootstrap_field form.SubnetId layout="horizontal" %}
+                                        {% bootstrap_field form.EIP layout="horizontal" %}
+                                        <div class="vpc" style="display:none">
+                                            {% bootstrap_field form.EIPPayMode layout="horizontal" %}
+                                            {% bootstrap_field form.EIPBandwidth layout="horizontal" %}
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>管理设置</h3>
+                                        {% bootstrap_field form.Name layout="horizontal" %}
+                                        {% bootstrap_field form.Password layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2">
+                                                <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
+                                                <button id="submit_button" class="btn btn-primary" type="submit">{% trans 'Submit' %}</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</form>
 {% endblock %}
 
 {% block custom_foot_js %}
 <script type="text/javascript">
-function hideHasError() {
-    var domain_form_group = $("#id_domain").closest('.form-group');
-    if (domain_form_group.hasClass('has-error')) {
-        domain_form_group.removeClass('has-error');
-        domain_form_group.find('.help-block').hide();
-    }
-}
-
 function getInfo(props) {
-    console.log(props)
     var url = '{% url "api-cmis:chost-get-info" %}';
     $(".splash").show();
     $.ajax({
@@ -94,15 +114,15 @@ function getInfo(props) {
 }
 function getZone(id, region) {
     getInfo({
-        to: 'id_zone',
-        data: {'action': 'getzone','account_id': id, 'region':region}
+        to: 'id_Zone',
+        data: {'Action': 'GetZone','account_id': id, 'Region':region}
     })
 }
 function getSubnet(id, region, projectID) {
-    var vpcID = $("#id_vpc").val();
+    var vpcID = $("#id_VPCId").val();
     getInfo({
-        to: 'id_subnet',
-        data: {'action': 'getsubnet','account_id': id, 'region':region, 'project_id':projectID, vpc_id:vpcID}
+        to: 'id_SubnetId',
+        data: {'Action': 'DescribeSubnet','account_id': id, 'Region':region, 'ProjectId':projectID, VPCId:vpcID}
     })
 }
 function getVPC(id, region, projectID) {
@@ -110,23 +130,23 @@ function getVPC(id, region, projectID) {
         getSubnet(id, region, projectID)
     }
     getInfo({
-        to: 'id_vpc',
-        data: {'action': 'getVPC','account_id': id, 'region':region, 'project_id':projectID},
+        to: 'id_VPCId',
+        data: {'Action': 'DescribeVPC','account_id': id, 'Region':region, 'ProjectId':projectID},
         success: subnet
     })
 }
 function getRegion(id) {
     var getOther = function () {
         //get zone
-        var region = $("#id_region").val();
+        var region = $("#id_Region").val();
         getZone(id, region)
-        var projectid = $("#id_project").val();
+        var projectid = $("#id_ProjectId").val();
         getVPC(id, region, projectid)
     }
     getInfo({
         //get region
-        to: 'id_region',
-        data: {'action': 'getregion','account_id': id},
+        to: 'id_Region',
+        data: {'Action': 'GetRegion','account_id': id},
         success: getOther
     })
 }
@@ -136,8 +156,8 @@ function getProject(id) {
     }
     getInfo({
         // get project
-        to: 'id_project',
-        data: {'action': 'getproject','account_id': id},
+        to: 'id_ProjectId',
+        data: {'Action': 'GetProjectList','account_id': id},
         success: getOther
     })
 }
@@ -145,10 +165,6 @@ function getProject(id) {
 $(document).ready(function () {
     $('.select2').select2({
         allowClear: true
-    });
-    $(".labels").select2({
-        allowClear: true,
-        templateSelection: format
     });
     $('#id_nodes.select2').select2({
         closeOnSelect: false
@@ -158,42 +174,41 @@ $(document).ready(function () {
         getProject(id)
     });
 
-    $("#id_project").change(function() {
+    $("#id_ProjectId").change(function() {
         var id = $("#id_account").val();
         getRegion(id)
     });
 
-    $("#id_region").change(function() {
+    $("#id_Region").change(function() {
         var id = $("#id_account").val();
         var region = $(this).val();
         getZone(id, region)
     });
 
-    $("#id_image_type").change(function() {
+    $("#id_ImageType").change(function() {
         var id = $("#id_account").val();
-        var projectid = $("#id_project").val();
-        var regionid = $("#id_region").val();
-        var zoneid = $("#id_zone").val();
-        var ostype = $("#id_os_type").val();
-        var imagetype = $("#id_image_type").val();
+        var projectid = $("#id_ProjectId").val();
+        var regionid = $("#id_Region").val();
+        var zoneid = $("#id_Zone").val();
+        var ostype = $("#id_OSType").val();
+        var imagetype = $("#id_ImageType").val();
         getInfo({
             //get region
-            to: 'id_image',
-            data: { "action":"getimage","account_id":id,"project_id":projectid,
-                    "region":regionid,"zone":zoneid, "os_type":ostype, "image_type":imagetype
+            to: 'id_ImageId',
+            data: { "Action":"DescribeImage","account_id":id,"ProjectId":projectid,
+                    "Region":regionid,"Zone":zoneid, "OSType":ostype, "ImageType":imagetype
                     },
         });
     });
 
-    $("#id_vpc").change(function() {
+    $("#id_VPCId").change(function() {
         var id = $("#id_account").val();
-        var projectID = $("#id_project").val();
-        var region = $("#id_region").val();
+        var projectID = $("#id_ProjectId").val();
+        var region = $("#id_Region").val();
         getSubnet(id, region, projectID)
     });
 
-    $("#id_eip").click(function () {
-        console.log($(this).is(':checked'))
+    $("#id_EIP").click(function () {
         if ($(this).is(':checked')){
             $('.vpc').css("display", "block");
         } else {

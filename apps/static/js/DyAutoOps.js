@@ -27,9 +27,9 @@ function DyAPIUpdateAttr(props) {
             if (msg === "") {
                 msg = default_success_message;
             }
-            $(".splash").hide();
             toastr.success(msg);
         }
+        $(".splash").hide();
         if (typeof props.success === 'function') {
             return props.success(data);
         }
@@ -48,11 +48,10 @@ function DyAPIUpdateAttr(props) {
             if (msg === "") {
                 msg = default_failed_message;
             }
-            $(".splash").hide();
             toastr.error(msg);
         }
+        $(".splash").hide();
         if (typeof props.error === 'function') {
-            $(".splash").hide();
             console.log(jqXHR);
             return props.error(jqXHR.responseText, jqXHR.status);
         }
@@ -144,4 +143,10 @@ function GetOss(url, selected_source, source_type, selected_source_type) {
             )
         }
     }
+}
+
+//UTC转北京时间
+function formatUTC(utc_datetime) {
+    var beijing_datetime = new Date(+new Date(utc_datetime) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '');
+    return beijing_datetime;
 }

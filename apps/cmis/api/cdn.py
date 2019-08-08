@@ -6,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import generics
 
 from common.utils import get_logger, get_object_or_none
-from common.permissions import IsOrgAdmin
+from common.permissions import IsOrgAdmin, IsValidUser
 
 from ..models import CDNDomain, Account
 from .. import serializers
@@ -16,9 +16,9 @@ from ..aliyun import AliyunCDN
 import time
 
 logger = get_logger(__file__)
-__all__ = ['CDNDomainViewSet','CDNDomainModifyApi', 'CDNDomainUpdateApi','CDNDomainSetApi',
+__all__ = ['CDNDomainViewSet', 'CDNDomainModifyApi', 'CDNDomainUpdateApi', 'CDNDomainSetApi',
            'CDNFreshSetApi',
-           'OSSGetApi',
+           'OSSGetApi', 'CDNFreshGetRemainApi',
            ]
 SetCDN = AliyunCDN()
 
@@ -26,12 +26,12 @@ class CDNDomainViewSet(BulkModelViewSet):
     filter_fields = ("domain_name",)
     search_fields = filter_fields
     queryset = CDNDomain.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.CDNDomainSerializer
     pagination_class = LimitOffsetPagination
 
 class CDNDomainModifyApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def post(self, request, *args, **kwargs):
         cdn_id = self.kwargs.get('pk')
@@ -58,7 +58,7 @@ class CDNDomainModifyApi(APIView):
             return Response({'error': '%s' % (cdn_data['msg'])}, status=400)
 
 class CDNDomainUpdateApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def cdn_update(self, cdn, **data):
         cdn_data = SetCDN.get_cdn_list(**data)
@@ -167,7 +167,7 @@ class CDNDomainUpdateApi(APIView):
             Response({'error': '%s:%s' % (cdn.domain_name, cdn_data['msg'])}, status=400)
 
 class CDNDomainSetApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def post(self, request, *args, **kwargs):
         cdn_id = self.kwargs.get('pk')
@@ -216,7 +216,7 @@ class CDNDomainSetApi(APIView):
         return Response({"msg": "ok"})
 
 class OSSGetApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def get(self, request, *args, **kwargs):
         cdn_id = self.kwargs.get('pk')
@@ -229,7 +229,7 @@ class OSSGetApi(APIView):
         return Response(oss_data)
 
 class CDNFreshSetApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def get(self, request, *args, **kwargs):
         accounts = Account.objects.all()
@@ -242,3 +242,16 @@ class CDNFreshSetApi(APIView):
                 fresh_data = SetCDN.fresh_get(**data)
                 if fresh_data['code']:
                     return Response({"results": fresh_data['msg']})
+
+class CDNFreshGetRemainApi(APIView):
+    permission_classes = (IsValidUser,)
+
+    def get(self, request, *args, **kwargs):
+        cdn_id = self.kwargs.get('pk')
+        account = Account.objects.get(id=cdn_id)
+        data = {
+            'access_id': account.access_id,
+            'access_key': account.access_key,
+        }
+        remain_data = SetCDN.remain_get(**data)
+        return Response(remain_data)
