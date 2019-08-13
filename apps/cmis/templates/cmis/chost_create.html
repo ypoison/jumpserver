@@ -43,6 +43,22 @@
                                         {% bootstrap_field form.admin_user layout="horizontal" %}
                                         {% bootstrap_field form.Domain layout="horizontal" %}
                                         {% bootstrap_field form.ChargeType layout="horizontal" %}
+                                        <div class="form-group required Quantity">
+                                            <label class="col-md-2 control-label" for="id_Quantity">购买时长</label>
+                                            <div class="col-md-9">
+                                                <select name="Quantity" class="form-control" title="" id="id_Quantity">
+                                                    <option value =0 selected>购至月末</option>
+                                                    <option value =1>1个月</option>
+                                                    <option value =2>2个月</option>
+                                                    <option value =3>3个月</option>
+                                                    <option value =4>4个月</option>
+                                                    <option value =5>5个月</option>
+                                                    <option value =6>6个月</option>
+                                                    <option value =7>7个月</option>
+                                                    <option value =8>8个月</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="hr-line-dashed"></div>
                                         <h3>地域</h3>
                                         <div class="form-group required">
@@ -274,6 +290,32 @@ $(document).ready(function () {
             $('.vpc').css("display", "block");
         } else {
             $('.vpc').css("display","none");
+        }
+    });
+    $("#id_ChargeType").change(function() {
+        var charge_type = $(this).val();
+        if (charge_type === 'Year'){
+            $(".Quantity").css("display", "block")
+            $("#id_Quantity option").remove();
+            $("#id_Quantity").append("<option value =1 selected>1年</option>")
+            $("#id_Quantity").append("<option value =2>2年</option>")
+            $("#id_Quantity").append("<option value =3>3年</option>")
+            $("#id_Quantity").append("<option value =4>4年</option>")
+            $("#id_Quantity").append("<option value =5>5年</option>")
+        } else if (charge_type === 'Month'){
+            $(".Quantity").css("display", "block")
+            $("#id_Quantity option").remove();
+            $("#id_Quantity").append("<option value =0 selected>购至月末</option>")
+            $("#id_Quantity").append("<option value =1>1个月</option>")
+            $("#id_Quantity").append("<option value =2>2个月</option>")
+            $("#id_Quantity").append("<option value =3>3个月</option>")
+            $("#id_Quantity").append("<option value =4>4个月</option>")
+            $("#id_Quantity").append("<option value =5>5个月</option>")
+            $("#id_Quantity").append("<option value =6>6个月</option>")
+            $("#id_Quantity").append("<option value =7>7个月</option>")
+            $("#id_Quantity").append("<option value =8>8个月</option>")
+        } else{
+            $(".Quantity").css("display", "none")
         }
     });
 });

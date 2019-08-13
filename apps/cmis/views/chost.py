@@ -78,6 +78,10 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
         else:
             del req['EIPBandwidth']
             del req['EIPPayMode']
+
+        if req.get('ChargeType') == 'Dynamic':
+            del req['Quantity']
+
         kw = {**req, **data}
         create_record = ChostCreateRecord.objects.create(
             region=kw['Region'],

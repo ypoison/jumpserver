@@ -64,6 +64,7 @@ class CreateCHostForm(forms.Form):
         )
     )
     ChargeType = forms.ChoiceField(initial='Month', choices=CHARGE_TYPE_CHOICES, required=False, label='计费模式')
+    Quantity = forms.IntegerField(label='购买时长')
     Region = forms.CharField(required=True, label='地域')
     Zone = forms.CharField(required=True, label='可用区')
     ProjectId = forms.CharField(required=True, label='项目')
