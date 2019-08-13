@@ -11,14 +11,16 @@ from .. import serializers
 
 from .. import ucloud_api
 
+from ..tasks import set_info
+
 logger = get_logger(__file__)
 __all__ = [
-            'CloudInfoAPI', 'ChostCreateRecordAPI',
+            'CloudInfoAPI', 'ChostCreateRecordAPI', 'GetStatusAPI',
         ]
 cloud_api = ucloud_api.UcloudAPI()
 
 class CloudInfoAPI(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AccountSerializer
 
     def post(self, request, *args, **kwargs):
@@ -41,7 +43,6 @@ class CloudInfoAPI(ListAPIView):
         elif action == 'GetRegion':
             queryset = cloud_api.GetRegion(**data)
         elif action == 'GetZone':
-            Region = self.request.data.get('Region')
             queryset = cloud_api.GetZone(**data)
         elif action == 'DescribeImage':
             queryset = cloud_api.GetImageList(**data)
@@ -50,15 +51,39 @@ class CloudInfoAPI(ListAPIView):
         elif action == 'DescribeSubnet':
             queryset = cloud_api.GetSubnet(**data)
         elif action == 'DescribeUHostInstance':
-            pass
+            queryset = cloud_api.GetUHostInstance(**data)
+        elif action == 'DescribeFirewall':
+            queryset = cloud_api.GetFirewall(**data)
         else:
             queryset = []
         return Response(queryset)
 
 class ChostCreateRecordAPI(ListAPIView):
-    filter_fields = ("hid",)
+    filter_fields = ("id", "hid")
     search_fields = filter_fields
     queryset = ChostCreateRecord.objects.all()
     permission_classes = (IsValidUser,)
     serializer_class = serializers.ChostCreateRecordSerializer
     pagination_class = LimitOffsetPagination
+
+class GetStatusAPI(ListAPIView):
+    permission_classes = (IsValidUser,)
+    serializer_class = serializers.AccountSerializer
+
+    def get(self, request, *args, **kwargs):
+        record_id = self.kwargs.get('pk')
+        print(record_id)
+        record = get_object_or_none(ChostCreateRecord, id=record_id)
+        print(record)
+        account = record.account
+        if not account:
+            return Response({'error': '账号信息不存在'}, status=400)
+        data = {
+            'PrivateKey': account.access_key,
+            "PublicKey": account.access_id,
+            "Region": record.region,
+            "UHostIds.0": record.hid
+        }
+        queryset = cloud_api.GetUHostInstance(**data)
+        set_info(queryset)
+        return Response(queryset)

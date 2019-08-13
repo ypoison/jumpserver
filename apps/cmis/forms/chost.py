@@ -25,9 +25,9 @@ class CreateCHostForm(forms.Form):
         ('Free', '免费带宽模式'),
     )
     HOST_TYPE_CHOICES = (
+        ('N2', '标准型 N2'),
         ('N3', '标准型 N3'),
         ('C1', '高主频型 C1'),
-        ('N2', '标准型 N2'),
         ('I2', '高IO型 I2'),
         ('G2', 'GPU型 - P40'),
         ('G3', 'GPU型 - V100'),
@@ -68,9 +68,9 @@ class CreateCHostForm(forms.Form):
         )
     )
     ChargeType = forms.ChoiceField(initial='Month', choices=CHARGE_TYPE_CHOICES, required=False, label='计费模式')
-    Region = forms.ChoiceField(required=True, label='地域')
-    Zone = forms.ChoiceField(required=True, label='可用区')
-    ProjectId = forms.ChoiceField(required=True, label='项目')
+    Region = forms.CharField(required=True, label='地域')
+    Zone = forms.CharField(required=True, label='可用区')
+    ProjectId = forms.CharField(required=True, label='项目')
     nodes = forms.ModelMultipleChoiceField(
         queryset=Node.objects.all(), label='节点',
         widget=forms.SelectMultiple(
@@ -99,24 +99,25 @@ class CreateCHostForm(forms.Form):
                                   help_text='单位：MB；范围 ：[1024, 262144]。'
                                   )
     Disks0Type = forms.ChoiceField(initial='CLOUD_SSD', choices=DISK0_TYPE_CHOICES, label='系统盘类型')
-    Disks0Size = forms.IntegerField(required=True, label='系统盘大小', min_value=10,
+    Disks0Size = forms.IntegerField(required=True, label='系统盘大小', min_value=20,
                                   help_text='单位GB。'
                                   )
     Disks1Type = forms.ChoiceField(choices=DISK1_TYPE_CHOICES, required=False,label='数据盘类型')
-    Disks1Size = forms.IntegerField(label='数据盘大小', required=False, min_value=10,
+    Disks1Size = forms.IntegerField(label='数据盘大小', required=False, min_value=20,
                                   help_text='单位GB。'
                                   )
     OSType = forms.ChoiceField(choices=OS_TYPE_CHOICES, label='系统类型')
     ImageType = forms.ChoiceField(choices=IMAGE_TYPE_CHOICES, label='镜像类型')
-    ImageId = forms.ChoiceField(label='镜像')
+    ImageId = forms.CharField(label='镜像')
 
-    VPCId = forms.ChoiceField(label='所属VPC')
-    SubnetId = forms.ChoiceField(label='所属子网')
+    VPCId = forms.CharField(label='所属VPC')
+    SubnetId = forms.CharField(label='所属子网')
     EIP = forms.BooleanField(required=False, label='外网弹性IP')
     EIPPayMode = forms.ChoiceField(initial='Bandwidth', choices=EIP_PAY_MODE_CHOICES, required=False, label='计费方式')
-    EIPBandwidth = forms.IntegerField(required=False, label='带宽')
+    EIPBandwidth = forms.IntegerField(min_value=1, required=False, label='带宽')
+    Firewall = forms.CharField(max_length=50, label='防火墙')
     Name = forms.CharField(max_length=50, label='实例名称')
     Password = forms.CharField(
         widget=forms.PasswordInput, max_length=128,
-        required=True, label='密码'
+        required=True, label='密码',help_text='长度8-30'
     )

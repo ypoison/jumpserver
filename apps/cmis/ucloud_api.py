@@ -104,18 +104,8 @@ class UcloudAPI:
             return {'code': 0, 'msg': ret['Message']}
 
     def CreateUhostInstance(self, **kwargs):
-        #ret = self.response(**kwargs)
-        ret = {
-            "RetCode": 0,
-            "Action": "CreateUHostInstanceResponse",
-            "UHostIds": [
-                "uhost-222"
-            ],
-            "IPs": [
-                "10.19.10.2"
-            ]
-        }
-        print(ret)
+        kwargs['Action'] = 'CreateUHostInstance'
+        ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret}
         else:
@@ -129,6 +119,15 @@ class UcloudAPI:
         else:
             return {'code': 0, 'msg': ret['Message']}
 
+    def GetFirewall(self, **kwargs):
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            firewalls = []
+            for firewall in  ret['DataSet']:
+                firewalls.append({ 'name':firewall['Name'],'id':firewall['FWId']})
+            return {'code': 1, 'msg':firewalls}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
 
 if __name__ == '__main__':
     data = {

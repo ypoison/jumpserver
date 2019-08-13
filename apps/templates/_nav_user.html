@@ -1,4 +1,13 @@
 {% load i18n %}
+<div class="splash">
+    <div class="spinner">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+    </div>
+</div>
 <li id="assets">
     <a href="{% url 'assets:user-asset-list' %}">
         <i class="fa fa-files-o" style="width: 14px"></i><span class="nav-label">{% trans 'My assets' %}</span><span class="label label-info pull-right"></span>
@@ -30,6 +39,7 @@
     </a>
     <ul class="nav nav-second-level">
         <li id="cdn"><a href="{% url 'cmis:cdn-list' %}">CDN</a></li>
+        <li id="chost"><a href="{% url 'cmis:chost-create' %}">采购云主机</a></li>
     </ul>
 </li>
 <li id="domain-name">

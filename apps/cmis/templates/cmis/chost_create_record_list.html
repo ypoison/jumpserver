@@ -32,7 +32,7 @@
                                             <th class="text-center">账号</th>
                                             <th class="text-center">云主机ID</th>
                                             <th class="text-center">资产信息</th>
-                                            <th class="text-center">创建人</th>
+                                            <th class="text-center">采购人</th>
                                             <th class="text-center">创建时间</th>
                                             <th class="text-center">状态</th>
                                             <th class="text-center">操作</th>
@@ -65,14 +65,36 @@ function initTable() {
             {targets: 5, createdCell: function (td, cellData) {
                 $(td).html(formatUTC(cellData))
             }},
+            {targets: 6, createdCell: function (td, cellData) {
+                if (cellData === "Initializing") {
+                    $(td).html('初始化')
+                } else if (cellData === "Starting"){
+                    $(td).html('启动中')
+                }else if (cellData === "Running"){
+                    $(td).html('运行中')
+                }else if (cellData === "Stopping"){
+                    $(td).html('关机中')
+                }else if (cellData === "Stopped"){
+                    $(td).html('关机')
+                }else if (cellData === "Install Fail"){
+                    $(td).html('安装失败')
+                }else if (cellData === "Rebooting"){
+                    $(td).html('重启中')
+                }else if (cellData === "Error"){
+                    $(td).html('创建失败')
+                }
+            }},
             {targets: 7, createdCell: function (td, cellData, rowData) {
-                console.log(cellData, rowData)
-                var update_btn = '<a class="btn btn-xs btn-info btn-update" ' +
-                    'data-uid="{{ DEFAULT_PK }}" ' +
-                    'data-action="getstatus" ' +
-                    'data-account_id="' + rowData.account +
-                    '">刷新状态</a>'.replace('{{ DEFAULT_PK }}', cellData);
-                $(td).html(update_btn)
+                if (rowData.hid) {
+                    var update_btn = '<a class="btn btn-xs btn-info btn-update" ' +
+                        'data-uid="{{ DEFAULT_PK }}" >刷新状态</a>';
+                    $(td).html(update_btn.replace('{{ DEFAULT_PK }}', cellData))
+                }else if (rowData.status === 'Error'){
+                     var fail_btn = '<a class="btn btn-xs  btn-danger">失败</a>';
+                    $(td).html(fail_btn)
+                }else{
+                    $(td).html('')
+                }
              }}
         ],
         ajax_url: '{% url "api-cmis:chost-create-record" %}',
@@ -93,21 +115,13 @@ $(document).ready(function(){
     $this = $(this)
     var $data_table = $('#cdn_list_table').DataTable();
     var uid = $this.data('uid');
-    var action =  $this.data('action');
-    var account_id = $this.data('account_id');
-    var the_url = '{% url "api-cmis:chost-get-info" %}'
-    var body = {
-        'cid':uid,
-        'Action': action,
-        'account_id':account_id,
-    }
+    var the_url = '{% url "api-cmis:chost-get-status" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
     var success = function () {
         $data_table.draw(false);
     }
     DyAPIUpdateAttr({
         url: the_url,
-        method: "POST",
-        body: JSON.stringify(body),
+        method: "GET",
         flash_message : false,
         success:success
     });

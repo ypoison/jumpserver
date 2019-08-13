@@ -70,24 +70,24 @@ function initTable() {
              }},
             {targets: 3, createdCell: function (td, cellData) {
                 if (cellData === "online"){
-                    $(td).html('启用')
+                    $(td).html('<i class="fa fa-circle text-navy btn"></i><span>正常运行</span>')
                 } else if (cellData === "offline") {
-                    $(td).html('停用')
+                    $(td).html('<i class="fa fa-circle text-danger btn"></i><span>已经停止</span>')
                 } else if (cellData === "configuring") {
-                    $(td).html('配置中')
+                    $(td).html('<i class="fa fa-circle text-warning btn"></i><span>配置中</span>')
                 } else if (cellData === "configure_failed") {
-                    $(td).html('配置失败')
+                    $(td).html('<i class="fa fa-circle text-danger btn"></i><span>配置失败</span>')
                 } else if (cellData === "checkingring") {
-                    $(td).html('正在审核')
+                    $(td).html('<i class="fa fa-circle text-danger btn"></i><span>正在审核</span>')
                 } else if (cellData === "check_failed") {
-                    $(td).html('审核失败')
+                    $(td).html('<i class="fa fa-circle text-danger btn"></i><span>审核失败</span>')
                 }
             }},
             {targets: 4, createdCell: function (td, cellData) {
                 if (cellData === "on"){
-                    $(td).html('<i class="fa fa-circle text-navy btn"></i>')
+                    $(td).html('已开启')
                 } else {
-                    $(td).html('<i class="fa fa-circle text-danger btn"></i>')
+                    $(td).html('未开启')
                 }
             }},
             {targets: 5, createdCell: function (td, cellData) {

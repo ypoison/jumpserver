@@ -125,6 +125,5 @@ class CDNFreshCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
         fresh = SetCDN.fresh_set(**kw)
         if not fresh['code']:
             self.success_message = fresh['msg']
-            print(self.success_message)
             return redirect(reverse_lazy('cmis:cdn-fresh-create'))
         return redirect(self.success_url)

@@ -14,6 +14,7 @@ router.register(r'cdn', api.CDNDomainViewSet, 'cdn')
 urlpatterns = [
     path('chost/get-info/', api.CloudInfoAPI.as_view(), name='chost-get-info'),
     path('chost/create/record/', api.ChostCreateRecordAPI.as_view(), name='chost-create-record'),
+    path('chost/<uuid:pk>/get-status/', api.GetStatusAPI.as_view(), name='chost-get-status'),
 
     path('cdn/<uuid:pk>/modify/', api.CDNDomainModifyApi.as_view(), name='cdn-modify'),
     path('cdn/<uuid:pk>/update/', api.CDNDomainUpdateApi.as_view(), name='cdn-update'),

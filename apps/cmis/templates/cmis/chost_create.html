@@ -24,17 +24,40 @@
                             <div class="ibox float-e-margins">
                                 <div class="ibox-content">
                                     <form id="groupForm" method="post" class="form-horizontal">
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                 {{ form.non_field_errors }}
+                                             </div>
+                                        {% endif %}
                                         {% csrf_token %}
                                         <h3>账号</h3>
                                         {% bootstrap_field form.account layout="horizontal" %}
-                                        {% bootstrap_field form.ProjectId layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_ProjectId">项目</label>
+                                            <div class="col-md-9">
+                                                <select name="ProjectId" class="form-control" title="" id="id_ProjectId">
+                                                </select>
+                                            </div>
+                                        </div>
                                         {% bootstrap_field form.nodes layout="horizontal" %}
                                         {% bootstrap_field form.admin_user layout="horizontal" %}
                                         {% bootstrap_field form.ChargeType layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <h3>地域</h3>
-                                        {% bootstrap_field form.Region layout="horizontal" %}
-                                        {% bootstrap_field form.Zone layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Region">地域</label>
+                                            <div class="col-md-9">
+                                                <select name="Region" class="form-control" title="" id="id_Region">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Zone">可用区</label>
+                                            <div class="col-md-9">
+                                                <select name="Zone" class="form-control" title="" id="id_Zone">
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="hr-line-dashed"></div>
                                         <h3>基础配置</h3>
                                         {% bootstrap_field form.HostType layout="horizontal" %}
@@ -47,15 +70,40 @@
                                         {% bootstrap_field form.Disks1Size layout="horizontal" %}
                                         {% bootstrap_field form.OSType layout="horizontal" %}
                                         {% bootstrap_field form.ImageType layout="horizontal" %}
-                                        {% bootstrap_field form.ImageId layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_ImageId">镜像</label>
+                                            <div class="col-md-9">
+                                                <select name="ImageId" class="form-control" title="" id="id_ImageId">
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="hr-line-dashed"></div>
                                         <h3>网络配置</h3>
-                                        {% bootstrap_field form.VPCId layout="horizontal" %}
-                                        {% bootstrap_field form.SubnetId layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_VPCId">所属VPC</label>
+                                            <div class="col-md-9">
+                                                <select name="VPCId" class="form-control" title="" id="id_VPCId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_SubnetId">所属子网</label>
+                                            <div class="col-md-9">
+                                                <select name="SubnetId" class="form-control" title="" id="id_SubnetId">
+                                                </select>
+                                            </div>
+                                        </div>
                                         {% bootstrap_field form.EIP layout="horizontal" %}
                                         <div class="vpc" style="display:none">
                                             {% bootstrap_field form.EIPPayMode layout="horizontal" %}
                                             {% bootstrap_field form.EIPBandwidth layout="horizontal" %}
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Firewall">防火墙</label>
+                                            <div class="col-md-9">
+                                                <select name="Firewall" class="form-control" title="" id="id_Firewall">
+                                                </select>
+                                            </div>
                                         </div>
                                         <div class="hr-line-dashed"></div>
                                         <h3>管理设置</h3>
@@ -135,6 +183,12 @@ function getVPC(id, region, projectID) {
         success: subnet
     })
 }
+function getFirewall(id, region, projectID) {
+    getInfo({
+        to: 'id_Firewall',
+        data: {'Action': 'DescribeFirewall','Region':region,'account_id': id, 'ProjectId':projectID},
+    })
+}
 function getRegion(id) {
     var getOther = function () {
         //get zone
@@ -142,6 +196,7 @@ function getRegion(id) {
         getZone(id, region)
         var projectid = $("#id_ProjectId").val();
         getVPC(id, region, projectid)
+        getFirewall(id, region, projectid)
     }
     getInfo({
         //get region
@@ -182,7 +237,10 @@ $(document).ready(function () {
     $("#id_Region").change(function() {
         var id = $("#id_account").val();
         var region = $(this).val();
+        var projectid = $("#id_ProjectId").val();
         getZone(id, region)
+        getVPC(id, region, projectid)
+        getFirewall(id, region, projectid)
     });
 
     $("#id_ImageType").change(function() {
