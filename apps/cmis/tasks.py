@@ -18,7 +18,7 @@ def set_info(queryset):
             if ip['Type'] == 'BGP' or ip['Type'] == 'International':
                 asset = get_object_or_none(Asset, number=data['UHostId'])
                 if asset:
-                    asset.ip = ip['IP']
+                    asset.public_ip = ip['IP']
                     asset.is_active = True
                     asset.save()
         create_record = get_object_or_none(ChostCreateRecord, hid=data['UHostId'])
@@ -31,22 +31,29 @@ def set_info(queryset):
 def buyer(create_record, **kw):
     admin_user = kw.pop('admin_user')
     nodes = kw.pop('nodes')
+    port = kw.pop('SSHPort')
+    domain = kw.pop('Domain')
     queryset = cloud_api.CreateUhostInstance(**kw)
     if queryset['code']:
         data = queryset['msg']
-        public_ip = data['IPs'][0]
+        ip = data['IPs'][0]
         cid = data['UHostIds'][0]
-        asset = Asset.objects.create(
-            hostname=kw.get('Name'),
-            platform=kw.get('OSType'),
-            ip=public_ip,
-            public_ip=public_ip,
-            admin_user=admin_user,
-            number=cid,
-            comment='由云账号"%s"采购添加' % create_record.account,
-            is_active=False,
-        )
-        asset.nodes.set(nodes)
+        try:
+            asset = Asset.objects.create(
+                hostname=kw.get('Name'),
+                platform=kw.get('OSType'),
+                ip=ip,
+                port=port,
+                domain=domain,
+                admin_user=admin_user,
+                number=cid,
+                comment='由云账号"%s"采购添加' % create_record.account,
+                is_active=False,
+            )
+            asset.nodes.set(nodes)
+        except Exception as e:
+            create_record.status = e
+            create_record.save()
         create_record.hid = cid
         create_record.asset = asset
         create_record.save()

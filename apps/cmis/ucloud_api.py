@@ -109,7 +109,7 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'msg': ret}
 
     def GetUHostInstance(self, **kwargs):
         kwargs['Action'] = 'DescribeUHostInstance'

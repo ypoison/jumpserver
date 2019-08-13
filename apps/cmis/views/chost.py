@@ -41,6 +41,12 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
 
     def form_valid(self, form):
         req = form.cleaned_data
+        check_asset = get_object_or_none(Asset, hostname=req.get('Name'))
+        if check_asset:
+            form.add_error(
+                "Name", "资产已经存在该hostname主机。"
+            )
+            return self.form_invalid(form)
         account = req.pop('account')
         Password = base64.b64encode(req.get('Password').encode('utf-8')).decode('utf-8')
         data = {
@@ -48,12 +54,10 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
             "PublicKey": account.access_id,
             'LoginMode': 'Password',
             'Password': Password,
-
+            'MinimalCpuPlatform': 'Intel/Auto',
             'Disks.0.Type': req.pop('Disks0Type'),
             'Disks.0.IsBoot':True,
             'Disks.0.Size': req.pop('Disks0Size'),
-
-            'UHostType': req.pop('HostType'),
         }
 
         Disks1Type = req.pop('Disks1Type')

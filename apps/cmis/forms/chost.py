@@ -3,7 +3,7 @@
 from django import forms
 
 from ..models import Account
-from assets.models import Node, AdminUser
+from assets.models import Node, AdminUser, Domain
 
 __all__ = ['CreateCHostForm',]
 
@@ -24,13 +24,9 @@ class CreateCHostForm(forms.Form):
         ('ShareBandwidth', '共享带宽模式'),
         ('Free', '免费带宽模式'),
     )
-    HOST_TYPE_CHOICES = (
-        ('N2', '标准型 N2'),
-        ('N3', '标准型 N3'),
-        ('C1', '高主频型 C1'),
-        ('I2', '高IO型 I2'),
-        ('G2', 'GPU型 - P40'),
-        ('G3', 'GPU型 - V100'),
+    MACHINETYPE_TYPE_CHOICES = (
+        ('N', '通用型 N'),
+        ('C', '高主频型 C'),
     )
     DISK0_TYPE_CHOICES = (
         ('LOCAL_NORMAL', '普通本地盘'),
@@ -84,7 +80,13 @@ class CreateCHostForm(forms.Form):
             attrs={'class': 'select2', 'data-placeholder': '管理用户'}
         )
     )
-    HostType = forms.ChoiceField(choices=HOST_TYPE_CHOICES,required=True, label='机型',
+    Domain = forms.ModelChoiceField(
+        queryset=Domain.objects.all(), label='网域',
+        widget=forms.Select(
+            attrs={'class': 'select2', 'data-placeholder': '网域'}
+        )
+    )
+    MachineType = forms.ChoiceField(choices=MACHINETYPE_TYPE_CHOICES,required=True, label='机型',
         widget=forms.Select(
             attrs={
                 'class': 'select2',
@@ -92,6 +94,7 @@ class CreateCHostForm(forms.Form):
             })
         )
     NetCapability =forms.ChoiceField(initial='Normal', choices=NET_CAPABILITY_CHOICES, required=False, label='网络增强')
+    HotplugFeature = forms.BooleanField(initial=True, label='热升级')
     CPU = forms.IntegerField(required=True, label='CPU', min_value=1, max_value=64,
                             help_text = '可选参数：1-64。'
                              )
@@ -115,9 +118,10 @@ class CreateCHostForm(forms.Form):
     EIP = forms.BooleanField(required=False, label='外网弹性IP')
     EIPPayMode = forms.ChoiceField(initial='Bandwidth', choices=EIP_PAY_MODE_CHOICES, required=False, label='计费方式')
     EIPBandwidth = forms.IntegerField(min_value=1, required=False, label='带宽')
-    Firewall = forms.CharField(max_length=50, label='防火墙')
+    SecurityGroupId = forms.CharField(max_length=50, label='防火墙')
     Name = forms.CharField(max_length=50, label='实例名称')
     Password = forms.CharField(
         widget=forms.PasswordInput, max_length=128,
         required=True, label='密码',help_text='长度8-30'
     )
+    SSHPort = forms.IntegerField(initial=1932, label='SSH端口')

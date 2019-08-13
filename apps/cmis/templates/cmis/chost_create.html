@@ -41,6 +41,7 @@
                                         </div>
                                         {% bootstrap_field form.nodes layout="horizontal" %}
                                         {% bootstrap_field form.admin_user layout="horizontal" %}
+                                        {% bootstrap_field form.Domain layout="horizontal" %}
                                         {% bootstrap_field form.ChargeType layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <h3>地域</h3>
@@ -60,14 +61,6 @@
                                         </div>
                                         <div class="hr-line-dashed"></div>
                                         <h3>基础配置</h3>
-                                        {% bootstrap_field form.HostType layout="horizontal" %}
-                                        {% bootstrap_field form.NetCapability layout="horizontal" %}
-                                        {% bootstrap_field form.CPU layout="horizontal" %}
-                                        {% bootstrap_field form.Memory layout="horizontal" %}
-                                        {% bootstrap_field form.Disks0Type layout="horizontal" %}
-                                        {% bootstrap_field form.Disks0Size layout="horizontal" %}
-                                        {% bootstrap_field form.Disks1Type layout="horizontal" %}
-                                        {% bootstrap_field form.Disks1Size layout="horizontal" %}
                                         {% bootstrap_field form.OSType layout="horizontal" %}
                                         {% bootstrap_field form.ImageType layout="horizontal" %}
                                         <div class="form-group required">
@@ -77,6 +70,15 @@
                                                 </select>
                                             </div>
                                         </div>
+                                        {% bootstrap_field form.MachineType layout="horizontal" %}
+                                        {% bootstrap_field form.CPU layout="horizontal" %}
+                                        {% bootstrap_field form.Memory layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Size layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Size layout="horizontal" %}
+                                        {% bootstrap_field form.NetCapability layout="horizontal" %}
+                                        {% bootstrap_field form.HotplugFeature layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <h3>网络配置</h3>
                                         <div class="form-group required">
@@ -99,9 +101,9 @@
                                             {% bootstrap_field form.EIPBandwidth layout="horizontal" %}
                                         </div>
                                         <div class="form-group required">
-                                            <label class="col-md-2 control-label" for="id_Firewall">防火墙</label>
+                                            <label class="col-md-2 control-label" for="id_SecurityGroupId">防火墙</label>
                                             <div class="col-md-9">
-                                                <select name="Firewall" class="form-control" title="" id="id_Firewall">
+                                                <select name="SecurityGroupId" class="form-control" title="" id="id_SecurityGroupId">
                                                 </select>
                                             </div>
                                         </div>
@@ -109,6 +111,7 @@
                                         <h3>管理设置</h3>
                                         {% bootstrap_field form.Name layout="horizontal" %}
                                         {% bootstrap_field form.Password layout="horizontal" %}
+                                        {% bootstrap_field form.SSHPort layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <div class="form-group">
                                             <div class="col-sm-4 col-sm-offset-2">
@@ -185,7 +188,7 @@ function getVPC(id, region, projectID) {
 }
 function getFirewall(id, region, projectID) {
     getInfo({
-        to: 'id_Firewall',
+        to: 'id_SecurityGroupId',
         data: {'Action': 'DescribeFirewall','Region':region,'account_id': id, 'ProjectId':projectID},
     })
 }
