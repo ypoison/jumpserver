@@ -16,12 +16,12 @@ from ..tasks import set_info
 logger = get_logger(__file__)
 __all__ = [
             'CloudInfoAPI', 'ChostCreateRecordAPI', 'GetStatusAPI',
+            'GetPriceAPI',
         ]
 cloud_api = ucloud_api.UcloudAPI()
 
 class CloudInfoAPI(ListAPIView):
     permission_classes = (IsValidUser,)
-    serializer_class = serializers.AccountSerializer
 
     def post(self, request, *args, **kwargs):
         queryset = []
@@ -68,13 +68,10 @@ class ChostCreateRecordAPI(ListAPIView):
 
 class GetStatusAPI(ListAPIView):
     permission_classes = (IsValidUser,)
-    serializer_class = serializers.AccountSerializer
 
     def get(self, request, *args, **kwargs):
         record_id = self.kwargs.get('pk')
-        print(record_id)
         record = get_object_or_none(ChostCreateRecord, id=record_id)
-        print(record)
         account = record.account
         if not account:
             return Response({'error': '账号信息不存在'}, status=400)
@@ -86,4 +83,66 @@ class GetStatusAPI(ListAPIView):
         }
         queryset = cloud_api.GetUHostInstance(**data)
         set_info(queryset)
+        return Response(queryset)
+
+class GetPriceAPI(ListAPIView):
+    permission_classes = (IsValidUser,)
+
+    def post(self, request, *args, **kwargs):
+        req = self.request.data
+        account_id = req.pop('account')
+        account = get_object_or_none(Account, id=account_id)
+        data = {
+            'PrivateKey': account.access_key,
+            'PublicKey': account.access_id,
+            'Count': 1,
+            'Disks.0.Type': req.pop('Disks0Type'),
+            'Disks.0.IsBoot': True,
+            'Disks.0.Size': int(req.pop('Disks0Size')),
+            'ProjectId': req['ProjectId'],
+            'ChargeType': req['ChargeType'],
+            'Region': req['Region'],
+            'Zone': req['Zone'],
+            'ImageId': req['ImageId'],
+            'MachineType': req['MachineType'],
+            'CPU': int(req['CPU']),
+            'Memory': int(req['Memory']),
+            'NetCapability': req['NetCapability'],
+        }
+        Disks1Type = req.pop('Disks1Type')
+        if Disks1Type:
+            data['Disks.1.Type'] = Disks1Type
+            data['Disks.1.IsBoot'] = False
+            data['Disks.1.Size'] = int(req.pop('Disks1Size'))
+
+        if not data.get('ChargeType') == 'Dynamic':
+            data['Quantity'] = int(req['Quantity'])
+
+        host_price = cloud_api.GetUHostInstancePrice(**data)['msg']
+        if req.get('EIP', ''):
+            data = {
+                'PrivateKey': account.access_key,
+                'PublicKey': account.access_id,
+                'Region': req['Region'],
+                'ProjectId': req['ProjectId'],
+                'Bandwidth': req['EIPBandwidth'],
+                'ChargeType': req['ChargeType'],
+                'PayMode': req['EIPPayMode']
+            }
+            if not data.get('ChargeType') == 'Dynamic':
+                data['Quantity'] = int(req['Quantity'])
+            if req.get('Region')[:2] == 'cn':
+                data['OperatorName'] = 'Bgp'
+            else:
+                data['OperatorName'] = 'International'
+            EIP_price = cloud_api.GetEIPPrice(**data)['msg']
+        else:
+            EIP_price = 0
+        try:
+            sum = '%.2f' % (host_price + EIP_price)
+            host_price = '%.2f' % host_price
+            EIP_price = '%.2f' % EIP_price
+        except:
+            sum = 0
+        queryset = {'host_price':host_price, 'EIP_price':EIP_price, 'sum':sum}
         return Response(queryset)

@@ -73,10 +73,10 @@
                     var data = ret['msg'];
                     $.each(data, function(key, val){
                         $("#" + key).html(val)
-                    })
+                    });
                     $("#remain").css("display", "block");
                 }
-            }
+            };
             DyAPIUpdateAttr({
             url: the_url,
             method: 'GET',

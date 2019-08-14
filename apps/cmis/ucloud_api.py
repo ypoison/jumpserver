@@ -129,6 +129,22 @@ class UcloudAPI:
         else:
             return {'code': 0, 'msg': ret['Message']}
 
+    def GetUHostInstancePrice(self, **kwargs):
+        kwargs['Action'] = 'GetUHostInstancePrice'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            return {'code': 1, 'msg': ret['PriceSet'][0]['Price']}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
+
+    def GetEIPPrice(self, **kwargs):
+        kwargs['Action'] = 'GetEIPPrice'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            return {'code': 1, 'msg': ret['PriceSet'][0]['Price']}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
+
 if __name__ == '__main__':
     data = {
         'PrivateKey' : 'u5IOOxOwQSFib5deoSdGxvKm5INFInDeKpmv+e+adexx4/2MTRqC8WXV8iKaWh0Y',
