@@ -3,7 +3,7 @@
 
 
 from rest_framework import serializers
-from ..models import ChostCreateRecord
+from ..models import ChostCreateRecord, ChostModel
 
 class ChostCreateRecordSerializer(serializers.ModelSerializer):
     account_display = serializers.SerializerMethodField()
@@ -19,3 +19,8 @@ class ChostCreateRecordSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_asset_display(obj):
         return str(obj.asset)
+
+class ChostModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChostModel
+        fields = '__all__'

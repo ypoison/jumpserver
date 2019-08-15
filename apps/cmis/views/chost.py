@@ -5,17 +5,11 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
-from django import forms
-
-from django.shortcuts import redirect
-
-from common.permissions import AdminUserRequiredMixin
-from common.const import create_success_msg
 from common.utils import get_object_or_none
 
-from assets.models import Asset,AdminUser,Node
+from assets.models import Asset
 
-from ..models import Account, ChostCreateRecord
+from ..models import ChostCreateRecord, ChostModel
 from ..forms import CreateCHostForm
 
 from ..tasks import buyer
@@ -35,6 +29,7 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
         context = {
             'app': '云管中心',
             'action': '采购云主机',
+            'models': ChostModel.objects.all()
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

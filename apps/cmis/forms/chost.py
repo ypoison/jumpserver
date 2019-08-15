@@ -44,8 +44,8 @@ class CreateCHostForm(forms.Form):
     )
     IMAGE_TYPE_CHOICES = (
         ('', '---------'),
-        ('Base', '标准镜像'),
         ('Custom', '自定义镜像'),
+        ('Base', '标准镜像'),
         ('Business', '行业镜像'),
     )
     OS_TYPE_CHOICES = (
@@ -118,7 +118,7 @@ class CreateCHostForm(forms.Form):
     SubnetId = forms.CharField(label='所属子网')
     EIP = forms.BooleanField(required=False, label='外网弹性IP')
     EIPPayMode = forms.ChoiceField(initial='Bandwidth', choices=EIP_PAY_MODE_CHOICES, required=False, label='计费方式')
-    EIPBandwidth = forms.IntegerField(min_value=1, required=False, label='带宽')
+    EIPBandwidth = forms.IntegerField(initial=10, min_value=1, required=False, label='带宽')
     SecurityGroupId = forms.CharField(max_length=50, label='防火墙')
     Name = forms.CharField(max_length=50, label='实例名称')
     Password = forms.CharField(

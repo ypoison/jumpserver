@@ -6,10 +6,33 @@ import uuid
 from django.db import models
 from assets.models import Asset
 from ..models import Account
-from common.utils import get_signer, get_object_or_none
 
-__all__ = ['ChostCreateRecord',]
-signer = get_signer()
+__all__ = ['ChostCreateRecord', 'ChostModel']
+
+class ChostModel(models.Model):
+    name = models.CharField(max_length=50, verbose_name='名称')
+    charge_type = models.CharField(max_length=10, verbose_name='计费模式')
+    quantity = models.IntegerField(verbose_name='购买时长')
+    machine_type = models.CharField(max_length=2, verbose_name='机型')
+    net_capability = models.CharField(max_length=10, null=True, verbose_name='网络增强')
+    cpu = models.IntegerField(verbose_name='CPU')
+    memory = models.IntegerField(verbose_name='内存')
+    disks_0_type = models.CharField(max_length=20, verbose_name='系统盘类型')
+    disks_0_size = models.IntegerField(verbose_name='系统盘大小')
+    disks_1_type = models.CharField(max_length=20, null=True, verbose_name='数据盘类型')
+    disks_1_size = models.IntegerField(null=True, verbose_name='数据盘大小')
+    eip = models.BooleanField(default=False, verbose_name='外网弹性IP')
+    eip_pay_mode = models.CharField(max_length=15, verbose_name='计费方式')
+    eip_bandwidth = models.IntegerField(verbose_name='带宽')
+    ssh_port = models.IntegerField(verbose_name='SSH端口')
+
+    class Meta:
+        unique_together = [('name')]
+        verbose_name = "云主机采购模板"
+        db_table = "cmis_chost_model"
+
+    def __str__(self):
+        return self.name
 
 class ChostCreateRecord(models.Model):
     STATUS_CHOICES = (

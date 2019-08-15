@@ -6,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin, IsValidUser
 
-from ..models import Account, ChostCreateRecord
+from ..models import Account, ChostCreateRecord, ChostModel
 from .. import serializers
 
 from .. import ucloud_api
@@ -16,7 +16,7 @@ from ..tasks import set_info
 logger = get_logger(__file__)
 __all__ = [
             'CloudInfoAPI', 'ChostCreateRecordAPI', 'GetStatusAPI',
-            'GetPriceAPI',
+            'GetPriceAPI', 'SetModelAPI', 'ForModelAPI',
         ]
 cloud_api = ucloud_api.UcloudAPI()
 
@@ -91,58 +91,107 @@ class GetPriceAPI(ListAPIView):
     def post(self, request, *args, **kwargs):
         req = self.request.data
         account_id = req.pop('account')
-        account = get_object_or_none(Account, id=account_id)
-        data = {
-            'PrivateKey': account.access_key,
-            'PublicKey': account.access_id,
-            'Count': 1,
-            'Disks.0.Type': req.pop('Disks0Type'),
-            'Disks.0.IsBoot': True,
-            'Disks.0.Size': int(req.pop('Disks0Size')),
-            'ProjectId': req['ProjectId'],
-            'ChargeType': req['ChargeType'],
-            'Region': req['Region'],
-            'Zone': req['Zone'],
-            'ImageId': req['ImageId'],
-            'MachineType': req['MachineType'],
-            'CPU': int(req['CPU']),
-            'Memory': int(req['Memory']),
-            'NetCapability': req['NetCapability'],
-        }
-        Disks1Type = req.pop('Disks1Type')
-        if Disks1Type:
-            data['Disks.1.Type'] = Disks1Type
-            data['Disks.1.IsBoot'] = False
-            data['Disks.1.Size'] = int(req.pop('Disks1Size'))
-
-        if not data.get('ChargeType') == 'Dynamic':
-            data['Quantity'] = int(req['Quantity'])
-
-        host_price = cloud_api.GetUHostInstancePrice(**data)['msg']
-        if req.get('EIP', ''):
+        try:
+            account = get_object_or_none(Account, id=account_id)
             data = {
                 'PrivateKey': account.access_key,
                 'PublicKey': account.access_id,
-                'Region': req['Region'],
+                'Count': 1,
+                'Disks.0.Type': req.pop('Disks0Type'),
+                'Disks.0.IsBoot': True,
+                'Disks.0.Size': int(req.pop('Disks0Size')),
                 'ProjectId': req['ProjectId'],
-                'Bandwidth': req['EIPBandwidth'],
                 'ChargeType': req['ChargeType'],
-                'PayMode': req['EIPPayMode']
+                'Region': req['Region'],
+                'Zone': req['Zone'],
+                'ImageId': req['ImageId'],
+                'MachineType': req['MachineType'],
+                'CPU': int(req['CPU']),
+                'Memory': int(req['Memory']),
+                'NetCapability': req['NetCapability'],
             }
+            Disks1Type = req.pop('Disks1Type')
+            if Disks1Type:
+                data['Disks.1.Type'] = Disks1Type
+                data['Disks.1.IsBoot'] = False
+                data['Disks.1.Size'] = int(req.pop('Disks1Size'))
+
             if not data.get('ChargeType') == 'Dynamic':
                 data['Quantity'] = int(req['Quantity'])
-            if req.get('Region')[:2] == 'cn':
-                data['OperatorName'] = 'Bgp'
+
+            host_price = cloud_api.GetUHostInstancePrice(**data)['msg']
+            if req.get('EIP', ''):
+                data = {
+                    'PrivateKey': account.access_key,
+                    'PublicKey': account.access_id,
+                    'Region': req['Region'],
+                    'ProjectId': req['ProjectId'],
+                    'Bandwidth': req['EIPBandwidth'],
+                    'ChargeType': req['ChargeType'],
+                    'PayMode': req['EIPPayMode']
+                }
+                if not data.get('ChargeType') == 'Dynamic':
+                    data['Quantity'] = int(req['Quantity'])
+                if req.get('Region')[:2] == 'cn':
+                    data['OperatorName'] = 'Bgp'
+                else:
+                    data['OperatorName'] = 'International'
+                EIP_price = cloud_api.GetEIPPrice(**data)['msg']
             else:
-                data['OperatorName'] = 'International'
-            EIP_price = cloud_api.GetEIPPrice(**data)['msg']
-        else:
-            EIP_price = 0
-        try:
-            sum = '%.2f' % (host_price + EIP_price)
-            host_price = '%.2f' % host_price
-            EIP_price = '%.2f' % EIP_price
+                EIP_price = 0
+            try:
+                sum = '%.2f' % (host_price + EIP_price)
+                host_price = '%.2f' % host_price
+                EIP_price = '%.2f' % EIP_price
+            except:
+                sum = 0
+            queryset = {'host_price':host_price, 'EIP_price':EIP_price, 'sum':sum}
         except:
-            sum = 0
-        queryset = {'host_price':host_price, 'EIP_price':EIP_price, 'sum':sum}
+            queryset = {}
         return Response(queryset)
+
+class SetModelAPI(ListAPIView):
+    permission_classes = (IsValidUser,)
+
+    def post(self, request, *args, **kwargs):
+        req = self.request.data
+        data = {
+            'name': req['model_name'],
+            'charge_type': req['ChargeType'],
+            'quantity': int(req['Quantity']),
+            'machine_type': req['MachineType'],
+            'net_capability': req['NetCapability'],
+            'cpu': int(req['CPU']),
+            'memory': int(req['Memory']),
+            'disks_0_type': req.pop('Disks0Type'),
+            'disks_0_size': int(req.pop('Disks0Size')),
+            'disks_1_type': req.get('Disks1Type', ''),
+
+            'eip_bandwidth': req.get('EIPBandwidth', ''),
+            'eip_pay_mode': req.get('EIPPayMode', ''),
+            'ssh_port': req['SSHPort']
+        }
+        if req.get('EIP', ''):
+            data['eip'] = True
+        if req.get('Disks1Size', ''):
+            data['disks_1_size'] = int(req.get('Disks1Size'))
+        try:
+            ChostModel.objects.create(**data)
+            models = ChostModel.objects.all()
+            print(models)
+            smodels = serializers.ChostModelSerializer(models, many=True)
+            return Response(smodels.data)
+        except Exception as e:
+            return Response({'error': '模板添加失败：%s' % e}, status=400)
+
+class ForModelAPI(ListAPIView):
+    permission_classes = (IsValidUser,)
+
+    def get(self, request, *args, **kwargs):
+        model_id = self.kwargs.get('pk')
+        model = get_object_or_none(ChostModel, id=model_id)
+        if not model:
+            return Response({'error': '模板不存在'}, status=400)
+        queryset = serializers.ChostModelSerializer(model)
+        print(queryset.data)
+        return Response(queryset.data)

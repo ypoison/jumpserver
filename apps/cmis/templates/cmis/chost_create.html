@@ -18,7 +18,7 @@
                         </ul>
                     </div>
                     <div class="tab-content">
-                        <div class="col-sm-12" style="padding-left: 0;">
+                        <div class="col-sm-9" style="padding-left: 0;">
                             <div class="" id="content_start">
                             </div>
                             <div class="ibox float-e-margins">
@@ -146,9 +146,25 @@
                                                 <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
                                                 <a id="price_button" class="btn btn-warning" type="submit">价格</a>
                                                 <button id="submit_button" class="btn btn-primary" type="submit">{% trans 'Submit' %}</button>
+                                                <a data-toggle="modal" data-target="#chost_model_name" class="btn btn-info" type="submit">生成模板</a>
                                             </div>
                                         </div>
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3" style="padding-left: 0;padding-right: 0">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <i class="fa fa-info-circle"></i> 模板
+                                </div>
+                                <div class="panel-body">
+                                    <div class="btn-group-xs" id="chost-model" data-toggle="buttons">
+                                        {% for model in models %}
+                                            <label style="margin: 3px;" class="btn-primary btn btn-outline chost-model">
+                                                <input type="radio" value={{ model.id }}> {{ model.name }}</label>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -157,6 +173,7 @@
             </div>
         </div>
     </div>
+    {% include 'cmis/_chost_model_name.html' %}
 {% endblock %}
 
 {% block custom_foot_js %}
@@ -247,6 +264,14 @@ function getProject(id) {
         data: {'Action': 'GetProjectList','account_id': id},
         success: getOther
     })
+}
+function formattingData() {
+    var formData = $("#groupForm").serializeArray();
+    var body = {};
+    $.each(formData, function(i, field){
+        body[field.name] = field.value
+    });
+    return body
 }
 
 $(document).ready(function () {
@@ -341,12 +366,7 @@ $(document).ready(function () {
                 });
                 $("#price").css("display", "block");
             };
-        var formData = $("#groupForm").serializeArray();
-        var body = {};
-        $.each(formData, function(i, field){
-
-            body[field.name] = field.value
-        });
+        var body = formattingData()
         DyAPIUpdateAttr({
             url: the_url,
             method: "POST",
@@ -355,6 +375,68 @@ $(document).ready(function () {
             success:success
         });
     })
+    $("#btn_model_name_confirm").click(function () {
+        var the_url = '{% url "api-cmis:chost-set-model" %}';
+        var model_name = $("#id_model_name").val();
+        var success = function (data) {
+            $("#chost-model label").remove();
+            $.each(data, function(key, val){
+                $("#chost-model").append('<label style="margin: 3px;" class="btn btn-primary btn-outline chost-model">' +
+                    '<input type="radio" value=' +
+                    val.id +'>' +
+                    val.name +
+                    '</label>'
+                )
+            });
+        };
+        var body = formattingData();
+        body['model_name'] = model_name;
+        $("#chost_model_name").modal('hide');
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success_message: 'ok',
+            success:success
+        });
+    })
+    $('.chost-model').click(function(){
+        var model_id = $(this).children('input').val()
+        var the_url = '{% url "api-cmis:chost-for-model" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', model_id);
+        var success = function (data) {
+            $("#id_ChargeType").val(data.charge_type);
+            console.log($("#id_ChargeType").val())
+            if ($("#id_ChargeType").val() == 'Dynamic'){
+                $('.Quantity').css("display","none");
+            } else {
+                $('.Quantity').css("display", "block");
+            }
+            $("#id_Quantity").val(data.quantity);
+            $("#id_MachineType").val(data.machine_type);
+            $("#id_NetCapability").val(data.net_capability);
+            $("#id_CPU").val(data.cpu);
+            $("#id_Memory").val(data.memory);
+            $("#id_Disks0Type").val(data.disks_0_type);
+            $("#id_Disks0Size").val(data.disks_0_size);
+            $("#id_Disks1Type").val(data.disks_1_type);
+            $("#id_Disks1Size").val(data.disks_1_size);
+            $("#id_EIP").prop("checked",data.eip);
+            if ($("#id_EIP").is(':checked')){
+                $('.vpc').css("display", "block");
+            } else {
+                $('.vpc').css("display","none");
+            }
+            $("#id_EIPPayMode").val(data.eip_pay_mode);
+            $("#id_EIPBandwidth").val(data.eip_bandwidth);
+            $("#id_SSHPort").val(data.ssh_port)
+        };
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "GET",
+            flash_message: false,
+            success:success
+        });
+    });
 });
 </script>
 {% endblock %}
