@@ -163,6 +163,7 @@ class SetModelAPI(ListAPIView):
             'net_capability': req['NetCapability'],
             'cpu': int(req['CPU']),
             'memory': int(req['Memory']),
+
             'disks_0_type': req.pop('Disks0Type'),
             'disks_0_size': int(req.pop('Disks0Size')),
             'disks_1_type': req.get('Disks1Type', ''),
@@ -171,6 +172,8 @@ class SetModelAPI(ListAPIView):
             'eip_pay_mode': req.get('EIPPayMode', ''),
             'ssh_port': req['SSHPort']
         }
+        if req.get('HotplugFeature', ''):
+            data['hotplug_feature'] = True
         if req.get('EIP', ''):
             data['eip'] = True
         if req.get('Disks1Size', ''):

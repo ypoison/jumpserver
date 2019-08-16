@@ -60,6 +60,27 @@
                                             </div>
                                         </div>
                                         <div class="hr-line-dashed"></div>
+                                        <h3>管理设置</h3>
+                                        {% bootstrap_field form.Name layout="horizontal" %}
+                                        {% bootstrap_field form.Password layout="horizontal" %}
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_Tag">业务组</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+	                                    	    <div class="input-group-btn">
+	                                    		    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+	                                    			    加入<span class="caret"></span>
+	                                    		    </button>
+	                                    		    <ul class="dropdown-menu">
+	                                    		        <li><a style="font-weight: bolder">宝贝</a></li>
+	                                    			    <li><a style="font-weight: bolder">店铺</a></li>
+	                                    		    </ul>
+	                                    	    </div>
+	                                    	    <input type="text" class="form-control" placeholder="新增直接输入" />
+                                            </div>
+
+                                        </div>
+                                        {% bootstrap_field form.SSHPort layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
                                         <h3>地域</h3>
                                         <div class="form-group required">
                                             <label class="col-md-2 control-label" for="id_Region">地域</label>
@@ -75,26 +96,6 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="hr-line-dashed"></div>
-                                        <h3>基础配置</h3>
-                                        {% bootstrap_field form.OSType layout="horizontal" %}
-                                        {% bootstrap_field form.ImageType layout="horizontal" %}
-                                        <div class="form-group required">
-                                            <label class="col-md-2 control-label" for="id_ImageId">镜像</label>
-                                            <div class="col-md-9">
-                                                <select name="ImageId" class="form-control" title="" id="id_ImageId">
-                                                </select>
-                                            </div>
-                                        </div>
-                                        {% bootstrap_field form.MachineType layout="horizontal" %}
-                                        {% bootstrap_field form.CPU layout="horizontal" %}
-                                        {% bootstrap_field form.Memory layout="horizontal" %}
-                                        {% bootstrap_field form.Disks0Type layout="horizontal" %}
-                                        {% bootstrap_field form.Disks0Size layout="horizontal" %}
-                                        {% bootstrap_field form.Disks1Type layout="horizontal" %}
-                                        {% bootstrap_field form.Disks1Size layout="horizontal" %}
-                                        {% bootstrap_field form.NetCapability layout="horizontal" %}
-                                        {% bootstrap_field form.HotplugFeature layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <h3>网络配置</h3>
                                         <div class="form-group required">
@@ -124,22 +125,37 @@
                                             </div>
                                         </div>
                                         <div class="hr-line-dashed"></div>
-                                        <h3>管理设置</h3>
-                                        {% bootstrap_field form.Name layout="horizontal" %}
-                                        {% bootstrap_field form.Password layout="horizontal" %}
-                                        {% bootstrap_field form.SSHPort layout="horizontal" %}
+                                        <h3>基础配置</h3>
+                                        {% bootstrap_field form.OSType layout="horizontal" %}
+                                        {% bootstrap_field form.ImageType layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_ImageId">镜像</label>
+                                            <div class="col-md-9">
+                                                <select name="ImageId" class="form-control" title="" id="id_ImageId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.MachineType layout="horizontal" %}
+                                        {% bootstrap_field form.CPU layout="horizontal" %}
+                                        {% bootstrap_field form.Memory layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Size layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Size layout="horizontal" %}
+                                        {% bootstrap_field form.NetCapability layout="horizontal" %}
+                                        {% bootstrap_field form.HotplugFeature layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <div class="form-group">
-                                        <div class="col-sm-4 col-sm-offset-2" style="display:none" id="price">
-                                            <p>
-                                                <span>主机费用:</span>
-                                                <span style="color:red;" id="host_price"></span>
-                                                <span>弹性IP费用:</span>
-                                                <span style="color:red;" id="EIP_price"></span>
-                                                <span>合计:</span>
-                                                <span style="color:red;" id="sum"></span>
-                                            </p>
-                                        </div>
+                                            <div class="col-sm-4 col-sm-offset-2" style="display:none" id="price">
+                                                <p>
+                                                    <span>主机费用:</span>
+                                                    <span style="color:red;" id="host_price"></span>
+                                                    <span>弹性IP费用:</span>
+                                                    <span style="color:red;" id="EIP_price"></span>
+                                                    <span>合计:</span>
+                                                    <span style="color:red;" id="sum"></span>
+                                                </p>
+                                            </div>
                                         </div>
                                         <div class="form-group">
                                             <div class="col-sm-4 col-sm-offset-2">
@@ -191,6 +207,7 @@ function getInfo(props) {
         if (ret.code != 0) {
             var data = ret['msg'];
             $("#" + props.to + " option").remove();
+            $("#" + props.to).append("<option value='' selected=''>---------</option>")
             for (var i = 0; i < data.length; i++) {
                 if (data[i].IsDefault) {
                     $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
@@ -246,6 +263,7 @@ function getRegion(id) {
         var projectid = $("#id_ProjectId").val();
         getVPC(id, region, projectid)
         getFirewall(id, region, projectid)
+        getImage()
     }
     getInfo({
         //get region
@@ -265,6 +283,21 @@ function getProject(id) {
         success: getOther
     })
 }
+function getImage() {
+    var id = $("#id_account").val();
+    var projectid = $("#id_ProjectId").val();
+    var regionid = $("#id_Region").val();
+    var ostype = $("#id_OSType").val();
+    var imagetype = $("#id_ImageType").val();
+    getInfo({
+        //get region
+        to: 'id_ImageId',
+        data: { "Action":"DescribeImage","account_id":id,"ProjectId":projectid,
+                "Region":regionid, "OSType":ostype, "ImageType":imagetype
+                },
+    });
+}
+
 function formattingData() {
     var formData = $("#groupForm").serializeArray();
     var body = {};
@@ -301,19 +334,7 @@ $(document).ready(function () {
     });
 
     $("#id_ImageType").change(function() {
-        var id = $("#id_account").val();
-        var projectid = $("#id_ProjectId").val();
-        var regionid = $("#id_Region").val();
-        var zoneid = $("#id_Zone").val();
-        var ostype = $("#id_OSType").val();
-        var imagetype = $("#id_ImageType").val();
-        getInfo({
-            //get region
-            to: 'id_ImageId',
-            data: { "Action":"DescribeImage","account_id":id,"ProjectId":projectid,
-                    "Region":regionid,"Zone":zoneid, "OSType":ostype, "ImageType":imagetype
-                    },
-        });
+        getImage()
     });
 
     $("#id_VPCId").change(function() {
@@ -336,22 +357,16 @@ $(document).ready(function () {
             $(".Quantity").css("display", "block")
             $("#id_Quantity option").remove();
             $("#id_Quantity").append("<option value =1 selected>1年</option>")
-            $("#id_Quantity").append("<option value =2>2年</option>")
-            $("#id_Quantity").append("<option value =3>3年</option>")
-            $("#id_Quantity").append("<option value =4>4年</option>")
-            $("#id_Quantity").append("<option value =5>5年</option>")
+            for (var i=2; i<=5;i++ ){
+                $("#id_Quantity").append("<option value =" + i + ">" + i + "年</option>")
+            }
         } else if (charge_type === 'Month'){
             $(".Quantity").css("display", "block")
             $("#id_Quantity option").remove();
             $("#id_Quantity").append("<option value =0 selected>购至月末</option>")
-            $("#id_Quantity").append("<option value =1>1个月</option>")
-            $("#id_Quantity").append("<option value =2>2个月</option>")
-            $("#id_Quantity").append("<option value =3>3个月</option>")
-            $("#id_Quantity").append("<option value =4>4个月</option>")
-            $("#id_Quantity").append("<option value =5>5个月</option>")
-            $("#id_Quantity").append("<option value =6>6个月</option>")
-            $("#id_Quantity").append("<option value =7>7个月</option>")
-            $("#id_Quantity").append("<option value =8>8个月</option>")
+            for (var i=1; i<=8;i++ ){
+                $("#id_Quantity").append("<option value =" + i + ">" + i + "个月</option>")
+            }
         } else{
             $(".Quantity").css("display", "none")
         }
@@ -416,6 +431,7 @@ $(document).ready(function () {
             $("#id_NetCapability").val(data.net_capability);
             $("#id_CPU").val(data.cpu);
             $("#id_Memory").val(data.memory);
+            $("#id_HotplugFeature").prop("checked",data.hotplug_feature);
             $("#id_Disks0Type").val(data.disks_0_type);
             $("#id_Disks0Size").val(data.disks_0_size);
             $("#id_Disks1Type").val(data.disks_1_type);

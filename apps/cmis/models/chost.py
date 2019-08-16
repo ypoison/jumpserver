@@ -17,6 +17,7 @@ class ChostModel(models.Model):
     net_capability = models.CharField(max_length=10, null=True, verbose_name='网络增强')
     cpu = models.IntegerField(verbose_name='CPU')
     memory = models.IntegerField(verbose_name='内存')
+    hotplug_feature = models.BooleanField(verbose_name='热升级')
     disks_0_type = models.CharField(max_length=20, verbose_name='系统盘类型')
     disks_0_size = models.IntegerField(verbose_name='系统盘大小')
     disks_1_type = models.CharField(max_length=20, null=True, verbose_name='数据盘类型')

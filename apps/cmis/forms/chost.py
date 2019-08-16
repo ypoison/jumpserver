@@ -43,7 +43,6 @@ class CreateCHostForm(forms.Form):
         ('EXCLUSIVE_LOCAL_DISK', '独享本地盘'),
     )
     IMAGE_TYPE_CHOICES = (
-        ('', '---------'),
         ('Custom', '自定义镜像'),
         ('Base', '标准镜像'),
         ('Business', '行业镜像'),
@@ -126,3 +125,4 @@ class CreateCHostForm(forms.Form):
         required=True, label='密码',help_text='长度8-30'
     )
     SSHPort = forms.IntegerField(initial=1932, label='SSH端口')
+    Tag = forms.CharField(required=False, label='业务组')

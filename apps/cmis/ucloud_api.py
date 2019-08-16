@@ -46,7 +46,9 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             region_list = []
             for r in ret['Regions']:
-                region = {'IsDefault':r['IsDefault'],'id':r['Region'],'name':r['Region']}
+                region = {'IsDefault':False,'id':r['Region'],'name':r['Region']}
+                if region['id'] == 'tw-tp':
+                    region['IsDefault'] = True
                 if region not in region_list:
                     region_list.append(region)
             return {'code':1, 'msg':region_list}
@@ -123,7 +125,7 @@ class UcloudAPI:
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             firewalls = []
-            for firewall in  ret['DataSet']:
+            for firewall in ret['DataSet']:
                 firewalls.append({ 'name':firewall['Name'],'id':firewall['FWId']})
             return {'code': 1, 'msg':firewalls}
         else:
@@ -142,6 +144,16 @@ class UcloudAPI:
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret['PriceSet'][0]['Price']}
+        else:
+            return {'code': 0, 'msg': ret['Message']}
+
+    def GetUHostTags(self, **kwargs):
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            tags = []
+            for tag in ret['TagSet']:
+                tags.append({ 'name':tag['Tag'],'id':tag['Tag']})
+            return {'code': 1, 'msg': tags}
         else:
             return {'code': 0, 'msg': ret['Message']}
 
