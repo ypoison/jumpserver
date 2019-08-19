@@ -60,27 +60,6 @@
                                             </div>
                                         </div>
                                         <div class="hr-line-dashed"></div>
-                                        <h3>管理设置</h3>
-                                        {% bootstrap_field form.Name layout="horizontal" %}
-                                        {% bootstrap_field form.Password layout="horizontal" %}
-                                        <div class="form-group">
-                                            <label class="col-md-2 control-label" for="id_Tag">业务组</label>
-	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
-	                                    	    <div class="input-group-btn">
-	                                    		    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-	                                    			    加入<span class="caret"></span>
-	                                    		    </button>
-	                                    		    <ul class="dropdown-menu">
-	                                    		        <li><a style="font-weight: bolder">宝贝</a></li>
-	                                    			    <li><a style="font-weight: bolder">店铺</a></li>
-	                                    		    </ul>
-	                                    	    </div>
-	                                    	    <input type="text" class="form-control" placeholder="新增直接输入" />
-                                            </div>
-
-                                        </div>
-                                        {% bootstrap_field form.SSHPort layout="horizontal" %}
-                                        <div class="hr-line-dashed"></div>
                                         <h3>地域</h3>
                                         <div class="form-group required">
                                             <label class="col-md-2 control-label" for="id_Region">地域</label>
@@ -96,6 +75,23 @@
                                                 </select>
                                             </div>
                                         </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>管理设置</h3>
+                                        {% bootstrap_field form.Name layout="horizontal" %}
+                                        {% bootstrap_field form.Password layout="horizontal" %}
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_Tag">业务组</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+	                                    	    <div class="input-group-btn">
+	                                    		    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">选择要加入组<span class="caret"></span>
+	                                    		    </button>
+	                                    		    <ul class="dropdown-menu" id="tag_select"></ul>
+	                                    	    </div>
+	                                    	    <input type="text" name="Tag" class="form-control" placeholder="新增直接输入" id="id_Tag" value="Default"/>
+                                            </div>
+
+                                        </div>
+                                        {% bootstrap_field form.SSHPort layout="horizontal" %}
                                         <div class="hr-line-dashed"></div>
                                         <h3>网络配置</h3>
                                         <div class="form-group required">
@@ -196,6 +192,8 @@
 <script type="text/javascript">
 function getInfo(props) {
     var url = '{% url "api-cmis:chost-get-info" %}';
+    $("#" + props.to + " option").remove();
+    $("#" + props.to).append("<option value='' selected=''>---------</option>")
     $(".splash").show();
     $.ajax({
         url: url,
@@ -206,8 +204,6 @@ function getInfo(props) {
     }).done(function(ret) {
         if (ret.code != 0) {
             var data = ret['msg'];
-            $("#" + props.to + " option").remove();
-            $("#" + props.to).append("<option value='' selected=''>---------</option>")
             for (var i = 0; i < data.length; i++) {
                 if (data[i].IsDefault) {
                     $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
@@ -255,15 +251,45 @@ function getFirewall(id, region, projectID) {
         data: {'Action': 'DescribeFirewall','Region':region,'account_id': id, 'ProjectId':projectID},
     })
 }
+function getTags() {
+    var the_url =  '{% url "api-cmis:chost-get-info" %}';
+    var id = $("#id_account").val();
+    var region = $("#id_Region").val();
+    var projectID = $("#id_ProjectId").val();
+    var success = function (ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            //$("#tag_select li").remove();
+            for (var i = 0; i < data.length; i++) {
+                    $("#tag_select").append("<li><a style='font-weight: bolder'>" + data[i].name + "</a></li>")
+            }
+        }
+    };
+    var body = {
+        'Action': 'DescribeUHostTags',
+        'account_id': id,
+        'Region':region,
+        'ProjectId':projectID,
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "POST",
+        body: JSON.stringify(body),
+        flash_message : false,
+        success:success
+    });
+
+}
 function getRegion(id) {
     var getOther = function () {
         //get zone
         var region = $("#id_Region").val();
-        getZone(id, region)
+        getZone(id, region);
         var projectid = $("#id_ProjectId").val();
-        getVPC(id, region, projectid)
-        getFirewall(id, region, projectid)
+        getVPC(id, region, projectid);
+        getFirewall(id, region, projectid);
         getImage()
+        getTags()
     }
     getInfo({
         //get region
@@ -331,6 +357,7 @@ $(document).ready(function () {
         getZone(id, region)
         getVPC(id, region, projectid)
         getFirewall(id, region, projectid)
+        getTags()
     });
 
     $("#id_ImageType").change(function() {
@@ -370,6 +397,11 @@ $(document).ready(function () {
         } else{
             $(".Quantity").css("display", "none")
         }
+    });
+
+    $("#tag_select").on('click', "li", function () {
+        var tag = $(this).text();
+        $("#id_Tag").val(tag)
     });
 
     $("#price_button").click(function () {
@@ -414,13 +446,13 @@ $(document).ready(function () {
             success_message: 'ok',
             success:success
         });
-    })
+    });
+
     $('.chost-model').click(function(){
         var model_id = $(this).children('input').val()
         var the_url = '{% url "api-cmis:chost-for-model" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', model_id);
         var success = function (data) {
             $("#id_ChargeType").val(data.charge_type);
-            console.log($("#id_ChargeType").val())
             if ($("#id_ChargeType").val() == 'Dynamic'){
                 $('.Quantity').css("display","none");
             } else {
@@ -453,6 +485,6 @@ $(document).ready(function () {
             success:success
         });
     });
-});
+})
 </script>
 {% endblock %}

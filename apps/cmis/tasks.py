@@ -51,22 +51,23 @@ def buyer(create_record, **kw):
                 is_active=False,
             )
             asset.nodes.set(nodes)
+
+            create_record.hid = cid
+            create_record.asset = asset
+            create_record.save()
+            time.sleep(10)
+            kwargs = {
+                'PrivateKey': create_record.account.access_key,
+                'PublicKey': create_record.account.access_id,
+                'Region': kw['Region'],
+                'ProjectId': kw['ProjectId'],
+                'UHostIds.0': cid
+            }
+            queryset = cloud_api.GetUHostInstance(**kwargs)
+            set_info(queryset)
         except Exception as e:
             create_record.status = e
             create_record.save()
-        create_record.hid = cid
-        create_record.asset = asset
-        create_record.save()
-        time.sleep(10)
-        kwargs = {
-            'PrivateKey': create_record.account.access_key,
-            'PublicKey': create_record.account.access_id,
-            'Region': kw['Region'],
-            'ProjectId': kw['ProjectId'],
-            'UHostIds.0': cid
-        }
-        queryset = cloud_api.GetUHostInstance(**kwargs)
-        set_info(queryset)
     else:
         create_record.status = queryset['msg']
         create_record.save()

@@ -112,7 +112,6 @@ class CreateCHostForm(forms.Form):
     OSType = forms.ChoiceField(choices=OS_TYPE_CHOICES, label='系统类型')
     ImageType = forms.ChoiceField(choices=IMAGE_TYPE_CHOICES, label='镜像类型')
     ImageId = forms.CharField(label='镜像')
-
     VPCId = forms.CharField(label='所属VPC')
     SubnetId = forms.CharField(label='所属子网')
     EIP = forms.BooleanField(required=False, label='外网弹性IP')

@@ -6,6 +6,7 @@ import uuid
 from django.db import models
 from assets.models import Asset
 from ..models import Account
+from common.utils import get_object_or_none
 
 __all__ = ['ChostCreateRecord', 'ChostModel']
 

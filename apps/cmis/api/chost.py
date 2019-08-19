@@ -54,9 +54,14 @@ class CloudInfoAPI(ListAPIView):
             queryset = cloud_api.GetUHostInstance(**data)
         elif action == 'DescribeFirewall':
             queryset = cloud_api.GetFirewall(**data)
+        elif action == 'DescribeUHostTags':
+            queryset = cloud_api.GetUHostTags(**data)
         else:
-            queryset = []
-        return Response(queryset)
+            return Response({'error': 'action参数错误'}, status=400)
+        if queryset['code']:
+            return Response(queryset)
+        else:
+            return Response(queryset, status=400)
 
 class ChostCreateRecordAPI(ListAPIView):
     filter_fields = ("id", "hid")

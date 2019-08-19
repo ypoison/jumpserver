@@ -27,9 +27,12 @@ class UcloudAPI:
         private_key = kwargs.pop('PrivateKey')
         signature = self._verfy_ac(private_key, kwargs)
         kwargs['Signature'] = signature
-        res = requests.post(self.url, data=kwargs)
-        content = res._content
-        ret = json.loads(content)
+        try:
+            res = requests.post(self.url, data=kwargs, timeout=20)
+            content = res._content
+            ret = json.loads(content)
+        except Exception as e:
+            ret = {'RetCode': 400, 'Message': str(e)}
         return ret
     def GetProjectList(self, **kwargs):
         ret = self.response(**kwargs)
@@ -39,7 +42,7 @@ class UcloudAPI:
                 project_list.append({'id':p['ProjectId'],'name':p['ProjectName'],'IsDefault':p['IsDefault']})
             return {'code':1, 'msg':project_list}
         else:
-            return {'code':0, 'msg':ret['Message']}
+            return {'code':0, 'error':ret['Message']}
 
     def GetRegion(self, **kwargs):
         ret = self.response(**kwargs)
@@ -53,7 +56,7 @@ class UcloudAPI:
                     region_list.append(region)
             return {'code':1, 'msg':region_list}
         else:
-            return {'code':0, 'msg':ret['Message']}
+            return {'code':0, 'error':ret['Message']}
 
     def GetZone(self, **kwargs):
         kwargs['Action'] = 'GetRegion'
@@ -67,7 +70,7 @@ class UcloudAPI:
                     zone_list.append(zone)
             return {'code':1, 'msg':zone_list}
         else:
-            return {'code':0, 'msg':ret['Message']}
+            return {'code':0, 'error':ret['Message']}
 
     def GetImageList(self, **kwargs):
         ret = self.response(**kwargs)
@@ -79,7 +82,8 @@ class UcloudAPI:
                 image_list = sorted(image_list, key=operator.itemgetter('name'))
             return {'code': 1, 'msg': image_list}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
+        return Response({'error': '模板不存在'}, status=400)
 
     def GetVPC(self, **kwargs):
         ret = self.response(**kwargs)
@@ -90,7 +94,7 @@ class UcloudAPI:
                 vpc_list.append(vpc)
             return {'code': 1, 'msg': vpc_list}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
     def GetSubnet(self, **kwargs):
         VPCId = kwargs.pop('VPCId')
@@ -103,7 +107,7 @@ class UcloudAPI:
                     subnet_list.append(subnet)
             return {'code': 1, 'msg': subnet_list}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
     def CreateUhostInstance(self, **kwargs):
         kwargs['Action'] = 'CreateUHostInstance'
@@ -111,7 +115,7 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret}
         else:
-            return {'code': 0, 'msg': ret}
+            return {'code': 0, 'error': ret}
 
     def GetUHostInstance(self, **kwargs):
         kwargs['Action'] = 'DescribeUHostInstance'
@@ -119,7 +123,7 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret['UHostSet'][0]}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
     def GetFirewall(self, **kwargs):
         ret = self.response(**kwargs)
@@ -129,7 +133,7 @@ class UcloudAPI:
                 firewalls.append({ 'name':firewall['Name'],'id':firewall['FWId']})
             return {'code': 1, 'msg':firewalls}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
     def GetUHostInstancePrice(self, **kwargs):
         kwargs['Action'] = 'GetUHostInstancePrice'
@@ -137,7 +141,7 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret['PriceSet'][0]['Price']}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
     def GetEIPPrice(self, **kwargs):
         kwargs['Action'] = 'GetEIPPrice'
@@ -145,17 +149,19 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret['PriceSet'][0]['Price']}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
     def GetUHostTags(self, **kwargs):
+        print(kwargs)
         ret = self.response(**kwargs)
+        print(ret)
         if ret.get('RetCode', '') == 0:
             tags = []
             for tag in ret['TagSet']:
                 tags.append({ 'name':tag['Tag'],'id':tag['Tag']})
             return {'code': 1, 'msg': tags}
         else:
-            return {'code': 0, 'msg': ret['Message']}
+            return {'code': 0, 'error': ret['Message']}
 
 if __name__ == '__main__':
     data = {
