@@ -16,7 +16,7 @@ from ..tasks import set_info
 logger = get_logger(__file__)
 __all__ = [
             'CloudInfoAPI', 'ChostCreateRecordAPI', 'GetStatusAPI',
-            'GetPriceAPI', 'SetModelAPI', 'ForModelAPI',
+            'GetPriceAPI', 'SetModelAPI', 'ForModelAPI','CreateIsolationGroupAPI',
         ]
 cloud_api = ucloud_api.UcloudAPI()
 
@@ -56,6 +56,8 @@ class CloudInfoAPI(ListAPIView):
             queryset = cloud_api.GetFirewall(**data)
         elif action == 'DescribeUHostTags':
             queryset = cloud_api.GetUHostTags(**data)
+        elif action == 'DescribeIsolationGroup':
+            queryset = cloud_api.DescribeIsolationGroup(**data)
         else:
             return Response({'error': 'action参数错误'}, status=400)
         if queryset['code']:
@@ -175,7 +177,17 @@ class SetModelAPI(ListAPIView):
 
             'eip_bandwidth': req.get('EIPBandwidth', ''),
             'eip_pay_mode': req.get('EIPPayMode', ''),
-            'ssh_port': req['SSHPort']
+            'ssh_port': req['SSHPort'],
+            'region': req.get('Region'),
+            'zone': req.get('Zone'),
+            'vpc': req.get('VPCId'),
+            'subnet': req.get('SubnetId'),
+            'security_group': req.get('SecurityGroupId'),
+            'os_type': req.get('OSType'),
+            'image_type': req.get('ImageType'),
+            'image': req.get('ImageId')
+
+
         }
         if req.get('HotplugFeature', ''):
             data['hotplug_feature'] = True
@@ -203,3 +215,25 @@ class ForModelAPI(ListAPIView):
         queryset = serializers.ChostModelSerializer(model)
         print(queryset.data)
         return Response(queryset.data)
+
+class CreateIsolationGroupAPI(ListAPIView):
+    permission_classes = (IsValidUser,)
+
+    def post(self, request, *args, **kwargs):
+        data = self.request.data
+        accountId = data.pop('accountId')
+        try:
+            account = get_object_or_none(Account, id=accountId)
+        except Exception as e:
+            return Response({'code': 0, 'error': '账户信息错误：' % e}, status=400)
+        if not account:
+            return Response({'code': 0, 'error': '找不到账户信息'}, status=400)
+        data.update({
+            'PrivateKey': account.access_key,
+            "PublicKey": account.access_id,
+        })
+        queryset = cloud_api.CreateIsolationGroup(**data)
+        if queryset['code']:
+            return Response(queryset)
+        else:
+            return Response(queryset, status=400)

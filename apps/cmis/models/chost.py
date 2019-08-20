@@ -18,7 +18,7 @@ class ChostModel(models.Model):
     net_capability = models.CharField(max_length=10, null=True, verbose_name='网络增强')
     cpu = models.IntegerField(verbose_name='CPU')
     memory = models.IntegerField(verbose_name='内存')
-    hotplug_feature = models.BooleanField(verbose_name='热升级')
+    hotplug_feature = models.BooleanField(default=False, verbose_name='热升级')
     disks_0_type = models.CharField(max_length=20, verbose_name='系统盘类型')
     disks_0_size = models.IntegerField(verbose_name='系统盘大小')
     disks_1_type = models.CharField(max_length=20, null=True, verbose_name='数据盘类型')
@@ -27,6 +27,15 @@ class ChostModel(models.Model):
     eip_pay_mode = models.CharField(max_length=15, verbose_name='计费方式')
     eip_bandwidth = models.IntegerField(verbose_name='带宽')
     ssh_port = models.IntegerField(verbose_name='SSH端口')
+    region = models.CharField(max_length=50, verbose_name='地域')
+    zone = models.CharField(max_length=50, verbose_name='可用区')
+    vpc = models.CharField(max_length=50, verbose_name='VPC')
+    subnet = models.CharField(max_length=50, verbose_name='子网')
+    security_group = models.CharField(max_length=50, verbose_name='防火墙')
+    os_type = models.CharField(max_length=20, verbose_name='系统类型')
+    image_type = models.CharField(max_length=20, verbose_name='镜像类型')
+    image = models.CharField(max_length=20, verbose_name='镜像')
+
 
     class Meta:
         unique_together = [('name')]

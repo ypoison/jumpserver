@@ -152,14 +152,35 @@ class UcloudAPI:
             return {'code': 0, 'error': ret['Message']}
 
     def GetUHostTags(self, **kwargs):
-        print(kwargs)
         ret = self.response(**kwargs)
-        print(ret)
         if ret.get('RetCode', '') == 0:
             tags = []
             for tag in ret['TagSet']:
                 tags.append({ 'name':tag['Tag'],'id':tag['Tag']})
             return {'code': 1, 'msg': tags}
+        else:
+            return {'code': 0, 'error': ret['Message']}
+
+    def CreateIsolationGroup(self, **kwargs):
+        kwargs['Action'] = 'CreateIsolationGroup'
+        ret = self.response(**kwargs)
+        if ret.get('RetCode', '') == 0:
+            return {'code': 1, 'msg': { 'name':kwargs['GroupName'],'id':ret['GroupId']}}
+        else:
+            return {'code': 0, 'error': ret['Message']}
+
+    def DescribeIsolationGroup(self, **kwargs):
+        kwargs['Action'] = 'DescribeIsolationGroup'
+        ret = self.response(**kwargs)
+        print(ret)
+        if ret.get('RetCode', '') == 0:
+            groups = []
+            set = ret.get('IsolationGroupSet','')
+            if set:
+                for group in set:
+                    groups.append({ 'name':group['GroupName'],'id':group['GroupId']})
+                print(groups)
+            return {'code': 1, 'msg': groups}
         else:
             return {'code': 0, 'error': ret['Message']}
 

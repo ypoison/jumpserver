@@ -1,0 +1,50 @@
+{% extends '_modal.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block modal_class %}modal-lg{% endblock %}
+{% block modal_id %}chost_isolation_group_add{% endblock %}
+{% block modal_title%}隔离组名称{% endblock %}
+{% block modal_body %}
+<link href="{% static 'css/plugins/ztree/awesomeStyle/awesome.css' %}" rel="stylesheet">
+<script type="text/javascript" src="{% static 'js/plugins/ztree/jquery.ztree.all.min.js' %}"></script>
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<style>
+.inmodal .modal-header {
+    padding: 10px 10px;
+    text-align: center;
+}
+</style>
+
+{% block form %}
+<form id="IsolationGroupName" method="post" class="form-horizontal">
+    {% csrf_token %}
+    <h3></h3>
+    <div class="form-group required">
+        <label class="col-md-2 control-label" for="IsolationGroupName">名称</label>
+        <div class="col-md-9">
+            <input type="text" name="IsolationGroupName" maxlength="128" class="form-control" title="" required="" id="id_IsolationGroupName">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-md-2 control-label" for="Remark">备注</label>
+        <div class="col-md-9">
+            <input type="text" name="Remark" maxlength="128" class="form-control" title="" required="" id="id_Remark">
+        </div>
+    </div>
+    <div class="hr-line-dashed"></div>
+</form>
+{% endblock %}
+
+<script>
+
+</script>
+{% endblock %}
+
+{% block modal_button %}
+    {{ block.super }}
+{% endblock %}
+{% block modal_confirm_id %}btn_isolation_group_confirm{% endblock %}
+
+
+

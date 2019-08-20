@@ -124,4 +124,5 @@ class CreateCHostForm(forms.Form):
         required=True, label='密码',help_text='长度8-30'
     )
     SSHPort = forms.IntegerField(initial=1932, label='SSH端口')
-    Tag = forms.CharField(required=False, label='业务组')
+    Tag = forms.CharField(initial='Default', required=False, label='业务组')
+    IsolationGroup = forms.CharField(required=False, label='	硬件隔离组')
