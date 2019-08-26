@@ -8,9 +8,10 @@ from assets.models import Asset
 from ..models import Account
 from common.utils import get_object_or_none
 
-__all__ = ['ChostCreateRecord', 'ChostModel']
+__all__ = ['ChostCreateRecord', 'ChostModel', 'HostName']
 
 class ChostModel(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     name = models.CharField(max_length=50, verbose_name='名称')
     charge_type = models.CharField(max_length=10, verbose_name='计费模式')
     quantity = models.IntegerField(verbose_name='购买时长')
@@ -57,6 +58,7 @@ class ChostCreateRecord(models.Model):
         ('Error', '创建失败'),
     )
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    job_id = models.UUIDField(null=True, verbose_name='jobID')
     account_id = models.CharField(max_length=36, null=True, verbose_name='所属账号')
     region = models.CharField(max_length=20, null=True, verbose_name='地域')
     hid = models.CharField(max_length=50, null=True, verbose_name='云主机ID')
@@ -72,3 +74,10 @@ class ChostCreateRecord(models.Model):
     @property
     def account(self):
         return get_object_or_none(Account, id=uuid.UUID(self.account_id).hex)
+
+class HostName(models.Model):
+    name = models.CharField(max_length=50,verbose_name='主机名')
+
+    class Meta:
+        unique_together = [('name')]
+        db_table = "cmis_host_name"

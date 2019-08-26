@@ -1,22 +1,17 @@
 # -*- coding: utf-8 -*-
 #
 from django.views.generic import TemplateView, CreateView, \
-    UpdateView, DetailView, FormView
+    UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy
-from django.shortcuts import redirect
 
 from common.permissions import AdminUserRequiredMixin
 from common.const import create_success_msg
 
-from assets.models import Asset
-
 from ..models import Account
-from ..forms import AccountForm, CreateCHostForm
-from .. import ucloud_api
+from ..forms import AccountForm
 
-import base64
 
 __all__ = (
     "AccountListView", "AccountDetailView","AccountCreateView", "AccountUpdateView",

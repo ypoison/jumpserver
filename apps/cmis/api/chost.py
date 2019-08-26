@@ -6,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin, IsValidUser
 
-from ..models import Account, ChostCreateRecord, ChostModel
+from ..models import Account, ChostCreateRecord, ChostModel, HostName
 from .. import serializers
 
 from .. import ucloud_api
@@ -17,6 +17,7 @@ logger = get_logger(__file__)
 __all__ = [
             'CloudInfoAPI', 'ChostCreateRecordAPI', 'GetStatusAPI',
             'GetPriceAPI', 'SetModelAPI', 'ForModelAPI','CreateIsolationGroupAPI',
+            'CreateHostNameAPI',
         ]
 cloud_api = ucloud_api.UcloudAPI()
 
@@ -31,9 +32,9 @@ class CloudInfoAPI(ListAPIView):
         try:
             account = get_object_or_none(Account, id=account_id)
         except Exception as e:
-            return Response({'code':0, 'msg':e})
+            return Response({'code': 0, 'msg': e})
         if not account:
-            return Response({'code':0, 'msg':queryset})
+            return Response({'code': 0, 'msg': queryset})
         data.update({
             'PrivateKey': account.access_key,
             "PublicKey": account.access_id,
@@ -66,7 +67,7 @@ class CloudInfoAPI(ListAPIView):
             return Response(queryset, status=400)
 
 class ChostCreateRecordAPI(ListAPIView):
-    filter_fields = ("id", "hid")
+    filter_fields = ("id", "hid", "job_id")
     search_fields = filter_fields
     queryset = ChostCreateRecord.objects.all()
     permission_classes = (IsValidUser,)
@@ -186,9 +187,8 @@ class SetModelAPI(ListAPIView):
             'os_type': req.get('OSType'),
             'image_type': req.get('ImageType'),
             'image': req.get('ImageId')
-
-
         }
+
         if req.get('HotplugFeature', ''):
             data['hotplug_feature'] = True
         if req.get('EIP', ''):
@@ -198,7 +198,6 @@ class SetModelAPI(ListAPIView):
         try:
             ChostModel.objects.create(**data)
             models = ChostModel.objects.all()
-            print(models)
             smodels = serializers.ChostModelSerializer(models, many=True)
             return Response(smodels.data)
         except Exception as e:
@@ -213,7 +212,6 @@ class ForModelAPI(ListAPIView):
         if not model:
             return Response({'error': '模板不存在'}, status=400)
         queryset = serializers.ChostModelSerializer(model)
-        print(queryset.data)
         return Response(queryset.data)
 
 class CreateIsolationGroupAPI(ListAPIView):
@@ -237,3 +235,19 @@ class CreateIsolationGroupAPI(ListAPIView):
             return Response(queryset)
         else:
             return Response(queryset, status=400)
+
+class CreateHostNameAPI(ListAPIView):
+    permission_classes = (IsValidUser,)
+
+    def post(self, request, *args, **kwargs):
+        data = self.request.data
+        host_name = data.get('HostName', '')
+
+        if host_name:
+            try:
+                HostName.objects.create(name=host_name)
+            except Exception as e:
+                return Response({'code': 0, 'error': '找不到账户信息'}, status=400)
+        else:
+            return Response({'code': 0, 'error': '找不到账户信息'}, status=400)
+        return Response({"msg": "ok"})

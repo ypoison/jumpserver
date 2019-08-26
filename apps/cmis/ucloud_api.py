@@ -73,6 +73,7 @@ class UcloudAPI:
             return {'code':0, 'error':ret['Message']}
 
     def GetImageList(self, **kwargs):
+        kwargs['Action'] = 'DescribeImage'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             image_list = []
@@ -86,6 +87,7 @@ class UcloudAPI:
         return Response({'error': '模板不存在'}, status=400)
 
     def GetVPC(self, **kwargs):
+        kwargs['Action'] = 'DescribeVPC'
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             vpc_list = []
@@ -97,13 +99,14 @@ class UcloudAPI:
             return {'code': 0, 'error': ret['Message']}
 
     def GetSubnet(self, **kwargs):
+        kwargs['Action'] = 'DescribeSubnet'
         VPCId = kwargs.pop('VPCId')
         ret = self.response(**kwargs)
         if ret.get('RetCode', '') == 0:
             subnet_list = []
             for s in ret['DataSet']:
                 if s['VPCId'] == VPCId:
-                    subnet = { 'name':s['Subnet'],'id':s['SubnetId']}
+                    subnet = { 'name':s['Subnet'], 'id':s['SubnetId']}
                     subnet_list.append(subnet)
             return {'code': 1, 'msg': subnet_list}
         else:
@@ -115,7 +118,7 @@ class UcloudAPI:
         if ret.get('RetCode', '') == 0:
             return {'code': 1, 'msg': ret}
         else:
-            return {'code': 0, 'error': ret}
+            return {'code': 0, 'error': str(ret)}
 
     def GetUHostInstance(self, **kwargs):
         kwargs['Action'] = 'DescribeUHostInstance'
@@ -172,14 +175,12 @@ class UcloudAPI:
     def DescribeIsolationGroup(self, **kwargs):
         kwargs['Action'] = 'DescribeIsolationGroup'
         ret = self.response(**kwargs)
-        print(ret)
         if ret.get('RetCode', '') == 0:
             groups = []
             set = ret.get('IsolationGroupSet','')
             if set:
                 for group in set:
                     groups.append({ 'name':group['GroupName'],'id':group['GroupId']})
-                print(groups)
             return {'code': 1, 'msg': groups}
         else:
             return {'code': 0, 'error': ret['Message']}

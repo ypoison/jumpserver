@@ -34,19 +34,22 @@ function DyAPIUpdateAttr(props) {
             return props.success(data);
         }
     }).fail(function(jqXHR, textStatus, errorThrown) {
-        var msg = "";
-        if (user_fail_message) {
-            msg = user_fail_message;
-        } else if (jqXHR.responseJSON) {
-            if (jqXHR.responseJSON.error) {
-                msg = jqXHR.responseJSON.error
-            } else if (jqXHR.responseJSON.msg) {
-                msg = jqXHR.responseJSON.msg
+        if (flash_message) {
+            var msg = "";
+            if (user_fail_message) {
+                msg = user_fail_message;
+            } else if (jqXHR.responseJSON) {
+                if (jqXHR.responseJSON.error) {
+                    msg = jqXHR.responseJSON.error
+                } else if (jqXHR.responseJSON.msg) {
+                    msg = jqXHR.responseJSON.msg
+                }
             }
-        }if (msg === "") {
-            msg = default_failed_message;
+            if (msg === "") {
+                msg = default_failed_message;
+            }
+            toastr.error(msg);
         }
-        toastr.error(msg);
         $(".splash").hide();
         if (typeof props.error === 'function') {
             console.log(jqXHR);

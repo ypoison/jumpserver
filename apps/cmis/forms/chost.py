@@ -2,12 +2,12 @@
 #
 from django import forms
 
-from ..models import Account
+from ..models import Account,ChostModel
 from assets.models import Node, AdminUser, Domain
 
-__all__ = ['CreateCHostForm',]
+__all__ = ['CHostCreateForm', 'CHostBulkCreateForm']
 
-class CreateCHostForm(forms.Form):
+class CHostCreateForm(forms.Form):
     CHARGE_TYPE_CHOICES = (
         ('Year', '按年付费'),
         ('Month', '按月付费'),
@@ -125,4 +125,51 @@ class CreateCHostForm(forms.Form):
     )
     SSHPort = forms.IntegerField(initial=1932, label='SSH端口')
     Tag = forms.CharField(initial='Default', required=False, label='业务组')
-    IsolationGroup = forms.CharField(required=False, label='	硬件隔离组')
+    IsolationGroup = forms.CharField(required=False, label='硬件隔离组')
+
+class CHostBulkCreateForm(forms.Form):
+    account = forms.ModelChoiceField(
+        required=True, queryset=Account.objects.filter(auth__contains='chost'),
+        label="账号",
+        widget=forms.Select(
+            attrs={
+                'class': 'select2',
+                'data-placeholder': '账号'
+            }
+        )
+    )
+    ProjectId = forms.CharField(required=True, label='项目')
+    nodes = forms.ModelMultipleChoiceField(
+        queryset=Node.objects.all(), label='节点',
+        widget=forms.SelectMultiple(
+            attrs={'class': 'select2', 'data-placeholder': '节点'}
+        )
+    )
+    chost_model = forms.ModelChoiceField(
+        queryset=ChostModel.objects.all(), label='模板',
+        widget=forms.Select(
+            attrs={'class': 'select2', 'data-placeholder': '模板'}
+        )
+    )
+
+    admin_user = forms.ModelChoiceField(
+        queryset=AdminUser.objects.all(), label='管理用户',
+        widget=forms.Select(
+            attrs={'class': 'select2', 'data-placeholder': '管理用户'}
+        )
+    )
+    Domain = forms.ModelChoiceField(
+        queryset=Domain.objects.all(), label='网域',
+        widget=forms.Select(
+            attrs={'class': 'select2', 'data-placeholder': '网域'}
+        )
+    )
+    Region = forms.CharField(required=True, label='地域')
+    Zone = forms.CharField(required=True, label='可用区')
+    Tag = forms.CharField(initial='Default', required=False, label='业务组')
+    IsolationGroup = forms.CharField(required=False, label='硬件隔离组')
+    SecurityGroupId = forms.CharField(max_length=50, label='防火墙')
+    Password = forms.CharField(
+        widget=forms.PasswordInput, max_length=128,
+        required=True, label='密码',help_text='长度8-30'
+    )
