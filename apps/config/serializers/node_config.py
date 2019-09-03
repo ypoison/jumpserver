@@ -47,5 +47,5 @@ class WEBConfigSerializer(serializers.ModelSerializer):
         model = WEBConfigRecords
         fields = [
             'id', 'platform', 'platform_display', 'node_asset', 'node_asset_display', 'domain', 'port',
-            'proxy_asset', 'proxy_asset_display', 'proxy_ip', 'proxy_port', 'comment'
+            'proxy_asset', 'proxy_asset_display', 'proxy_ip', 'proxy_port', 'comment', 'jid'
         ]

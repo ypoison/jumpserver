@@ -19,7 +19,7 @@ urlpatterns = [
     path('chost/<uuid:pk>/get/status/', api.GetStatusAPI.as_view(), name='chost-get-status'),
     path('chost/for/model/<pk>/', api.ForModelAPI.as_view(), name='chost-for-model'),
     path('chost/create/isolation-group/', api.CreateIsolationGroupAPI.as_view(), name='chost-create-isolation-group'),
-    path('chost/create/host-name/', api.CreateHostNameAPI.as_view(), name='chost-create-host_name'),
+    path('chost/create/host-name/', api.CreateGameNameAPI.as_view(), name='chost-create-host_name'),
 
     path('cdn/<uuid:pk>/modify/', api.CDNDomainModifyApi.as_view(), name='cdn-modify'),
     path('cdn/<uuid:pk>/update/', api.CDNDomainUpdateApi.as_view(), name='cdn-update'),

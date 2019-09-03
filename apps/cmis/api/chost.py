@@ -6,7 +6,8 @@ from rest_framework.pagination import LimitOffsetPagination
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin, IsValidUser
 
-from ..models import Account, ChostCreateRecord, ChostModel, HostName
+from ..models import Account, ChostCreateRecord, ChostModel
+from config.models import App
 from .. import serializers
 
 from .. import ucloud_api
@@ -17,7 +18,7 @@ logger = get_logger(__file__)
 __all__ = [
             'CloudInfoAPI', 'ChostCreateRecordAPI', 'GetStatusAPI',
             'GetPriceAPI', 'SetModelAPI', 'ForModelAPI','CreateIsolationGroupAPI',
-            'CreateHostNameAPI',
+            'CreateGameNameAPI',
         ]
 cloud_api = ucloud_api.UcloudAPI()
 
@@ -236,18 +237,18 @@ class CreateIsolationGroupAPI(ListAPIView):
         else:
             return Response(queryset, status=400)
 
-class CreateHostNameAPI(ListAPIView):
+class CreateGameNameAPI(ListAPIView):
     permission_classes = (IsValidUser,)
 
     def post(self, request, *args, **kwargs):
         data = self.request.data
-        host_name = data.get('HostName', '')
-
-        if host_name:
-            try:
-                HostName.objects.create(name=host_name)
-            except Exception as e:
-                return Response({'code': 0, 'error': '找不到账户信息'}, status=400)
-        else:
-            return Response({'code': 0, 'error': '找不到账户信息'}, status=400)
+        kw = {
+            'name': data.get('GameName', ''),
+            'port': data.get('Port', ''),
+            'type': 'game'
+        }
+        try:
+            App.objects.create(**kw)
+        except Exception as e:
+            return Response({'code': 0, 'error': e}, status=400)
         return Response({"msg": "ok"})

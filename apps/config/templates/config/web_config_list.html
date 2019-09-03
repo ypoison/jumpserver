@@ -40,6 +40,7 @@
                                 <div class="ibox-content">
                                     <div class="uc pull-left  m-r-5">
                                         <a href="{% url 'config:web-config-create' %}" class="btn btn-sm btn-primary"> 添加WEB配置 </a>
+                                        <a href="#" class="btn btn-sm btn-primary" id="update"> 刷新 </a>
                                     </div>
                                     <div class="btn-group uc pull-right  m-r-5">
                                        <button data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle"> 平台 <span class="caret"></span></button>
@@ -116,6 +117,10 @@ $(document).ready(function(){
     var val = $(this).text();
     $("#asset_list_table_filter input").val(val);
     web_config_table.search(val).draw();
- });
+ })
+.on('click', '#update', function () {
+    var $data_table = $('#web_config_list_table').DataTable();
+    $data_table.draw(false);
+});
 </script>
 {% endblock %}

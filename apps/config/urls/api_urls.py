@@ -10,6 +10,7 @@ router = DefaultRouter()
 
 router.register(r'node-config', api.NodeViewSet, 'node-config')
 router.register(r'web-config', api.WEBConfigViewSet, 'web-config')
+router.register(r'app', api.AppViewSet, 'app')
 
 urlpatterns = [
     path('node-config/reload/', api.NodeReloadApi.as_view(), name='node-config-reload'),

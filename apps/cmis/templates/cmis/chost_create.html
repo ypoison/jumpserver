@@ -208,7 +208,6 @@ function getInfo(props) {
     var url = '{% url "api-cmis:chost-get-info" %}';
     $("#" + props.to + " option").remove();
     $("#" + props.to).append("<option value='' selected=''>---------</option>")
-    $(".splash").show();
     $.ajax({
         url: url,
         async: false,
@@ -236,6 +235,7 @@ function getInfo(props) {
             $(".splash").hide();
         }
     });
+
 }
 function getZone(id, region) {
     getInfo({

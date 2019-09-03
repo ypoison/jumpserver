@@ -13,8 +13,11 @@
                             <li>
                                 <a href="{% url 'config:node-config-list' %}" class="text-center"><i class="fa fa-laptop"></i> 节点信息 </a>
                             </li>
-                            <li class="active">
+                            <li>
                                 <a href="{% url 'config:web-config-list' %}" class="text-center"><i class="fa fa-laptop"></i> WEB配置 </a>
+                            </li>
+                            <li class="active">
+                                <a href="{% url 'config:web-config-bulk-create' %}" class="text-center"><i class="fa fa-laptop"></i> 批量WEB配置 </a>
                             </li>
                         </ul>
                     </div>
@@ -40,6 +43,11 @@
                                 </div>
                                 <div class="ibox-content">
                                     <form id="groupForm" method="post" class="form-horizontal">
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                 {{ form.non_field_errors }}
+                                             </div>
+                                        {% endif %}
                                         {% csrf_token %}
                                         {% bootstrap_field form.platform layout="horizontal" %}
                                         <div class="form-group required">
@@ -50,26 +58,11 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        {% bootstrap_field form.domain layout="horizontal" %}
-                                        {% bootstrap_field form.port layout="horizontal" %}
+                                        {% bootstrap_field form.game_domain layout="horizontal" %}
+                                        {% bootstrap_field form.pay_domain layout="horizontal" %}
+                                        {% bootstrap_field form.h5_domain layout="horizontal" %}
+                                        {% bootstrap_field form.net_type layout="horizontal" %}
                                         <div class="form-group required">
-                                            <labe class="col-md-2 control-label" for="id_proxy_asset">代理主机</labe>
-                                            <div class="col-md-9">
-                                                <select name="proxy_asset" class="form-control select2" data-placeholder="代理主机" title="" required id="id_proxy_asset">
-                                                    <option value="">---------</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group required">
-                                            <labe class="col-md-2 control-label" for="id_proxy_ip">代理IP</labe>
-                                            <div class="col-md-9">
-                                                <select name="proxy_ip" class="form-control select2" data-placeholder="代理IP" title="" required id="id_proxy_ip">
-                                                    <option value="">---------</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        {% bootstrap_field form.proxy_port layout="horizontal" %}
-                                        {% bootstrap_field form.comment layout="horizontal" %}
 
                                         <div class="hr-line-dashed"></div>
                                         <div class="form-group">
@@ -119,16 +112,6 @@ $(document).ready(function () {
     $("#id_platform").change(function() {
         var platform_id = $(this).val();
         GetInfo(platform_id, "getnode", "id_node_asset");
-        GetInfo(platform_id, "getproxy", "id_proxy_asset");
-        var domain_form_group = $("#id_domain").closest('.form-group');
-        if (domain_form_group.hasClass('has-error')) {
-            domain_form_group.removeClass('has-error');
-            domain_form_group.find('.help-block').hide();
-        }
-    });
-    $("#id_proxy_asset").change(function() {
-        var asset_id = $(this).val();
-        GetInfo(asset_id, "getip", "id_proxy_ip");
     });
 });
 </script>

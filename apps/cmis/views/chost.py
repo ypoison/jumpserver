@@ -9,7 +9,8 @@ from common.utils import get_object_or_none
 
 from assets.models import Asset, Node
 
-from ..models import ChostCreateRecord, ChostModel, HostName
+from ..models import ChostCreateRecord, ChostModel
+from config.models import App
 from ..forms import CHostCreateForm, CHostBulkCreateForm
 
 from ..tasks import buyer, bulk_buyer
@@ -98,7 +99,7 @@ class CHostBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
             'app': '云管中心',
             'action': '批量采购云主机',
             'models': ChostModel.objects.all(),
-            'names': HostName.objects.all()
+            'names': App.objects.filter(type='game')
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -106,7 +107,7 @@ class CHostBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
     def form_valid(self, form):
         create_host_list = self.request.POST.getlist('Name')
         if not create_host_list:
-            create_host_list = [i.name for i in HostName.objects.all()]
+            create_host_list = [i.name for i in App.objects.filter(type='game')]
         req = form.cleaned_data
         try:
             node_key = req.get('nodes')[0].key[:3]

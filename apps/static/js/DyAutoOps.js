@@ -21,7 +21,7 @@ function DyAPIUpdateAttr(props) {
             var msg = "";
             if (user_success_message) {
                 msg = user_success_message;
-            } else if (jqXHR.responseJSON.msg) {
+            } else if (jqXHR.responseJSON.msg || false) {
                 msg = jqXHR.responseJSON.msg
             }
             if (msg === "") {

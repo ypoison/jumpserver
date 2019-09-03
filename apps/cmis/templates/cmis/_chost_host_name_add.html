@@ -21,9 +21,15 @@
     {% csrf_token %}
     <h3></h3>
     <div class="form-group required">
-        <label class="col-md-2 control-label" for="HostName">游戏名称</label>
+        <label class="col-md-2 control-label" for="GameName">游戏服名称</label>
         <div class="col-md-9">
-            <input type="text" name="HostName" maxlength="128" class="form-control" title="" required="" id="id_HostName">
+            <input type="text" name="GameName" maxlength="128" class="form-control" title="" required="" id="id_GameName">
+        </div>
+    </div>
+    <div class="form-group required">
+        <label class="col-md-2 control-label" for="Port">端口</label>
+        <div class="col-md-9">
+            <input type="text" name="Port" maxlength="128" class="form-control" title="" required="" id="id_Port">
         </div>
     </div>
     <div class="hr-line-dashed"></div>

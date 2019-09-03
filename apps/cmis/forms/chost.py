@@ -94,7 +94,7 @@ class CHostCreateForm(forms.Form):
             })
         )
     NetCapability =forms.ChoiceField(initial='Normal', choices=NET_CAPABILITY_CHOICES, required=False, label='网络增强')
-    HotplugFeature = forms.BooleanField(initial=True, label='热升级')
+    HotplugFeature = forms.BooleanField(initial=True, required=False, label='热升级')
     CPU = forms.IntegerField(required=True, label='CPU', min_value=1, max_value=64,
                             help_text = '可选参数：1-64。'
                              )

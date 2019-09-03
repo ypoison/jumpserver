@@ -146,33 +146,34 @@
 function getInfo(props) {
     var url = '{% url "api-cmis:chost-get-info" %}';
     $("#" + props.to + " option").remove();
-    $(".splash").show();
-    $.ajax({
-        url: url,
-        async: false,
-        data: JSON.stringify(props.data),
-        type: "POST",
-        contentType:"application/json; charset=utf-8",
-        dataType:"json"
-    }).done(function(ret) {
-        if (ret.code != 0) {
-            var data = ret['msg'];
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].IsDefault) {
-                    $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
-                } else {
-                    $("#" + props.to).append("<option value =" + data[i].id + ">" + data[i].name + "</option>")
+    $(".splash").show(function () {
+        $.ajax({
+            url: url,
+            async: false,
+            data: JSON.stringify(props.data),
+            type: "POST",
+            contentType:"application/json; charset=utf-8",
+            dataType:"json"
+        }).done(function(ret) {
+            if (ret.code != 0) {
+                var data = ret['msg'];
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].IsDefault) {
+                        $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
+                    } else {
+                        $("#" + props.to).append("<option value =" + data[i].id + ">" + data[i].name + "</option>")
+                    }
                 }
+                if (typeof props.success === 'function') {
+                    return props.success(props.data);
+                }
+                $(".splash").hide();
+            } else {
+                $("#" + props.to + " option").remove();
+                $("#" + props.to).append("<option value='' >没有相关信息</option>")
+                $(".splash").hide();
             }
-            if (typeof props.success === 'function') {
-                return props.success(props.data);
-            }
-            $(".splash").hide();
-        } else {
-            $("#" + props.to + " option").remove();
-            $("#" + props.to).append("<option value='' >没有相关信息</option>")
-            $(".splash").hide();
-        }
+        });
     });
 }
 function getZone(id, region) {
@@ -352,13 +353,15 @@ $(document).ready(function () {
 
     $("#btn_host_name_confirm").on('click',function () {
         var the_url = '{% url "api-cmis:chost-create-host_name" %}';
-        var HostName = $("#id_HostName").val();
+        var GameName = $("#id_GameName").val();
+        var Port = $("#id_Port").val();
         var success = function (ret) {
             var data = ret['msg']
-           $("#id_Name").append("<option value =" + HostName + ">" + HostName + "</option>")
+           $("#id_Name").append("<option value =" + GameName + ">" + GameName + "</option>")
         };
         var body = {
-            'HostName': HostName,
+            'GameName': GameName,
+            'Port': Port
         }
 
         $("#chost_host_name_add").modal('hide');

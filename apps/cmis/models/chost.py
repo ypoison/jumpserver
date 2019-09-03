@@ -8,7 +8,7 @@ from assets.models import Asset
 from ..models import Account
 from common.utils import get_object_or_none
 
-__all__ = ['ChostCreateRecord', 'ChostModel', 'HostName']
+__all__ = ['ChostCreateRecord', 'ChostModel']
 
 class ChostModel(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
@@ -74,10 +74,3 @@ class ChostCreateRecord(models.Model):
     @property
     def account(self):
         return get_object_or_none(Account, id=uuid.UUID(self.account_id).hex)
-
-class HostName(models.Model):
-    name = models.CharField(max_length=50,verbose_name='主机名')
-
-    class Meta:
-        unique_together = [('name')]
-        db_table = "cmis_host_name"

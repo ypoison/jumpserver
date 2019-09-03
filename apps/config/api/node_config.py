@@ -9,14 +9,15 @@ from common.utils import get_request_ip, get_logger, get_object_or_none
 from common.permissions import IsOrgAdmin, IsValidUser
 
 from assets.models import Node, Asset
-from ..models import WEBConfigRecords
+from ..models import WEBConfigRecords, App
 from .. import serializers
 from ..webconfig import WEBConfig
 
 from ..tasks import write_log_async
 
 logger = get_logger(__file__)
-__all__ = ['NodeViewSet','NodeReloadApi', 'WEBConfigViewSet','GetApi',
+__all__ = ['NodeViewSet', 'NodeReloadApi', 'WEBConfigViewSet', 'GetApi',
+           'AppViewSet',
            ]
 webconfig = WEBConfig()
 
@@ -71,7 +72,7 @@ class NodeReloadApi(ListAPIView):
 
 
 class WEBConfigViewSet(BulkModelViewSet):
-    filter_fields = ('platform__value', 'domain', 'port', 'proxy_ip', 'proxy_port', 'comment')
+    filter_fields = ('platform__value', 'domain', 'port', 'proxy_ip', 'proxy_port', 'comment', 'jid')
     search_fields = filter_fields
     queryset = WEBConfigRecords.objects.all()
     permission_classes = (IsValidUser,)
@@ -107,10 +108,18 @@ class GetApi(ListAPIView):
             asset = list(Node.objects.get(id=id).get_children().get(value='other').get_all_assets().filter(hostname__contains='Proxy'))
             queryset.extend(asset)
         elif action == "getproxy":
-            queryset =  list(Node.objects.get(id=id).get_all_assets())
+            queryset = list(Node.objects.get(id=id).get_all_assets())
         elif action == "getip":
             asset = get_object_or_none(Asset,id=id)
             queryset.append({'id':asset.ip,'ip':asset.ip,'hostname':asset.hostname})
             if asset.public_ip:
                 queryset.append({'id':asset.public_ip,'ip':asset.public_ip,'hostname':asset.hostname})
         return queryset
+
+class AppViewSet(BulkModelViewSet):
+    filter_fields = ('name', 'type', 'port')
+    search_fields = filter_fields
+    queryset = App.objects.all()
+    permission_classes = (IsValidUser,)
+    serializer_class = serializers.AppSerializer
+    pagination_class = LimitOffsetPagination
