@@ -1,0 +1,159 @@
+{% extends '_base_create_update.html' %}
+{% load static %}
+{% load bootstrap3 %}
+{% load i18n %}
+
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li>
+                                <a href="{% url 'config:node-config-list' %}" class="text-center"><i class="fa fa-laptop"></i> 节点信息 </a>
+                            </li>
+                            <li class="active">
+                                <a href="{% url 'config:web-config-list' %}" class="text-center"><i class="fa fa-laptop"></i> WEB配置 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'config:web-config-bulk-create' %}" class="text-center"><i class="fa fa-laptop"></i> 批量WEB配置 </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-12" style="padding-left: 0;">
+                            <div class="" id="content_start">
+                            </div>
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <div class="ibox-tools">
+                                        <a class="collapse-link">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </a>
+                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                            <i class="fa fa-wrench"></i>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-user">
+                                        </ul>
+                                        <a class="close-link">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="ibox-content">
+                                    <form id="groupForm" method="post" class="form-horizontal">
+                                        {% csrf_token %}
+                                        {% bootstrap_field form.platform layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_node_asset">节点主机</labe>
+                                            <div class="col-md-9">
+                                                <select name="node_asset" class="form-control select2" data-placeholder="节点主机" title="" required id="id_node_asset">
+                                                    <option value="">---------</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.domain layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_port">端口</labe>
+                                            <div class="col-md-9">
+                                                <select name="port" class="form-control select2" data-placeholder="端口" title="" required id="id_port">
+                                                    <option value="">---------</option>
+                                                    {% for p in ports %}
+                                                        <option value="{{ p.port }}">{{ p.name }}({{ p.port }})</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_proxy_asset">代理主机</labe>
+                                            <div class="col-md-9">
+                                                <select name="proxy_asset" class="form-control select2" data-placeholder="代理主机" title="" required id="id_proxy_asset">
+                                                    <option value="">---------</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_proxy_ip">代理IP</labe>
+                                            <div class="col-md-9">
+                                                <select name="proxy_ip" class="form-control select2" data-placeholder="代理IP" title="" required id="id_proxy_ip">
+                                                    <option value="">---------</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <labe class="col-md-2 control-label" for="id_proxy_port">代理端口</labe>
+                                            <div class="col-md-9">
+                                                <select name="proxy_port" class="form-control select2" data-placeholder="代理端口" title="" required id="id_proxy_port">
+                                                    <option value="">---------</option>
+                                                    {% for p in ports %}
+                                                        <option value="{{ p.port }}">{{ p.name }}({{ p.port }})</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                        {% bootstrap_field form.comment layout="horizontal" %}
+
+                                        <div class="hr-line-dashed"></div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2">
+                                                <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
+                                                <button id="submit_button" class="btn btn-primary" type="submit">{% trans 'Submit' %}</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block custom_foot_js %}
+<script type="text/javascript">
+function GetInfo (id, action, to) {
+    $("#"+ to +" option:gt(0)").remove();
+    if (id != "") {
+        var url = '{% url "api-config:web-config-get" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', id);
+        $.ajax({
+            url: url,
+            data: {"action":action},
+            type: "GET",
+            contentType:"application/json; charset=utf-8",
+            dataType:"json"
+        }).done(function(data, textStatue, jqXHR) {
+            if (data.length != 0) {
+                for (var i = 0; i < data.length; i++) {
+                    $("#"+ to).append("<option value =" + data[i].id + ">" + data[i].hostname + "(" + data[i].ip + ")" + "</option>")
+                }
+            } else {
+                $("#" + to).append("<option value='' >没有相关信息</option>")
+            }
+        });
+    }
+}
+$(document).ready(function () {
+    $('.select2').select2({
+        allowClear: true
+    });
+    $("#id_platform").change(function() {
+        var platform_id = $(this).val();
+        GetInfo(platform_id, "getnode", "id_node_asset");
+        GetInfo(platform_id, "getproxy", "id_proxy_asset");
+        var domain_form_group = $("#id_domain").closest('.form-group');
+        if (domain_form_group.hasClass('has-error')) {
+            domain_form_group.removeClass('has-error');
+            domain_form_group.find('.help-block').hide();
+        }
+    });
+    $("#id_proxy_asset").change(function() {
+        var asset_id = $(this).val();
+        GetInfo(asset_id, "getip", "id_proxy_ip");
+    });
+});
+</script>
+{% endblock %}

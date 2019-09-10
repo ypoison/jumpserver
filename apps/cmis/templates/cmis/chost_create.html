@@ -1,0 +1,601 @@
+{% extends '_base_create_update.html' %}
+{% load static %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a href="{% url 'cmis:chost-create' %}" class="text-center"><i class="fa fa-laptop"></i> 采购云主机 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'cmis:chost-bulk-create' %}" class="text-center"><i class="fa fa-laptop"></i> 批量采购云主机 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'cmis:chost-create-record-list' %}" class="text-center"><i class="fa fa-laptop"></i> 采购记录 </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-9" style="padding-left: 0;">
+                            <div class="" id="content_start">
+                            </div>
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-content">
+                                    <form id="groupForm" method="post" class="form-horizontal">
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                 {{ form.non_field_errors }}
+                                             </div>
+                                        {% endif %}
+                                        {% csrf_token %}
+                                        <h3>账号</h3>
+                                        {% bootstrap_field form.account layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_ProjectId">项目</label>
+                                            <div class="col-md-9">
+                                                <select name="ProjectId" class="form-control" title="" id="id_ProjectId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.nodes layout="horizontal" %}
+                                        {% bootstrap_field form.admin_user layout="horizontal" %}
+                                        {% bootstrap_field form.Domain layout="horizontal" %}
+                                        {% bootstrap_field form.ChargeType layout="horizontal" %}
+                                        <div class="form-group required Quantity">
+                                            <label class="col-md-2 control-label" for="id_Quantity">购买时长</label>
+                                            <div class="col-md-9">
+                                                <select name="Quantity" class="form-control" title="" id="id_Quantity">
+                                                    <option value =0 selected>购至月末</option>
+                                                    <option value =1>1个月</option>
+                                                    <option value =2>2个月</option>
+                                                    <option value =3>3个月</option>
+                                                    <option value =4>4个月</option>
+                                                    <option value =5>5个月</option>
+                                                    <option value =6>6个月</option>
+                                                    <option value =7>7个月</option>
+                                                    <option value =8>8个月</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>地域</h3>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Region">地域</label>
+                                            <div class="col-md-9">
+                                                <select name="Region" class="form-control" title="" id="id_Region">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Zone">可用区</label>
+                                            <div class="col-md-9">
+                                                <select name="Zone" class="form-control" title="" id="id_Zone">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>管理设置</h3>
+                                        {% bootstrap_field form.Name layout="horizontal" %}
+                                        {% bootstrap_field form.Password layout="horizontal" %}
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_Tag">业务组</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+	                                    	    <div class="input-group-btn">
+	                                    		    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">加入组<span class="caret"></span>
+	                                    		    </button>
+                                                    <div style="margin-top: 37px;"></div>
+	                                    		    <ul class="dropdown-menu" id="tag_select"></ul>
+	                                    	    </div>
+	                                    	    <input type="text" name="Tag" class="form-control" id="id_Tag" />
+                                                <div class="help-block">新增直接输入, 若“加入组”找不到相关组，也可直接输入。</div>
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_IsolationGroup">硬件隔离组</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+	                                    	    <a class="input-group-addon"  data-toggle="modal" data-target="#chost_isolation_group_add" class="btn btn-info" type="submit" id="AddIsolationGroup">+</a>
+                                                <select name="IsolationGroup" class="select2 form-control m-b" title="" id="id_IsolationGroup">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.SSHPort layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>网络配置</h3>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_VPCId">所属VPC</label>
+                                            <div class="col-md-9">
+                                                <select name="VPCId" class="form-control" title="" id="id_VPCId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_SubnetId">所属子网</label>
+                                            <div class="col-md-9">
+                                                <select name="SubnetId" class="form-control" title="" id="id_SubnetId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.EIP layout="horizontal" %}
+                                        <div class="vpc" style="display:none">
+                                            {% bootstrap_field form.EIPPayMode layout="horizontal" %}
+                                            {% bootstrap_field form.EIPBandwidth layout="horizontal" %}
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_SecurityGroupId">防火墙</label>
+                                            <div class="col-md-9">
+                                                <select name="SecurityGroupId" class="form-control" title="" id="id_SecurityGroupId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>基础配置</h3>
+                                        {% bootstrap_field form.OSType layout="horizontal" %}
+                                        {% bootstrap_field form.ImageType layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_ImageId">镜像</label>
+                                            <div class="col-md-9">
+                                                <select name="ImageId" class="form-control" title="" id="id_ImageId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.MachineType layout="horizontal" %}
+                                        {% bootstrap_field form.CPU layout="horizontal" %}
+                                        {% bootstrap_field form.Memory layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks0Size layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Type layout="horizontal" %}
+                                        {% bootstrap_field form.Disks1Size layout="horizontal" %}
+                                        {% bootstrap_field form.NetCapability layout="horizontal" %}
+                                        {% bootstrap_field form.HotplugFeature layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2" style="display:none" id="price">
+                                                <p>
+                                                    <span>主机费用:</span>
+                                                    <span style="color:red;" id="host_price"></span>
+                                                    <span>弹性IP费用:</span>
+                                                    <span style="color:red;" id="EIP_price"></span>
+                                                    <span>合计:</span>
+                                                    <span style="color:red;" id="sum"></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2">
+                                                <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
+                                                <a id="price_button" class="btn btn-warning" type="submit">价格</a>
+                                                <button id="submit_button" class="btn btn-primary" type="submit">{% trans 'Submit' %}</button>
+                                                <a data-toggle="modal" data-target="#chost_model_name" class="btn btn-info" type="submit">生成模板</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3" style="padding-left: 0;padding-right: 0">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <i class="fa fa-info-circle"></i> 模板
+                                </div>
+                                <div class="panel-body">
+                                    <div class="btn-group-xs" id="chost-model" data-toggle="buttons">
+                                        {% for model in models %}
+                                            <label style="margin: 3px;" class="btn-primary btn btn-outline chost-model">
+                                                <input type="radio" value={{ model.id }}> {{ model.name }}</label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'cmis/_chost_model_name.html' %}
+    {% include 'cmis/_chost_isolation_group_add.html' %}
+{% endblock %}
+
+{% block custom_foot_js %}
+<script type="text/javascript">
+function getInfo(props) {
+    var url = '{% url "api-cmis:chost-get-info" %}';
+    $("#" + props.to + " option").remove();
+    $("#" + props.to).append("<option value='' selected=''>---------</option>")
+    $.ajax({
+        url: url,
+        async: false,
+        data: JSON.stringify(props.data),
+        type: "POST",
+        contentType:"application/json; charset=utf-8",
+        dataType:"json"
+    }).done(function(ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].IsDefault) {
+                    $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
+                } else {
+                    $("#" + props.to).append("<option value =" + data[i].id + ">" + data[i].name + "</option>")
+                }
+            }
+            if (typeof props.success === 'function') {
+                return props.success(props.data);
+            }
+            $(".splash").hide();
+        } else {
+            $("#" + props.to + " option").remove();
+            $("#" + props.to).append("<option value='' >没有相关信息</option>")
+            $(".splash").hide();
+        }
+    });
+
+}
+function getZone(id, region) {
+    getInfo({
+        to: 'id_Zone',
+        data: {'Action': 'GetZone','account_id': id, 'Region':region}
+    })
+}
+function getSubnet(id, region, projectID) {
+    var vpcID = $("#id_VPCId").val();
+    getInfo({
+        to: 'id_SubnetId',
+        data: {'Action': 'DescribeSubnet','account_id': id, 'Region':region, 'ProjectId':projectID, VPCId:vpcID}
+    })
+}
+function getVPC(id, region, projectID) {
+    var subnet = function () {
+        getSubnet(id, region, projectID)
+    }
+    getInfo({
+        to: 'id_VPCId',
+        data: {'Action': 'DescribeVPC','account_id': id, 'Region':region, 'ProjectId':projectID},
+        success: subnet
+    })
+}
+function getFirewall(id, region, projectID) {
+    getInfo({
+        to: 'id_SecurityGroupId',
+        data: {'Action': 'DescribeFirewall','Region':region,'account_id': id, 'ProjectId':projectID},
+    })
+}
+function getTags() {
+    var the_url =  '{% url "api-cmis:chost-get-info" %}';
+    var id = $("#id_account").val();
+    var region = $("#id_Region").val();
+    var projectID = $("#id_ProjectId").val();
+    var success = function (ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            //$("#tag_select li").remove();
+            for (var i = 0; i < data.length; i++) {
+                    $("#tag_select").append("<li><a style='font-weight: bolder'>" + data[i].name + "</a></li>")
+            }
+        }
+    };
+    var body = {
+        'Action': 'DescribeUHostTags',
+        'account_id': id,
+        'Region':region,
+        'ProjectId':projectID,
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "POST",
+        body: JSON.stringify(body),
+        flash_message : false,
+        success:success
+    });
+}
+function getIsolationGroup() {
+    var the_url =  '{% url "api-cmis:chost-get-info" %}';
+    var id = $("#id_account").val();
+    var region = $("#id_Region").val();
+    var projectID = $("#id_ProjectId").val();
+    var success = function (ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            $("#id_IsolationGroup option").remove();
+            $("#id_IsolationGroup").append("<option value =''>------------</option>")
+            $.each(data, function(key, val){
+                $("#id_IsolationGroup").append("<option value =" + val.id + ">" + val.name + "</option>")
+            });
+        }
+    };
+    var body = {
+        'Action': 'DescribeIsolationGroup',
+        'account_id': id,
+        'Region':region,
+        'ProjectId':projectID,
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "POST",
+        body: JSON.stringify(body),
+        flash_message : false,
+        success:success
+    });
+}
+function getRegion() {
+    var account_id = $("#id_account").val();
+    var getOther = function () {
+        //get zone
+        var region = $("#id_Region").val();
+        getZone(account_id, region);
+        var projectid = $("#id_ProjectId").val();
+        getVPC(account_id, region, projectid);
+        getFirewall(account_id, region, projectid);
+        getImage()
+        getTags()
+        getIsolationGroup()
+    }
+    getInfo({
+        //get region
+        to: 'id_Region',
+        data: {'Action': 'GetRegion','account_id': account_id},
+        success: getOther
+    })
+}
+function getProject(id) {
+    var getOther = function () {
+        getRegion()
+    }
+    getInfo({
+        // get project
+        to: 'id_ProjectId',
+        data: {'Action': 'GetProjectList','account_id': id},
+        success: getOther
+    })
+}
+function getImage() {
+    var id = $("#id_account").val();
+    var projectid = $("#id_ProjectId").val();
+    var regionid = $("#id_Region").val();
+    var ostype = $("#id_OSType").val();
+    var imagetype = $("#id_ImageType").val();
+    getInfo({
+        //get region
+        to: 'id_ImageId',
+        data: { "Action":"DescribeImage","account_id":id,"ProjectId":projectid,
+                "Region":regionid, "OSType":ostype, "ImageType":imagetype
+                },
+    });
+}
+
+function formattingData() {
+    var formData = $("#groupForm").serializeArray();
+    var body = {};
+    $.each(formData, function(i, field){
+        body[field.name] = field.value
+    });
+    return body
+}
+
+$(document).ready(function () {
+    $('.select2').select2({
+        allowClear: true
+    });
+    $('#id_nodes.select2').select2({
+        closeOnSelect: false
+    });
+    $("#id_account").change(function() {
+        var id = $("#id_account").val();
+        getProject(id)
+    });
+
+    $("#id_ProjectId").change(function() {
+        if (!$(this)){
+            getRegion()
+        }
+    });
+
+    $("#id_Region").change(function() {
+        var id = $("#id_account").val();
+        var region = $(this).val();
+        var projectid = $("#id_ProjectId").val();
+        getZone(id, region)
+        getVPC(id, region, projectid)
+        getFirewall(id, region, projectid)
+        getTags()
+        getIsolationGroup()
+    });
+
+    $("#id_ImageType").change(function() {
+        getImage()
+    });
+
+    $("#id_VPCId").change(function() {
+        var id = $("#id_account").val();
+        var projectID = $("#id_ProjectId").val();
+        var region = $("#id_Region").val();
+        getSubnet(id, region, projectID)
+    });
+
+    $("#id_EIP").click(function () {
+        if ($(this).is(':checked')){
+            $('.vpc').css("display", "block");
+        } else {
+            $('.vpc').css("display","none");
+        }
+    });
+    $("#id_ChargeType").change(function() {
+        var charge_type = $(this).val();
+        if (charge_type === 'Year'){
+            $(".Quantity").css("display", "block")
+            $("#id_Quantity option").remove();
+            $("#id_Quantity").append("<option value =1 selected>1年</option>")
+            for (var i=2; i<=5;i++ ){
+                $("#id_Quantity").append("<option value =" + i + ">" + i + "年</option>")
+            }
+        } else if (charge_type === 'Month'){
+            $(".Quantity").css("display", "block")
+            $("#id_Quantity option").remove();
+            $("#id_Quantity").append("<option value =0 selected>购至月末</option>")
+            for (var i=1; i<=8;i++ ){
+                $("#id_Quantity").append("<option value =" + i + ">" + i + "个月</option>")
+            }
+        } else{
+            $(".Quantity").css("display", "none")
+        }
+    });
+
+    $("#tag_select").on('click', "li", function () {
+        var tag = $(this).text();
+        $("#id_Tag").val(tag)
+    });
+
+        $("#btn_isolation_group_confirm").on('click',function () {
+        var the_url = '{% url "api-cmis:chost-create-isolation-group" %}';
+        var GroupName = $("#id_IsolationGroupName").val();
+        var Remark = $("#id_Remark").val();
+        var accountId = $("#id_account").val();
+        var Region = $("#id_Region").val();
+        var ProjectId = $("#id_ProjectId").val();
+        var success = function (ret) {
+            var data = ret['msg']
+           $("#id_IsolationGroup").append("<option selected value =" + data.id + ">" + data.name + "</option>")
+        };
+        var body = {
+            'accountId':accountId,
+            'Region':Region,
+            'ProjectId':ProjectId,
+            'GroupName': GroupName,
+            'Remark': Remark
+        }
+
+        $("#chost_isolation_group_add").modal('hide');
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success_message: 'ok',
+            success:success
+        });
+    });
+
+
+    $("#price_button").click(function () {
+        var the_url = '{% url "api-cmis:chost-get-price" %}';
+            var success = function (ret) {
+                var data = ret;
+                $.each(data, function(key, val){
+                    $("#" + key).html(val)
+                });
+                $("#price").css("display", "block");
+            };
+        var body = formattingData()
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            flash_message : false,
+            success:success
+        });
+    });
+
+    $("#btn_model_name_confirm").click(function () {
+        var the_url = '{% url "api-cmis:chost-set-model" %}';
+        var model_name = $("#id_model_name").val();
+        var success = function (data) {
+            $("#chost-model label").remove();
+            $.each(data, function(key, val){
+                $("#chost-model").append('<label style="margin: 3px;" class="btn btn-primary btn-outline chost-model">' +
+                    '<input type="radio" value=' +
+                    val.id +'>' +
+                    val.name +
+                    '</label>'
+                )
+            });
+        };
+        var body = formattingData();
+        body['model_name'] = model_name;
+        body['VPCId'] = $("#id_VPCId option:selected").text();
+        body['SubnetId'] = $("#id_SubnetId option:selected").text();
+        body['SecurityGroupId'] = $("#id_SecurityGroupId option:selected").text();
+        body['ImageId'] = $("#id_ImageId option:selected").text();
+        $("#chost_model_name").modal('hide');
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success_message: 'ok',
+            success:success
+        });
+    });
+
+    $('.chost-model').click(function(){
+        var account = $("#id_account").val();
+        var project = $("#id_ProjectId").val();
+        if (!account || !project){
+             swal( "", "请选择 账号 和 项目 后再选择模板！", "error");
+             return
+        }
+        var model_id = $(this).children('input').val()
+        var the_url = '{% url "api-cmis:chost-for-model" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', model_id);
+        var success = function (data) {
+            $("#id_ChargeType").val(data.charge_type);
+            if ($("#id_ChargeType").val() == 'Dynamic'){
+                $('.Quantity').css("display","none");
+            } else {
+                $('.Quantity').css("display", "block");
+            }
+
+            $("#id_Region").val(data.region);
+            var id = $("#id_account").val();
+            var region = $("#id_Region").val();
+            var projectid = $("#id_ProjectId").val();
+            getZone(id, region);
+            getVPC(id, region, projectid);
+            getFirewall(id, region, projectid);
+            getTags();
+            getIsolationGroup();
+
+            $("#id_Zone").val(data.zone);
+            $("#id_OSType").val(data.os_type);
+            $("#id_ImageType").val(data.image_type);
+            getImage();
+            $("#id_Quantity").val(data.quantity);
+            $("#id_MachineType").val(data.machine_type);
+            $("#id_NetCapability").val(data.net_capability);
+            $("#id_CPU").val(data.cpu);
+            $("#id_Memory").val(data.memory);
+            $("#id_HotplugFeature").prop("checked",data.hotplug_feature);
+            $("#id_Disks0Type").val(data.disks_0_type);
+            $("#id_Disks0Size").val(data.disks_0_size);
+            $("#id_Disks1Type").val(data.disks_1_type);
+            $("#id_Disks1Size").val(data.disks_1_size);
+            $("#id_EIP").prop("checked",data.eip);
+            if ($("#id_EIP").is(':checked')){
+                $('.vpc').css("display", "block");
+            } else {
+                $('.vpc').css("display","none");
+            }
+            $("#id_EIPPayMode").val(data.eip_pay_mode);
+            $("#id_EIPBandwidth").val(data.eip_bandwidth);
+            $("#id_SSHPort").val(data.ssh_port)
+
+
+            $("#id_VPCId option").filter(function(){return $(this).text()==data.vpc;}).attr("selected", true);
+            getSubnet(id,region,projectid)
+            $("#id_SubnetId option").filter(function(){return $(this).text()==data.subnet;}).attr("selected", true);
+            $("#id_SecurityGroupId option").filter(function(){return $(this).text()==data.security_group;}).attr("selected", true);
+            $("#id_ImageId option").filter(function(){return $(this).text()==data.image;}).attr("selected", true);
+
+        };
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "GET",
+            flash_message: false,
+            success:success
+        });
+    });
+})
+</script>
+{% endblock %}

@@ -6,7 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import generics
 
 from common.utils import get_logger, get_object_or_none
-from common.permissions import IsOrgAdmin
+from common.permissions import IsOrgAdmin, IsValidUser
 
 from ..models import DomainName, Records, Account
 from .. import serializers
@@ -40,7 +40,7 @@ class DomainNameViewSet(BulkModelViewSet):
     filter_fields = ("domain_name", "project")
     search_fields = filter_fields
     queryset = DomainName.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.DomainNameSerializer
     pagination_class = LimitOffsetPagination
 
@@ -49,7 +49,7 @@ class DomainNameViewSet(BulkModelViewSet):
         return queryset
 
 class DomainNameNetAPIUpdateApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def get(self, request, *args, **kwargs):
         domain_name_account = Account.objects.all()
@@ -95,7 +95,7 @@ class DomainNameNetAPIUpdateApi(APIView):
 
 class DomainNameBeiAnCheckApi(generics.UpdateAPIView):
     queryset = DomainName.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def update(self, request, *args, **kwargs):
         domain = self.get_object()
@@ -112,7 +112,7 @@ class DomainNameBeiAnCheckApi(generics.UpdateAPIView):
 
 class DomainNameGFWCheckApi(generics.UpdateAPIView):
     queryset = DomainName.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def update(self, request, *args, **kwargs):
         domain = self.get_object()
@@ -131,7 +131,7 @@ class RecordsViewSet(BulkModelViewSet):
     filter_fields = ("domain_name",)
     search_fields = ("value", "rr")
     queryset = Records.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.RecordsSerializer
     pagination_class = LimitOffsetPagination
 
@@ -170,7 +170,7 @@ class RecordsViewSet(BulkModelViewSet):
 class DomainNameRecordUpdateApi(generics.UpdateAPIView):
     queryset = Records.objects.all()
     serializer_class = serializers.RecordStatusUpdateSerializer
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = ( IsValidUser,)
 
     def update(self, request, *args, **kwargs):
         record = self.get_object()
@@ -188,7 +188,7 @@ class DomainNameRecordUpdateApi(generics.UpdateAPIView):
             return Response({'error': serializer.errors}, status=400)
 
 class RecordsNetAPIUpdateApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = ( IsValidUser,)
 
     def get(self, request, *args, **kwargs):
         domain_name_id = self.kwargs.get('pk')

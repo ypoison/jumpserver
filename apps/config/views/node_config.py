@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
 #
 from django.views.generic import TemplateView, CreateView, \
-    UpdateView, DeleteView, DetailView, ListView
-from django.views.generic.detail import SingleObjectMixin
+    UpdateView
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy, reverse
-
+from django.urls import reverse_lazy
+from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.permissions import AdminUserRequiredMixin
-from common.const import create_success_msg, update_success_msg
-from common.utils import get_object_or_none
+from common.const import create_success_msg
+
 from assets.models import Node
-from ..models import WEBConfigRecords
-from ..forms import WEBConfigForm
+from ..models import WEBConfigRecords, App
+from ..forms import WEBConfigForm, WEBConfigBulkForm, AppForm
 from ..webconfig import WEBConfig
+from ..tasks import bulk_config
 
 __all__ = (
-    "NodeConfigListView", "NodeConfigWEBConfigListView", "NodeConfigWEBConfigCreateView"
+    "NodeConfigListView", "NodeConfigWEBConfigListView", "NodeConfigWEBConfigCreateView", "WEBConfigBulkCreateView",
+    'AppListView', 'AppCreateView', 'AppUpdateView',
 )
 webconfig = WEBConfig()
 
-class NodeConfigListView(AdminUserRequiredMixin, TemplateView):
-    template_name = 'node_config/node_config_list.html'
+class NodeConfigListView(LoginRequiredMixin, TemplateView):
+    template_name = 'config/node_config_list.html'
 
     def get_context_data(self, **kwargs):
         context = {
@@ -30,8 +33,8 @@ class NodeConfigListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class NodeConfigWEBConfigListView(AdminUserRequiredMixin, TemplateView):
-    template_name = 'node_config/web_config_list.html'
+class NodeConfigWEBConfigListView(LoginRequiredMixin, TemplateView):
+    template_name = 'config/web_config_list.html'
 
     def get_context_data(self, **kwargs):
         context = {
@@ -42,9 +45,9 @@ class NodeConfigWEBConfigListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class NodeConfigWEBConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class NodeConfigWEBConfigCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = WEBConfigRecords
-    template_name = 'node_config/web_config_create_update.html'
+    template_name = 'config/web_config_create_update.html'
     form_class = WEBConfigForm
     success_url = reverse_lazy('config:web-config-list')
     success_message = "updated successfully."
@@ -70,6 +73,72 @@ class NodeConfigWEBConfigCreateView(AdminUserRequiredMixin, SuccessMessageMixin,
         context = {
             'app': '配置管理',
             'action': '添加WEB配置',
+            'ports': App.objects.all()
+        }
+        kwargs.update(context)
+        return super().get_context_data(**kwargs)
+
+class WEBConfigBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = WEBConfigRecords
+    template_name = 'config/web_config_bulk_create.html'
+    form_class = WEBConfigBulkForm
+    success_url = reverse_lazy('config:web-config-list')
+    success_message = "updated successfully."
+
+    def form_valid(self, form):
+        req = form.cleaned_data
+        job = bulk_config.delay(req)
+        self.success_message = '配置任务已生成。 jobID: %s' % str(job).replace('-', '')
+        messages.success(self.request, self.success_message)
+        return redirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'app': '配置管理',
+            'action': '添加WEB配置',
+            'ports': App.objects.all()
+        }
+        kwargs.update(context)
+        return super().get_context_data(**kwargs)
+
+
+class AppListView(AdminUserRequiredMixin, TemplateView):
+    template_name = 'config/app_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'app': '配置管理',
+            'action': '应用信息列表',
+        }
+        kwargs.update(context)
+        return super().get_context_data(**kwargs)
+
+class AppCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = App
+    template_name = 'config/app_update.html'
+    form_class = AppForm
+    success_url = reverse_lazy('config:app-list')
+    success_message = create_success_msg
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'app': '配置管理',
+            'action': '应用信息创建',
+        }
+        kwargs.update(context)
+        return super().get_context_data(**kwargs)
+
+class AppUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = App
+    template_name = 'config/app_update.html'
+    form_class = AppForm
+    success_url = reverse_lazy('config:app-list')
+    success_message = create_success_msg
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'app': '配置管理',
+            'action': '应用信息更新',
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

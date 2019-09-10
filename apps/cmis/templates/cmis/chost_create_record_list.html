@@ -1,0 +1,140 @@
+{% extends '_base_list.html' %}
+{% load i18n static %}
+{% block table_search %}{% endblock %}
+
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li>
+                                <a href="{% url 'cmis:chost-create' %}" class="text-center"><i class="fa fa-laptop"></i> 采购云主机 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'cmis:chost-bulk-create' %}" class="text-center"><i class="fa fa-laptop"></i> 批量采购云主机 </a>
+                            </li>
+                            <li class="active">
+                                <a href="{% url 'cmis:chost-create-record-list' %}" class="text-center"><i class="fa fa-laptop"></i> 采购记录 </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-12" style="padding-left: 0;">
+                            <div class="" id="content_start">
+                            </div>
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-content">
+                                    <div class="uc pull-left  m-r-5">
+                                        <a href="#" class="btn btn-sm btn-primary" id="update"> 刷新 </a>
+                                    </div>
+                                    <table class="table table-striped table-bordered table-hover " id="chost_create_record_list_table" >
+                                        <thead>
+                                        <tr>
+                                            <th class="text-center">
+                                                <input type="checkbox" id="check_all" class="ipt_check_all" >
+                                            </th>
+                                            <th class="text-center">账号</th>
+                                            <th class="text-center">云主机ID</th>
+                                            <th class="text-center">资产信息</th>
+                                            <th class="text-center">采购人</th>
+                                            <th class="text-center">创建时间</th>
+                                            <th class="text-center">状态</th>
+                                            <th class="text-center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block content_bottom_left %}{% endblock %}
+{% block custom_foot_js %}
+<script>
+function initTable() {
+    var options = {
+        ele: $('#chost_create_record_list_table'),
+        columnDefs: [
+            {targets: 3, createdCell: function (td, cellData, rowData) {
+                {% url 'assets:asset-detail' pk=DEFAULT_PK as the_url  %}
+                var detail_btn = '<a href="{{ the_url }}">' + cellData + '</a>';
+                $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.asset));
+            }},
+            {targets: 5, createdCell: function (td, cellData) {
+                $(td).html(formatUTC(cellData))
+            }},
+            {targets: 6, createdCell: function (td, cellData) {
+                if (cellData === "Initializing") {
+                    $(td).html('初始化')
+                } else if (cellData === "Starting"){
+                    $(td).html('启动中')
+                }else if (cellData === "Running"){
+                    $(td).html('运行中')
+                }else if (cellData === "Stopping"){
+                    $(td).html('关机中')
+                }else if (cellData === "Stopped"){
+                    $(td).html('关机')
+                }else if (cellData === "Install Fail"){
+                    $(td).html('安装失败')
+                }else if (cellData === "Rebooting"){
+                    $(td).html('重启中')
+                }else if (cellData === "Error"){
+                    $(td).html('创建失败')
+                }
+            }},
+            {targets: 7, createdCell: function (td, cellData, rowData) {
+                if (rowData.hid) {
+                    var update_btn = '<a class="btn btn-xs btn-info btn-update" ' +
+                        'data-uid="{{ DEFAULT_PK }}" >刷新状态</a>';
+                    $(td).html(update_btn.replace('{{ DEFAULT_PK }}', cellData))
+                }else if (rowData.status === 'Error'){
+                     var fail_btn = '<a class="btn btn-xs  btn-danger">失败</a>';
+                    $(td).html(fail_btn)
+                }else{
+                    $(td).html('')
+                }
+             }}
+        ],
+        ajax_url: '{% url "api-cmis:chost-create-record" %}',
+        columns: [
+            {data: "id"}, {data: "account_display"}, {data: "hid" }, {data: "asset_display" },
+            {data: "created_by" }, {data: "date_created" },
+            {data: "status"}, {data: "id"},
+        ],
+        op_html: $('#actions').html()
+    };
+    jumpserver.initServerSideDataTable(options);
+}
+$(document).ready(function(){
+
+    initTable();
+})
+.on('click', '.btn-update', function () {
+    $this = $(this)
+    var $data_table = $('#chost_create_record_list_table').DataTable();
+    var uid = $this.data('uid');
+    var the_url = '{% url "api-cmis:chost-get-status" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+    var success = function () {
+        $data_table.draw(false);
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "GET",
+        flash_message : false,
+        success:success
+    });
+})
+.on('click', '#update', function () {
+    var $data_table = $('#chost_create_record_list_table').DataTable();
+    $data_table.draw(false);
+});
+</script>
+{% endblock %}

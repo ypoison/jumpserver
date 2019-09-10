@@ -21,15 +21,15 @@ function DyAPIUpdateAttr(props) {
             var msg = "";
             if (user_success_message) {
                 msg = user_success_message;
-            } else if (jqXHR.responseJSON.msg) {
+            } else if (jqXHR.responseJSON.msg || false) {
                 msg = jqXHR.responseJSON.msg
             }
             if (msg === "") {
                 msg = default_success_message;
             }
-            $(".splash").hide();
             toastr.success(msg);
         }
+        $(".splash").hide();
         if (typeof props.success === 'function') {
             return props.success(data);
         }
@@ -48,11 +48,10 @@ function DyAPIUpdateAttr(props) {
             if (msg === "") {
                 msg = default_failed_message;
             }
-            $(".splash").hide();
             toastr.error(msg);
         }
+        $(".splash").hide();
         if (typeof props.error === 'function') {
-            $(".splash").hide();
             console.log(jqXHR);
             return props.error(jqXHR.responseText, jqXHR.status);
         }
@@ -100,4 +99,54 @@ function DySwalAjax(obj, name, url, method, data, redirectTo) {
     }, function () {
         doMethod()
     });
+}
+
+//云管中心拿oss列表函数
+function GetOss(url, selected_source, source_type, selected_source_type) {
+    if ($("#id_source_type").val() === 'oss') {
+        var the_url = url
+        var success = function (ret) {
+            $("#id_sources").parent().html(
+                '<select name="sources" class="form-control" title="" id="id_sources"> </select>'
+            )
+            if (ret.code != 0) {
+                var data = ret['msg'];
+                $.each(data, function (key, val) {
+                    if (val === selected_source) {
+                        $("#id_sources").append("<option value =" + val + " selected>" + val + "</option>")
+                    } else {
+                        $("#id_sources").append("<option value =" + val + " >" + val + "</option>")
+                    }
+                })
+            }
+        }
+        DyAPIUpdateAttr({
+            url: the_url, method: 'GET', success: success
+        })
+    } else {
+        if (!selected_source){
+            var selected_source = '1.1.1.1:20,2.1.1.1:30'
+        }
+        if (source_type === selected_source_type) {
+            $("#id_sources").parent().html(
+                '<input type="text" name="sources" value="' + selected_source + '" placeholder="1.1.1.1:20,2.1.1.1:30" ' +
+                'maxlength="128" class="form-control" title="20为主，30为备；如：1.1.1.1:20,2.1.1.1:30；source1.dymis.com:20,source2.dymis.com:30" ' +
+                'required="" id="id_sources">' +
+                '<div class="help-block">20为主，30为备；如：1.1.1.1:20,2.1.1.1:30；source1.dymis.com:20,source2.dymis.com:30</div>'
+            )
+        } else {
+            $("#id_sources").parent().html(
+                '<input type="text" name="sources" placeholder="1.1.1.1:20,2.1.1.1:30" ' +
+                'maxlength="128" class="form-control" title="20为主，30为备；如：1.1.1.1:20,2.1.1.1:30；source1.dymis.com:20,source2.dymis.com:30" ' +
+                'required="" id="id_sources">' +
+                '<div class="help-block">20为主，30为备；如：1.1.1.1:20,2.1.1.1:30；source1.dymis.com:20,source2.dymis.com:30</div>'
+            )
+        }
+    }
+}
+
+//UTC转北京时间
+function formatUTC(utc_datetime) {
+    var beijing_datetime = new Date(+new Date(utc_datetime) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '');
+    return beijing_datetime;
 }

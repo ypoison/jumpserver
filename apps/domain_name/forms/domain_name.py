@@ -4,7 +4,24 @@ from django import forms
 from orgs.mixins import OrgModelForm
 from ..models import DomainName, Records, Account
 
+import re
+
 __all__ = ['DomainNameForm','DomainNameRecordForm', 'DomainNameAccountForm']
+
+
+def is_domain(domain):
+    domain_regex = re.compile(
+        r'(?:[A-Z0-9_](?:[A-Z0-9-_]{0,247}[A-Z0-9])?\.)+(?:[A-Z]{2,6}|[A-Z0-9-]{2,}(?<!-))\Z',
+        re.IGNORECASE)
+    return True if domain_regex.match(domain) else False
+
+
+def is_ipv4(address):
+    ipv4_regex = re.compile(
+        r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+        re.IGNORECASE)
+    return True if ipv4_regex.match(address) else False
+
 
 class DomainNameAccountForm(forms.ModelForm):
     access_key = forms.CharField(
@@ -38,4 +55,20 @@ class DomainNameForm(OrgModelForm):
 class DomainNameRecordForm(OrgModelForm):
     class Meta:
         model = Records
-        fields = ['domain_name', 'type','rr','line','value','priority','ttl', 'comment']
+        fields = ['domain_name', 'type', 'rr', 'line', 'value', 'priority', 'ttl', 'comment']
+
+    def clean_value(self):
+        type = self.cleaned_data['type']
+        value = self.cleaned_data['value']
+        if type == 'A':
+            check = is_ipv4(value)
+            print(check)
+            if not check:
+                msg = 'A记录的记录值为IP形式(如10.11.12.13)'
+                raise forms.ValidationError(msg)
+        elif type == 'CNAME':
+            check = is_domain(value)
+            if not check:
+                msg = 'CNAME记录的记录值为域名形式(如abc.example.com)'
+                raise forms.ValidationError(msg)
+        return value

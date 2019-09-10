@@ -51,18 +51,18 @@ function initTable() {
             }},
             {targets: 6, createdCell: function (td, cellData) {
                 if (cellData === 1){
-                    $(td).html('<i class="fa fa-circle text-navy btn beian-btn"></i>')
+                    $(td).html('<i class="fa fa-circle text-navy btn beian-btn"></i><span">正常</span>')
                 } else if (cellData === 0) {
-                    $(td).html('<i class="fa fa-circle text-danger btn beian-btn"></i>')
-                } else {
-                    $(td).html('<i class="fa fa-circle text-warning btn beian-btn"></i>')
+                    $(td).html('<i class="fa fa-circle text-danger btn beian-btn"></i><span">掉备案</span>')
+                } else if (cellData === 2){
+                    $(td).html('<i class="fa fa-circle text-warning btn beian-btn"></i><span">未备案</span>')
                 }
             }},
             {targets: 7, createdCell: function (td, cellData) {
                 if (cellData === 1){
-                    $(td).html('<i class="fa fa-circle text-navy btn gfw-btn"></i>')
+                    $(td).html('<i class="fa fa-circle text-navy btn gfw-btn"></i><span">正常</span>')
                 } else if (cellData === 0) {
-                    $(td).html('<i class="fa fa-circle text-danger btn gfw-btn"></i>')
+                    $(td).html('<i class="fa fa-circle text-danger btn gfw-btn"></i><span">被墙</span>')
                 } else {
                     $(td).html('<i class="fa fa-circle text-warning btn gfw-btn"></i>')
                 }

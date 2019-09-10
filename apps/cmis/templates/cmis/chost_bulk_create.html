@@ -1,0 +1,438 @@
+{% extends '_base_create_update.html' %}
+{% load static %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li>
+                                <a href="{% url 'cmis:chost-create' %}" class="text-center"><i class="fa fa-laptop"></i> 采购云主机 </a>
+                            </li>
+                            <li class="active">
+                                <a href="{% url 'cmis:chost-bulk-create' %}" class="text-center"><i class="fa fa-laptop"></i> 批量采购云主机 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'cmis:chost-create-record-list' %}" class="text-center"><i class="fa fa-laptop"></i> 采购记录 </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-12" style="padding-left: 0;">
+                            <div class="" id="content_start">
+                            </div>
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-content">
+                                    <form id="groupForm" method="post" class="form-horizontal">
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                 {{ form.non_field_errors }}
+                                             </div>
+                                        {% endif %}
+                                        {% csrf_token %}
+                                        <h3>账号</h3>
+                                        {% bootstrap_field form.account layout="horizontal" %}
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_ProjectId">项目</label>
+                                            <div class="col-md-9">
+                                                <select name="ProjectId" class="form-control" title="" id="id_ProjectId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.chost_model layout="horizontal" %}
+                                        {% bootstrap_field form.nodes layout="horizontal" %}
+                                        {% bootstrap_field form.admin_user layout="horizontal" %}
+                                        {% bootstrap_field form.Domain layout="horizontal" %}
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>地域</h3>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Region">地域</label>
+                                            <div class="col-md-9">
+                                                <select name="Region" class="form-control" title="" id="id_Region">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_Zone">可用区</label>
+                                            <div class="col-md-9">
+                                                <select name="Zone" class="form-control" title="" id="id_Zone">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>管理设置</h3>
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_Name">主机名</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+                                                <div class="input-group-btn">
+	                                    	        <a class="input-group-addon"  data-toggle="modal" data-target="#chost_host_name_add" class="btn btn-info" type="submit" id="AddIsolationGroup">+</a>
+                                                    <div style="margin-top: 30px;"></div>
+                                                </div>
+                                                <select name="Name" class="select2 form-control m-b" multiple title="" id="id_Name">
+                                                    {% for name in names %}
+                                                        <option value ={{ name.name }}>{{ name.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            <div class="help-block">默认为全选</div>
+                                            </div>
+                                        </div>
+                                        {% bootstrap_field form.Password layout="horizontal" %}
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_Tag">业务组</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+	                                    	    <div class="input-group-btn">
+	                                    		    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">加入组<span class="caret"></span>
+	                                    		    </button>
+	                                    		    <ul class="dropdown-menu" id="tag_select"></ul>
+	                                    	    </div>
+	                                    	    <input type="text" name="Tag" class="form-control" id="id_Tag" placeholder="新增直接输入, 若“加入组”找不到相关组，也可直接输入。"/>
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_IsolationGroup">硬件隔离组</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+	                                    	    <a class="input-group-addon"  data-toggle="modal" data-target="#chost_isolation_group_add" class="btn btn-info" type="submit" id="AddIsolationGroup">+</a>
+                                                <select name="IsolationGroup" class="select2 form-control m-b" title="" id="id_IsolationGroup">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <h3>网络配置</h3>
+                                        <div class="form-group required">
+                                            <label class="col-md-2 control-label" for="id_SecurityGroupId">防火墙</label>
+                                            <div class="col-md-9">
+                                                <select name="SecurityGroupId" class="form-control" title="" id="id_SecurityGroupId">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="hr-line-dashed"></div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2" style="display:none" id="price">
+                                                <p>
+                                                    <span>主机费用:</span>
+                                                    <span style="color:red;" id="host_price"></span>
+                                                    <span>弹性IP费用:</span>
+                                                    <span style="color:red;" id="EIP_price"></span>
+                                                    <span>合计:</span>
+                                                    <span style="color:red;" id="sum"></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-4 col-sm-offset-2">
+                                                <button class="btn btn-default" type="reset"> {% trans 'Reset' %}</button>
+                                                <button class="btn btn-primary" type="submit" id="submit_button" >{% trans 'Submit' %}</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'cmis/_chost_isolation_group_add.html' %}
+    {% include 'cmis/_chost_host_name_add.html' %}
+{% endblock %}
+
+{% block custom_foot_js %}
+<script type="text/javascript">
+function getInfo(props) {
+    var url = '{% url "api-cmis:chost-get-info" %}';
+    $("#" + props.to + " option").remove();
+    $(".splash").show(function () {
+        $.ajax({
+            url: url,
+            async: false,
+            data: JSON.stringify(props.data),
+            type: "POST",
+            contentType:"application/json; charset=utf-8",
+            dataType:"json"
+        }).done(function(ret) {
+            if (ret.code != 0) {
+                var data = ret['msg'];
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].IsDefault) {
+                        $("#" + props.to).append("<option value =" + data[i].id + " selected>" + data[i].name + "</option>")
+                    } else {
+                        $("#" + props.to).append("<option value =" + data[i].id + ">" + data[i].name + "</option>")
+                    }
+                }
+                if (typeof props.success === 'function') {
+                    return props.success(props.data);
+                }
+                $(".splash").hide();
+            } else {
+                $("#" + props.to + " option").remove();
+                $("#" + props.to).append("<option value='' >没有相关信息</option>")
+                $(".splash").hide();
+            }
+        });
+    });
+}
+function getZone(id, region) {
+    getInfo({
+        to: 'id_Zone',
+        data: {'Action': 'GetZone','account_id': id, 'Region':region}
+    })
+}
+
+function getFirewall(id, region, projectID) {
+    getInfo({
+        to: 'id_SecurityGroupId',
+        data: {'Action': 'DescribeFirewall','Region':region,'account_id': id, 'ProjectId':projectID},
+    })
+}
+function getTags() {
+    var the_url =  '{% url "api-cmis:chost-get-info" %}';
+    var id = $("#id_account").val();
+    var region = $("#id_Region").val();
+    var projectID = $("#id_ProjectId").val();
+    var success = function (ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            //$("#tag_select li").remove();
+            for (var i = 0; i < data.length; i++) {
+                    $("#tag_select").append("<li><a style='font-weight: bolder'>" + data[i].name + "</a></li>")
+            }
+        }
+    };
+    var body = {
+        'Action': 'DescribeUHostTags',
+        'account_id': id,
+        'Region':region,
+        'ProjectId':projectID,
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "POST",
+        body: JSON.stringify(body),
+        flash_message : false,
+        success:success
+    });
+}
+function getIsolationGroup() {
+    var the_url =  '{% url "api-cmis:chost-get-info" %}';
+    var id = $("#id_account").val();
+    var region = $("#id_Region").val();
+    var projectID = $("#id_ProjectId").val();
+    var success = function (ret) {
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            $("#id_IsolationGroup option").remove();
+            $("#id_IsolationGroup").append("<option value =''>------------</option>")
+            $.each(data, function(key, val){
+                $("#id_IsolationGroup").append("<option value =" + val.id + ">" + val.name + "</option>")
+            });
+        }
+    };
+    var body = {
+        'Action': 'DescribeIsolationGroup',
+        'account_id': id,
+        'Region':region,
+        'ProjectId':projectID,
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "POST",
+        body: JSON.stringify(body),
+        flash_message : false,
+        success:success
+    });
+}
+function getRegion() {
+    var account_id = $("#id_account").val();
+    var getOther = function () {
+        //get zone
+        var region = $("#id_Region").val();
+        getZone(account_id, region);
+        var projectid = $("#id_ProjectId").val();
+        getFirewall(account_id, region, projectid);
+        getTags()
+        getIsolationGroup()
+    }
+    getInfo({
+        //get region
+        to: 'id_Region',
+        data: {'Action': 'GetRegion','account_id': account_id},
+        success: getOther
+    })
+}
+function getProject(id) {
+    var getOther = function () {
+        getRegion()
+    }
+    getInfo({
+        // get project
+        to: 'id_ProjectId',
+        data: {'Action': 'GetProjectList','account_id': id},
+        success: getOther
+    })
+}
+
+function formattingData() {
+    var formData = $("#groupForm").serializeArray();
+    var body = {};
+    $.each(formData, function(i, field){
+        body[field.name] = field.value
+    });
+    return body
+}
+
+$(document).ready(function () {
+    $('.select2').select2({
+        allowClear: true
+    });
+    $('#id_nodes.select2').select2({
+        closeOnSelect: false
+    });
+    $('#id_Name.select2').select2({
+        closeOnSelect: false
+    });
+    $("#id_account").change(function() {
+        $(".splash").hide();
+        var id = $("#id_account").val();
+        getProject(id)
+    });
+
+    $("#id_ProjectId").change(function() {
+        if (!$(this)){
+            getRegion()
+        }
+    });
+
+    $("#id_Region").change(function() {
+        var id = $("#id_account").val();
+        var region = $(this).val();
+        var projectid = $("#id_ProjectId").val();
+        getZone(id, region)
+        getFirewall(id, region, projectid)
+        getTags()
+        getIsolationGroup()
+    });
+
+    $("#tag_select").on('click', "li", function () {
+        var tag = $(this).text();
+        $("#id_Tag").val(tag)
+    });
+
+    $("#btn_isolation_group_confirm").on('click',function () {
+        var the_url = '{% url "api-cmis:chost-create-isolation-group" %}';
+        var GroupName = $("#id_IsolationGroupName").val();
+        var Remark = $("#id_Remark").val();
+        var accountId = $("#id_account").val();
+        var Region = $("#id_Region").val();
+        var ProjectId = $("#id_ProjectId").val();
+        var success = function (ret) {
+            var data = ret['msg']
+           $("#id_IsolationGroup").append("<option selected value =" + data.id + ">" + data.name + "</option>")
+        };
+        var body = {
+            'accountId':accountId,
+            'Region':Region,
+            'ProjectId':ProjectId,
+            'GroupName': GroupName,
+            'Remark': Remark
+        }
+
+        $("#chost_isolation_group_add").modal('hide');
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success_message: 'ok',
+            success:success
+        });
+    });
+
+    $("#btn_host_name_confirm").on('click',function () {
+        var the_url = '{% url "api-cmis:chost-create-host_name" %}';
+        var GameName = $("#id_GameName").val();
+        var Port = $("#id_Port").val();
+        var success = function (ret) {
+            var data = ret['msg']
+           $("#id_Name").append("<option value =" + GameName + ">" + GameName + "</option>")
+        };
+        var body = {
+            'GameName': GameName,
+            'Port': Port
+        }
+
+        $("#chost_host_name_add").modal('hide');
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success_message: 'ok',
+            success:success
+        });
+    });
+
+    $("#btn_model_name_confirm").click(function () {
+        var the_url = '{% url "api-cmis:chost-set-model" %}';
+        var model_name = $("#id_model_name").val();
+        var success = function (data) {
+            $("#chost-model label").remove();
+            $.each(data, function(key, val){
+                $("#chost-model").append('<label style="margin: 3px;" class="btn btn-primary btn-outline chost-model">' +
+                    '<input type="radio" value=' +
+                    val.id +'>' +
+                    val.name +
+                    '</label>'
+                )
+            });
+        };
+        var body = formattingData();
+        body['model_name'] = model_name;
+        body['VPCId'] = $("#id_VPCId option:selected").text();
+        body['SubnetId'] = $("#id_SubnetId option:selected").text();
+        body['SecurityGroupId'] = $("#id_SecurityGroupId option:selected").text();
+        body['ImageId'] = $("#id_ImageId option:selected").text();
+        $("#chost_model_name").modal('hide');
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success_message: 'ok',
+            success:success
+        });
+    });
+
+    $('#id_chost_model').on('change',function () {
+        var account = $("#id_account").val();
+        var project = $("#id_ProjectId").val();
+        if (!account || !project){
+             swal( "", "请选择 账号 和 项目 后再选择模板！", "error");
+             return
+        }
+        var model_id =  $('#id_chost_model').val()
+        var the_url = '{% url "api-cmis:chost-for-model" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', model_id);
+        var success = function (data) {
+
+            $("#id_Region").val(data.region);
+            var id = $("#id_account").val();
+            var region = $("#id_Region").val();
+            var projectid = $("#id_ProjectId").val();
+            getZone(id, region);
+            getFirewall(id, region, projectid);
+            getTags();
+            getIsolationGroup();
+
+            $("#id_Zone").val(data.zone);
+        };
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "GET",
+            flash_message: false,
+            success:success
+        });
+    });
+})
+</script>
+{% endblock %}

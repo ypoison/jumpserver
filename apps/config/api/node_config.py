@@ -6,24 +6,25 @@ from rest_framework.generics import (
     ListAPIView,
 )
 from common.utils import get_request_ip, get_logger, get_object_or_none
-from common.permissions import IsOrgAdmin
+from common.permissions import IsOrgAdmin, IsValidUser
 
 from assets.models import Node, Asset
-from ..models import WEBConfigRecords
+from ..models import WEBConfigRecords, App
 from .. import serializers
 from ..webconfig import WEBConfig
 
 from ..tasks import write_log_async
 
 logger = get_logger(__file__)
-__all__ = ['NodeViewSet','NodeReloadApi', 'WEBConfigViewSet','GetApi',
+__all__ = ['NodeViewSet', 'NodeReloadApi', 'WEBConfigViewSet', 'GetApi',
+           'AppViewSet',
            ]
 webconfig = WEBConfig()
 
 class NodeViewSet(BulkModelViewSet):
     filter_fields = ("platform", "node_asset")
     search_fields = ("platform__value", "node_asset__ip")
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeConfigSerializer
     pagination_class = LimitOffsetPagination
 
@@ -32,7 +33,7 @@ class NodeViewSet(BulkModelViewSet):
         return self.queryset
 
 class NodeReloadApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.PrivateAssetSerializer
 
     def post(self, request, *args, **kwargs):
@@ -65,23 +66,27 @@ class NodeReloadApi(ListAPIView):
                 else:
                     return Response({'error': res['msg']}, status=400)
             except Exception as e:
-                Response({"error":  e}, status=400)
+                return Response({"error":  e}, status=400)
         else:
             return Response({"error": '获取节点主机信息失败'}, status=400)
 
 
 class WEBConfigViewSet(BulkModelViewSet):
-    filter_fields = ('platform__value', 'domain', 'port', 'proxy_ip', 'proxy_port', 'comment')
+    filter_fields = ('platform__value', 'domain', 'port', 'proxy_ip', 'proxy_port', 'comment', 'jid')
     search_fields = filter_fields
     queryset = WEBConfigRecords.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.WEBConfigSerializer
     pagination_class = LimitOffsetPagination
 
     def destroy(self, request, *args, **kwargs):
         web_config = self.get_object()
         kw= (web_config.__dict__)
-        node_ip = web_config.node_asset.ip
+        try:
+            node_ip = web_config.node_asset.ip
+        except:
+            web_config.delete()
+            return Response({"msg": "ok"})
         kw.update(node_ip=node_ip)
         platform = web_config.platform.code
         kw.update(platform=platform)
@@ -93,7 +98,7 @@ class WEBConfigViewSet(BulkModelViewSet):
             return Response({'error': del_web_config['msg']}, status=400)
 
 class GetApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.PrivateAssetSerializer
 
     def get_queryset(self):
@@ -107,10 +112,18 @@ class GetApi(ListAPIView):
             asset = list(Node.objects.get(id=id).get_children().get(value='other').get_all_assets().filter(hostname__contains='Proxy'))
             queryset.extend(asset)
         elif action == "getproxy":
-            queryset =  list(Node.objects.get(id=id).get_all_assets())
+            queryset = list(Node.objects.get(id=id).get_all_assets())
         elif action == "getip":
             asset = get_object_or_none(Asset,id=id)
             queryset.append({'id':asset.ip,'ip':asset.ip,'hostname':asset.hostname})
             if asset.public_ip:
                 queryset.append({'id':asset.public_ip,'ip':asset.public_ip,'hostname':asset.hostname})
         return queryset
+
+class AppViewSet(BulkModelViewSet):
+    filter_fields = ('name', 'type', 'port')
+    search_fields = filter_fields
+    queryset = App.objects.all()
+    permission_classes = (IsValidUser,)
+    serializer_class = serializers.AppSerializer
+    pagination_class = LimitOffsetPagination

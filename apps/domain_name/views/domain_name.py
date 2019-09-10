@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy, reverse
 
 from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg
 from common.utils import get_object_or_none
 from ..models import DomainName, Records, Account
@@ -79,7 +80,7 @@ class DomainNameAccountDetailView(AdminUserRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class DomainNameListView(AdminUserRequiredMixin, TemplateView):
+class DomainNameListView(LoginRequiredMixin, TemplateView):
     template_name = 'domain_name/domain_name_list.html'
 
     def get_context_data(self, **kwargs):
@@ -90,7 +91,7 @@ class DomainNameListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class DomainNameCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = DomainName
     template_name = 'domain_name/domain_name_create.html'
     form_class = DomainNameForm
@@ -120,7 +121,7 @@ class DomainNameCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class DomainNameUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = DomainName
     template_name = 'domain_name/domain_name_update.html'
     form_class = DomainNameForm
@@ -141,7 +142,7 @@ class DomainNameUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateVi
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameDetailView(AdminUserRequiredMixin, DetailView):
+class DomainNameDetailView(LoginRequiredMixin, DetailView):
     model = DomainName
     template_name = 'domain_name/domain_name_detail.html'
 
@@ -153,7 +154,7 @@ class DomainNameDetailView(AdminUserRequiredMixin, DetailView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameRecordsListView(AdminUserRequiredMixin, SingleObjectMixin, TemplateView):
+class DomainNameRecordsListView(LoginRequiredMixin, SingleObjectMixin, TemplateView):
     template_name = 'domain_name/records_list.html'
     model = DomainName
     object = None
@@ -167,7 +168,7 @@ class DomainNameRecordsListView(AdminUserRequiredMixin, SingleObjectMixin, Templ
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameRecordCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class DomainNameRecordCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Records
     template_name = 'domain_name/records_create_update.html'
     form_class = DomainNameRecordForm
@@ -208,7 +209,7 @@ class DomainNameRecordCreateView(AdminUserRequiredMixin, SuccessMessageMixin, Cr
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameRecordUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class DomainNameRecordUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Records
     template_name = 'domain_name/records_create_update.html'
     form_class = DomainNameRecordForm

@@ -1,4 +1,13 @@
 {% load i18n %}
+<div class="splash">
+    <div class="spinner">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+    </div>
+</div>
 <li id="assets">
     <a href="{% url 'assets:user-asset-list' %}">
         <i class="fa fa-files-o" style="width: 14px"></i><span class="nav-label">{% trans 'My assets' %}</span><span class="label label-info pull-right"></span>
@@ -23,4 +32,29 @@
     <a href="{% url 'terminal:web-sftp' %}" target="_blank"><i class="fa fa-file" style="width: 14px"></i>
         <span class="nav-label">{% trans 'File manager' %}</span>
     </a>
+</li>
+<li id="cmis">
+    <a>
+        <i class="fa fa-inbox" style="width: 14px"></i> <span class="nav-label">云管中心</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="cdn"><a href="{% url 'cmis:cdn-list' %}">CDN</a></li>
+        <li id="chost"><a href="{% url 'cmis:chost-create' %}">采购云主机</a></li>
+    </ul>
+</li>
+<li id="domain-name">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">域名管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level active">
+        <li id="domain-name"><a href="{% url 'domain-name:domain-name-list' %}">域名列表</a></li>
+    </ul>
+</li>
+<li id="config">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">配置管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="node-config"><a href="{% url 'config:node-config-list' %}">节点配置</a></li>
+    </ul>
 </li>
