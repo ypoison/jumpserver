@@ -67,8 +67,9 @@ def bulk_config(req):
             config_record.comment = comment
             config_record.save()
         except Exception as e:
-            config_record.comment = e
+            config_record.comment = '{}:{}'.format(proxy_asset, e)
             config_record.save()
+            continue
 
         kwargs = {
             'platform': pf_code,

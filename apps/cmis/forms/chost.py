@@ -81,6 +81,7 @@ class CHostCreateForm(forms.Form):
         )
     )
     Domain = forms.ModelChoiceField(
+        required=False,
         queryset=Domain.objects.all(), label='网域',
         widget=forms.Select(
             attrs={'class': 'select2', 'data-placeholder': '网域'}
@@ -159,6 +160,7 @@ class CHostBulkCreateForm(forms.Form):
         )
     )
     Domain = forms.ModelChoiceField(
+        required=False,
         queryset=Domain.objects.all(), label='网域',
         widget=forms.Select(
             attrs={'class': 'select2', 'data-placeholder': '网域'}

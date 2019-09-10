@@ -79,7 +79,10 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
 
         if req.get('ChargeType') == 'Dynamic':
             del req['Quantity']
-
+        if req.pop('IsolationGroup', ''):
+            data['IsolationGroup'] = req.get('IsolationGroup')
+        if req.pop('Tag', ''):
+            data['Tag'] = req.get('Tag')
         kw = {**req, **data}
         create_record = ChostCreateRecord.objects.create(
             region=kw['Region'],
@@ -212,9 +215,9 @@ class CHostBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
             data['NetworkInterface.0.EIP.PayMode'] = model.eip_pay_mode
         if model.charge_type != 'Dynamic':
             data['Quantity'] = model.quantity
-        if req.get('IsolationGroup',''):
+        if req.get('IsolationGroup', ''):
             data['IsolationGroup'] = req.get('IsolationGroup')
-        if req.get('Tag',''):
+        if req.get('Tag', ''):
             data['Tag'] = req.get('Tag')
 
         job = bulk_buyer.delay(node_code, create_host_list, req, **data)

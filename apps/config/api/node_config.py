@@ -82,7 +82,11 @@ class WEBConfigViewSet(BulkModelViewSet):
     def destroy(self, request, *args, **kwargs):
         web_config = self.get_object()
         kw= (web_config.__dict__)
-        node_ip = web_config.node_asset.ip
+        try:
+            node_ip = web_config.node_asset.ip
+        except:
+            web_config.delete()
+            return Response({"msg": "ok"})
         kw.update(node_ip=node_ip)
         platform = web_config.platform.code
         kw.update(platform=platform)

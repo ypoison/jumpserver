@@ -13,7 +13,7 @@ class NodeConfigSerializer(serializers.ModelSerializer):
     node_asset_display = serializers.SerializerMethodField()
     class Meta:
         model = WEBConfigRecords
-        fields =[ 'platform',  'node_asset','record_count','platform_display','node_asset_display'
+        fields = ['platform',  'node_asset', 'record_count', 'platform_display', 'node_asset_display'
         ]
 
     @staticmethod
@@ -26,13 +26,22 @@ class NodeConfigSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_platform_display(obj):
-        return str(Node.objects.get(id=obj['platform']))
+        try:
+            return str(Node.objects.get(id=obj['platform']))
+        except:
+            return 'None'
     @staticmethod
     def get_node_asset_display(obj):
-        return str(Asset.objects.get(id=obj['node_asset']))
+        try:
+            return str(Asset.objects.get(id=obj['node_asset']))
+        except:
+            return 'None'
     @staticmethod
     def get_record_count(obj):
-        return WEBConfigRecords.objects.filter(platform=obj['platform'],node_asset=obj['node_asset']).count()
+        try:
+            return WEBConfigRecords.objects.filter(platform=obj['platform'],node_asset=obj['node_asset']).count()
+        except:
+            return 'None'
 
 class PrivateAssetSerializer(serializers.ModelSerializer):
     class Meta:
