@@ -1,0 +1,117 @@
+{% extends '_modal.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block modal_class %}modal-lg{% endblock %}
+{% block modal_id %}perm_edit_modal{% endblock %}
+{% block modal_title%}权限编辑{% endblock %}
+{% block modal_body %}
+<link href="{% static 'css/plugins/ztree/awesomeStyle/awesome.css' %}" rel="stylesheet">
+<link href="{% static 'css/console.min.css' %}" rel="stylesheet">
+<script type="text/javascript" src="{% static 'js/plugins/ztree/jquery.ztree.all.min.js' %}"></script>
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+
+<style>
+    div.u-col-4 {vertical-align:bottom}
+</style>
+
+<div class="wrapper wrapper-content">
+   <div class="row">
+       <div class="" style="position: relative;">
+           <div class="uc-modal__body">
+               <div class="uc-modal__body-content">
+                   <div>
+                       <div class="u-col-group u-mb20">
+                           <div class="u-col-6 u-line-height--lg">
+                               <span class="u-mr10">
+                                   名称：
+                               </span>
+                               <span>
+                                   <div class="u-dib">
+                                       <div class="uc-input  uc-input--md uc-input--fixed-md">
+                                           <input type="text" value="api-create-uhost" class="uc-input__inner">
+                                       </div>
+                                   </div>
+                               </span>
+                           </div>
+                       </div>
+                   </div>
+                   <div>
+                       <div class="u-col-group u-mb15">
+                           <div class="u-col-4">
+                               <span class="u-font-name" style="color: #6b798e;">产品权限</span>
+                           </div>
+                           <div class="u-col-8 u-pl6">
+                               <label class="uc-checkbox-wrapper">
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <span class="u-ml8 u-dib u-vm">增</span>
+                               </label>
+                               <div class="u-dib" style="width: 54px;"></div>
+                               <label class="uc-checkbox-wrapper">
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <span class="u-ml8 u-dib u-vm">删</span>
+                               </label>
+                               <div class="u-dib" style="width: 54px;"></div>
+                               <label class="uc-checkbox-wrapper">
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <span class="u-ml8 u-dib u-vm">改</span>
+                               </label>
+                               <div class="u-dib" style="width: 54px;"></div>
+                               <label class="uc-checkbox-wrapper">
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <span class="u-ml8 u-dib u-vm">查</span>
+                               </label>
+                           </div>
+                       </div>
+                   </div>
+                   <div>
+                       <div style="max-height: 300px; overflow: hidden auto;">
+                           <div class="u-col-group u-mb8">
+                               <div class="u-col-4">
+                                   <span class="u-font-name">云主机  uhost</span>
+                               </div>
+                               <div class="u-col-8 u-pl6">
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <div class="u-dib" style="width: 85px;"></div>
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <div class="u-dib" style="width: 85px;"></div>
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                                   <div class="u-dib" style="width: 85px;"></div>
+                                   <span class="uc-checkbox">
+                                       <input class="icon--xs" id="id_delete_host" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
+                                   </span>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+</div>
+
+<script>
+</script>
+{% endblock %}
+
+{% block modal_button %}
+    {{ block.super }}
+{% endblock %}
+{% block modal_confirm_id %}btn_asset_modal_confirm{% endblock %}
+
+
+

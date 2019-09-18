@@ -62,12 +62,13 @@ INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'terminal.apps.TerminalConfig',
     'audits.apps.AuditsConfig',
+    'authentication.apps.AuthenticationConfig',  # authentication
 
     'domain_name.apps.DomainNameConfig',
-
-    'authentication.apps.AuthenticationConfig',  # authentication
     'config.apps.ConfigConfig',
     'cmis.apps.CMisConfig',
+    'rbac.apps.RBACConfig',
+
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg',

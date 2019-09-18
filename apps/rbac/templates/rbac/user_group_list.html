@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="panel-options">
+                        <ul class="nav nav-tabs">
+                            <li>
+                                <a href="{% url 'rbac:menu-list' %}" class="text-center"><i class="fa fa-laptop"></i> 菜单管理 </a>
+                            </li>
+                            <li class="active">
+                                <a href="{% url 'rbac:group-list' %}" class="text-center"><i class="fa fa-laptop"></i> 用户组授权管理 </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'rbac:user-list' %}" class="text-center"><i class="fa fa-laptop"></i> 用户授权管理 </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="col-sm-12" style="padding-left: 0;">
+                            <div class="" id="content_start">
+                            </div>
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <div class="ibox-tools">
+                                        <a class="collapse-link">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </a>
+                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                            <i class="fa fa-wrench"></i>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-user">
+                                        </ul>
+                                        <a class="close-link">
+                                            <i class="fa fa-times"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="ibox-content">
+                                    <table class="table table-striped table-bordered table-hover " id="group_list_table" >
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">
+                                                    <input id="" type="checkbox" class="ipt_check_all">
+                                                </th>
+                                                <th class="text-center">{% trans 'Name' %}</th>
+                                                <th class="text-center">{% trans 'User' %}</th>
+                                                <th class="text-center">{% trans 'Action' %}</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% include 'rbac/_perm_edit_modal.html' %}
+{% endblock %}
+
+{% block content_bottom_left %}{% endblock %}
+{% block custom_foot_js %}
+<script>
+$(document).ready(function() {
+    var options = {
+        ele: $('#group_list_table'),
+        buttons: [],
+        columnDefs: [
+            {targets: 3, createdCell: function (td, cellData, rowData) {
+
+                var update_btn = '<a id="group_perm_edit" class="btn-perm-edit btn btn-xs btn-info" data-toggle="modal" data-target="#perm_edit_modal" tabindex="0">编辑</a>'
+                $(td).html(update_btn)
+            }}
+        ],
+        ajax_url: '{% url "api-users:user-group-list" %}',
+        columns: [{data: function(){return ""}}, {data: "name" }, {data: "users"}, {data: "id" }],
+        order: [],
+        op_html: $('#actions').html()
+    };
+    jumpserver.initServerSideDataTable(options);
+
+}).on('click', '#btn_bulk_update', function(){
+    var action = $('#slct_bulk_update').val();
+    var $data_table = $('#group_list_table').DataTable()
+    var plain_id_list = [];
+    $data_table.rows({selected: true}).every(function(){
+        plain_id_list.push(this.data().id);
+    });
+    if (plain_id_list === []) {
+        return false;
+    }
+    var the_url = "{% url 'api-users:user-group-list' %}";
+    function doDelete() {
+        swal({
+            title: "{% trans 'Are you sure?' %}",
+            text: "{% trans 'This will delete the selected groups !!!' %}",
+            type: "warning",
+            showCancelButton: true,
+            cancelButtonText: "{% trans 'Cancel' %}",
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "{% trans 'Confirm' %}",
+            closeOnConfirm: false
+        }, function() {
+            var success = function() {
+                var msg = "{% trans 'UserGroups Deleted.' %}";
+                swal("{% trans 'UserGroups Delete' %}", msg, "success");
+                $data_table.ajax.reload();
+            };
+            var fail = function() {
+                var msg = "{% trans 'UserGroup Deleting failed.' %}";
+                swal("{% trans 'UserGroups Delete' %}", msg, "error");
+            };
+            var url_delete = the_url + '?id__in=' + JSON.stringify(plain_id_list);
+            APIUpdateAttr({url: url_delete, method: 'DELETE', success: success, error: fail});
+            jumpserver.checked = false;
+        });
+    }
+    switch(action) {
+        case 'delete':
+            doDelete();
+            break;
+        default:
+            break;
+    }
+})
+</script>
+{% endblock %}

@@ -25,6 +25,7 @@ api_v1_patterns = [
         path('domain-name/v1/', include('domain_name.urls.api_urls', namespace='api-domain-name')),
         path('config/v1/', include('config.urls.api_urls', namespace='api-config')),
         path('cmis/v1/', include('cmis.urls.api_urls', namespace='api-cmis')),
+        path('perms/rbac/v1/', include('rbac.urls.api_urls', namespace='api-rbac')),
    ]))
 ]
 
@@ -48,6 +49,7 @@ app_view_patterns = [
     path('domain-name/', include('domain_name.urls.views_urls', namespace='domain-name')),
     path('config/', include('config.urls.views_urls', namespace='config')),
     path('cmis/', include('cmis.urls.views_urls', namespace='cmis')),
+    path('perms/rbac/', include('rbac.urls.views_urls', namespace='rbac')),
 ]
 
 
