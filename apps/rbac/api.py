@@ -22,3 +22,14 @@ class MenuViewSet(BulkModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset().all()
         return queryset
+
+class MenuPermsAPI(ListAPIView):
+    permission_classes = (IsOrgAdmin,)
+
+    def get(self, request, *args, **kwargs):
+        model_id = self.kwargs.get('pk')
+        model = get_object_or_none(ChostModel, id=model_id)
+        if not model:
+            return Response({'error': '模板不存在'}, status=400)
+        queryset = serializers.ChostModelSerializer(model)
+        return Response(queryset.data)

@@ -11,6 +11,7 @@ router = DefaultRouter()
 router.register(r'menu', api.MenuViewSet, 'menu')
 
 urlpatterns = [
+path('menu/perms/', api.MenuPermsAPI.as_view(), name='menu-perms'),
 ]
 
 urlpatterns += router.urls

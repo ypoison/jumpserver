@@ -84,50 +84,6 @@ $(document).ready(function() {
         op_html: $('#actions').html()
     };
     jumpserver.initServerSideDataTable(options);
-
-}).on('click', '#btn_bulk_update', function(){
-    var action = $('#slct_bulk_update').val();
-    var $data_table = $('#group_list_table').DataTable()
-    var plain_id_list = [];
-    $data_table.rows({selected: true}).every(function(){
-        plain_id_list.push(this.data().id);
-    });
-    if (plain_id_list === []) {
-        return false;
-    }
-    var the_url = "{% url 'api-users:user-group-list' %}";
-    function doDelete() {
-        swal({
-            title: "{% trans 'Are you sure?' %}",
-            text: "{% trans 'This will delete the selected groups !!!' %}",
-            type: "warning",
-            showCancelButton: true,
-            cancelButtonText: "{% trans 'Cancel' %}",
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "{% trans 'Confirm' %}",
-            closeOnConfirm: false
-        }, function() {
-            var success = function() {
-                var msg = "{% trans 'UserGroups Deleted.' %}";
-                swal("{% trans 'UserGroups Delete' %}", msg, "success");
-                $data_table.ajax.reload();
-            };
-            var fail = function() {
-                var msg = "{% trans 'UserGroup Deleting failed.' %}";
-                swal("{% trans 'UserGroups Delete' %}", msg, "error");
-            };
-            var url_delete = the_url + '?id__in=' + JSON.stringify(plain_id_list);
-            APIUpdateAttr({url: url_delete, method: 'DELETE', success: success, error: fail});
-            jumpserver.checked = false;
-        });
-    }
-    switch(action) {
-        case 'delete':
-            doDelete();
-            break;
-        default:
-            break;
-    }
 })
 </script>
 {% endblock %}
