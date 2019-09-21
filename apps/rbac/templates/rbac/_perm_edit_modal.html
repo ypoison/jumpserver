@@ -28,9 +28,7 @@
                                </span>
                                <span>
                                    <div class="u-dib">
-                                       <div class="uc-input  uc-input--md uc-input--fixed-md">
-                                           <input type="text" value="api-create-uhost" class="uc-input__inner">
-                                       </div>
+                                       <span style="color: #0a1633;"id="name" ></span>
                                    </div>
                                </span>
                            </div>
@@ -39,7 +37,7 @@
                    <div>
                        <div class="u-col-group u-mb15">
                            <div class="u-col-4">
-                               <span class="u-font-name" style="color: #6b798e;">产品权限</span>
+                               <span class="u-font-name" style="color: #6b798e;">菜单权限</span>
                            </div>
                            <div class="u-col-8 u-pl6">
                                <label class="uc-checkbox-wrapper">
@@ -72,30 +70,10 @@
                            </div>
                        </div>
                    </div>
-                   <div style="max-height: 300px; overflow: hidden auto;">
-                       <div class="u-col-group u-mb8" id="prems_checkbox_list">
-                           <div class="u-col-4">
-                               <span class="u-font-name">云主机  uhost</span>
-                           </div>
-                           <div class="u-col-8 u-pl6">
-                               <span class="uc-checkbox">
-                                   <input class="icon--xs add-check" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
-                               </span>
-                               <div class="u-dib" style="width: 85px;"></div>
-                               <span class="uc-checkbox">
-                                   <input class="icon--xs del-check" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
-                               </span>
-                               <div class="u-dib" style="width: 86px;"></div>
-                               <span class="uc-checkbox">
-                                   <input class="icon--xs change-check" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
-                               </span>
-                               <div class="u-dib" style="width: 86px;"></div>
-                               <span class="uc-checkbox">
-                                   <input class="icon--xs view-check" name="{{ f.id }}" type="checkbox" value="{{ s.id }}" >
-                               </span>
-                           </div>
-                       </div>
-                   </div>
+                   <form class="form-horizontal" id="auth_group_from" method="post"  role="form">
+                        <div style="max-height: 300px; overflow: hidden auto;" id="prems_checkbox_list">
+                        </div>
+                   </form>
                </div>
            </div>
        </div>
@@ -103,34 +81,9 @@
 </div>
 
 <script>
-function initMenu() {
-    var url = '{% url "api-rbac:menu-perms" %}';
-    var setting = {
-        view: {
-            dblClickExpand: false,
-            showLine: true
-        },
-        data: {
-            simpleData: {
-                enable: true
-            }
-        },
-        async: {
-			enable: true,
-			url: url,
-			autoParam: ["id=key", "name=n", "level=lv"],
-            type: 'get'
-		},
-        callback: {
-            onSelected: onNodeSelected2
-        }
-    };
-    zTree2 = $.fn.zTree.init($("#assetTree2"), setting);
-}
-
 $(document).ready(function() {
     $('.check-all').on('click', function() {
-        action = ($(this).val())
+        action = ($(this).val());
       if ($(this).prop("checked")) {
           $('#prems_checkbox_list').find('.' + action + '-check').prop('checked', true);
       } else {
@@ -144,7 +97,7 @@ $(document).ready(function() {
 {% block modal_button %}
     {{ block.super }}
 {% endblock %}
-{% block modal_confirm_id %}btn_asset_modal_confirm{% endblock %}
+{% block modal_confirm_id %}btn_perm_modal_confirm{% endblock %}
 
 
 

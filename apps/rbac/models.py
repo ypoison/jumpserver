@@ -32,14 +32,14 @@ class Menu(models.Model):
         return "{}:{}".format(self.key, mark)
 
 class Permission2Group(models.Model):
-    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户组')
+    target = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户组')
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE, verbose_name='菜单')
     action = models.CharField(max_length=10, verbose_name='操作')
 
     class Meta:
         verbose_name = "用户组权限"
         db_table = 'rbac_permission_group'
-        unique_together = [('group','menu'),]
+        unique_together = [('target','menu'),]
 
     @property
     def action_list(self):
@@ -49,14 +49,14 @@ class Permission2Group(models.Model):
             return self.action.split(' ')
 
 class Permission2User(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    target = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE, verbose_name='菜单')
     action = models.CharField(max_length=10, verbose_name='操作')
 
     class Meta:
         verbose_name = "用户权限"
         db_table = 'rbac_permission_user'
-        unique_together = [('user','menu'),]
+        unique_together = [('target','menu'),]
 
     @property
     def action_list(self):

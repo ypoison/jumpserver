@@ -52,7 +52,7 @@ class Permission2GroupForm(forms.ModelForm):
 
     class Meta:
         model = Permission2Group
-        fields = ['group', 'menu', 'action']
+        fields = ['target', 'menu', 'action']
 
     def __init__(self, *args, **kwargs):
         if kwargs.get('instance', None):
@@ -76,7 +76,7 @@ class Permission2UserForm(forms.ModelForm):
 
     class Meta:
         model = Permission2User
-        fields = ['user', 'menu', 'action']
+        fields = ['target', 'menu', 'action']
 
     def __init__(self, *args, **kwargs):
         if kwargs.get('instance', None):
