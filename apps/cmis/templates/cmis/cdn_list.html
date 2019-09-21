@@ -122,17 +122,17 @@ $(document).ready(function(){
     initTable();
 })
 .on('click', '.btn-update', function () {
-    $this = $(this)
+    $this = $(this);
     var $data_table = $('#cdn_list_table').DataTable();
     var uid = $this.data('uid');
     var action =  $this.data('action');
     var the_url = '{% url "api-cmis:cdn-update" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
     var body = {
-        'action': action,
-    }
+        'action': action
+    };
     var success = function () {
         $data_table.draw(false);
-    }
+    };
     DyAPIUpdateAttr({
         url: the_url,
         method: "POST",

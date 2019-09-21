@@ -43,6 +43,8 @@ class WEBConfig:
                     data = json.loads(dresponse.text)
                     if data['status'] == 2000:
                         ret = {'code':1}
+                    elif data['status'] == 5000 and data['resultInfo'] == 'domain nginx config file null':
+                        ret = {'code': 1}
                     else:
                         ret = {'code':0, 'msg':data['resultInfo']}
                 else:

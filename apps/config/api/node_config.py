@@ -50,7 +50,6 @@ class NodeReloadApi(ListAPIView):
                 elif action == 'restart':
                     res = webconfig.restart(**kw)
                 if res['code']:
-
                     login_ip = get_request_ip(self.request)
                     user_agent = self.request.user
                     data = {
@@ -84,12 +83,11 @@ class WEBConfigViewSet(BulkModelViewSet):
         kw= (web_config.__dict__)
         try:
             node_ip = web_config.node_asset.ip
+            platform = web_config.platform.code
         except:
             web_config.delete()
             return Response({"msg": "ok"})
-        kw.update(node_ip=node_ip)
-        platform = web_config.platform.code
-        kw.update(platform=platform)
+        kw.update(node_ip=node_ip, platform=platform)
         del_web_config = webconfig.remove(**kw)
         if del_web_config['code']:
             web_config.delete()
