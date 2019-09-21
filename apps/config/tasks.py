@@ -40,9 +40,11 @@ def bulk_config(req):
                 domain = game_domain
                 comment = proxy_asset.hostname
             elif asset_name == 'HallServer' and h5_domain:
+                asset_name = 'H5'
                 domain = h5_domain
                 comment = '{}-H5'.format(pf_code)
             elif asset_name == 'ApiServer' and pay_domain:
+                asset_name = 'Pay'
                 domain = pay_domain
                 comment = '{}-Pay'.format(pf_code)
             else:
@@ -51,12 +53,29 @@ def bulk_config(req):
                 proxyip = proxy_asset.ip
             else:
                 proxyip = proxy_asset.public_ip
-
-            config_record = WEBConfigRecords.objects.create(
-                domain=domain,
-                jid=jid
-            )
             port = proxyport = get_object_or_none(App, name=asset_name).port
+            try:
+                config_record = get_object_or_none(WEBConfigRecords, node_asset=node_asset, domain=domain, port=port)
+            except:
+                config_record = WEBConfigRecords.objects.create(
+                    platform=platform,
+                    node_asset=node_asset,
+                    port=port,
+                    domain=domain,
+                    jid=jid,
+                    comment='{}:{}'.format(proxy_asset, '此记录有重复，请先删除错误的记录')
+                )
+                continue
+            if config_record:
+                config_record.jid = jid
+            else:
+                config_record = WEBConfigRecords.objects.create(
+                    platform=platform,
+                    node_asset=node_asset,
+                    port=port,
+                    domain=domain,
+                    jid=jid
+                )
 
             config_record.platform = platform
             config_record.node_asset = node_asset

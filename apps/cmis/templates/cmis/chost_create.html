@@ -451,7 +451,7 @@ $(document).ready(function () {
         $("#id_Tag").val(tag)
     });
 
-        $("#btn_isolation_group_confirm").on('click',function () {
+    $("#btn_isolation_group_confirm").on('click',function () {
         var the_url = '{% url "api-cmis:chost-create-isolation-group" %}';
         var GroupName = $("#id_IsolationGroupName").val();
         var Remark = $("#id_Remark").val();
