@@ -70,10 +70,8 @@
                            </div>
                        </div>
                    </div>
-                   <form class="form-horizontal" id="auth_group_from" method="post"  role="form">
-                        <div style="max-height: 300px; overflow: hidden auto;" id="prems_checkbox_list">
-                        </div>
-                   </form>
+                   <div style="max-height: 300px; overflow: hidden auto;" id="prems_checkbox_list">
+                   </div>
                </div>
            </div>
        </div>
@@ -81,6 +79,71 @@
 </div>
 
 <script>
+
+function initMenu(id, model) {
+    var the_url = '{% url "api-rbac:menu-perms" %}';
+    var success = function(ret) {
+        $('#prems_checkbox_list .u-mb8').remove();
+
+        if (ret.code != 0) {
+            var data = ret['msg'];
+            var action_tag = ['add', 'del', 'change', 'view'];
+            for (var i = 0; i < data.length; i++) {
+                if (!data[i].parent__name){
+                    $('#prems_checkbox_list').append(
+                        '<div class="u-col-group u-mb8">'+
+                            '<div class="u-col-4">' +
+                                '<span class="u-font-name"  style="color: #6b798e;" data-id=' + data[i].id +'>'+ data[i].name + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="u-col-8 u-pl6" id="' + data[i].id +' "></div></div>'
+                    )
+                }else {
+                    $('#prems_checkbox_list').append(
+                        '<div class="u-col-group u-mb8">' +
+                            '<div class="u-col-4">' +
+                                '<span class="u-font-name" data-id=' + data[i].id +'>' + data[i].name + '</span>' +
+                            '</div> ' +
+                            '<div class="u-col-8 u-pl6" id="'+ data[i].id +'"></div></div>'
+                    );
+                    for (var a = 0; a < action_tag.length; a++){
+                        var index = $.inArray(action_tag[a], data[i].action);
+                        if (index >= 0) {
+                            $('#' + data[i].id).append(
+                                '<span class="uc-checkbox u-mr60">' +
+                                '<input class="icon--xs ' + action_tag[a] + '-check" data-id=' + action_tag[a] + ' type="checkbox" checked="checked">' +
+                                '</span>' +
+                                '<div class="u-dib" style="width: 32px;"></div>'
+                            )
+                        }else {
+                            $('#' + data[i].id).append(
+                                '<span class="uc-checkbox u-mr60">' +
+                                '<input class="icon--xs ' + action_tag[a] + '-check" data-id=' + action_tag[a] + ' type="checkbox">' +
+                                '</span>' +
+                                '<div class="u-dib" style="width: 32px;"></div>'
+                            )
+                        }
+                    }
+                }
+            }
+
+            $("#name").data('id',id);
+            $("#perm_edit_modal").modal('show');
+        }
+    }
+    var body = {
+        'id':id,
+        'model': model
+    }
+    DyAPIUpdateAttr({
+        url: the_url,
+        method: "POST",
+        body: JSON.stringify(body),
+        flash_message:false,
+        success:success
+    });
+}
+
 $(document).ready(function() {
     $('.check-all').on('click', function() {
         action = ($(this).val());
@@ -90,6 +153,46 @@ $(document).ready(function() {
           $('#prems_checkbox_list').find('.' + action + '-check').prop('checked', false);
       }
     });
+
+    $("#btn_perm_modal_confirm").on('click', function () {
+        var id = $("#name").data('id');
+        var target = $('.target').data('name');
+        var url = "{% url 'api-rbac:perms-edit' pk=DEFAULT_PK %}".replace("{{ DEFAULT_PK }}", id);
+        var data = {
+            'id':id,
+            'model':target,
+        };
+        var menu_perms = {}
+        $('#prems_checkbox_list .u-mb8').each(function () {
+            var menu = $(this).find('span').data('id');
+            var action = [];
+            $(this).find('input').each(function () {
+                if ($(this).prop("checked")){
+                    action.push($(this).data('id'))
+                }
+            });
+            menu_perms[menu] = action
+        });
+        data['menu_perms'] = menu_perms;
+        var success = function() {
+            $("#perm_edit_modal").modal('hide');
+        }
+        DyAPIUpdateAttr({
+            'url': url,
+            'method': 'POST',
+            'body': JSON.stringify(data),
+            success:success
+        })
+    })
+
+}).on('click', '.btn-perms-edit', function () {
+    var $this = $(this);
+    var id = $this.data('id');
+    var name = $this.data('name');
+    var target = $('.target').data('name');
+    $('#name').html(name);
+    initMenu(id, target)
+
 });
 </script>
 {% endblock %}

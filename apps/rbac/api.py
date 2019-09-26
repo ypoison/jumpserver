@@ -16,14 +16,6 @@ __all__ = ['MenuViewSet', 'MenuPermsAPI',
            'PermsEditAPI',
            ]
 
-
-def getObjInfo(id, model):
-    if model == 'user':
-        model = Permission2User
-    elif model == 'group':
-        model = Permission2Group
-    return get_object_or_404(model, id=id)
-
 class MenuViewSet(BulkModelViewSet):
     filter_fields = ("name", 'parent', "url")
     search_fields = filter_fields
@@ -43,10 +35,22 @@ class MenuPermsAPI(ListAPIView):
         data = self.request.data
         id = data.get('id')
         model = data.get('model')
+        if model == 'user':
+            target = get_object_or_none(User, id=id)
+            model = Permission2User
+        elif model == 'group':
+            target = get_object_or_none(UserGroup,id=id)
+            model = Permission2Group
         try:
             menus = list(Menu.objects.all().order_by('key').values('id', 'name', 'url', 'parent__name').distinct())
+            for menu in menus:
+                target_menu_perm = get_object_or_none(model, target=target, menu__id=menu['id'])
+                if target_menu_perm:
+                    menu['action'] = target_menu_perm.action_list
+                else:
+                    menu['action'] = []
         except Exception as e:
-            return Response({'code': 0, 'error': e}, status=400)
+            return Response({'code': 0, 'error': str(e)}, status=400)
         return Response({"code":1, "msg": menus})
 
 class PermsEditAPI(ListAPIView):
@@ -65,10 +69,20 @@ class PermsEditAPI(ListAPIView):
             perm_model = Permission2Group
         try:
             target = get_object_or_none(target_model, id=id)
+            print(target)
             for menu_id, action in data.get('menu_perms').items():
-                menu = get_object_or_none(Menu, id=menu_id)
-                perm_model.objects.create()
-
+                if action:
+                    menu = get_object_or_none(Menu, id=menu_id)
+                    perms = get_object_or_none(perm_model, target=target, menu=menu)
+                    if perms:
+                        perms.action = action
+                        perms.save()
+                    else:
+                        perm_model.objects.create(
+                            target=target,
+                            menu=menu,
+                            action=action
+                        )
         except Exception as e:
-            return Response({'code': 0, 'error': e}, status=400)
-        return Response({"code":1, "msg": ok})
+            return Response({'code': 0, 'error': str(e)}, status=400)
+        return Response({"code":1, "msg": 'ok'})
