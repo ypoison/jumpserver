@@ -9,7 +9,7 @@ from common.permissions import AdminUserRequiredMixin
 from common.const import create_success_msg
 
 from .models import Menu, Permission2User, Permission2Group
-from .forms import MenuForm, Permission2UserForm, Permission2GroupForm
+from .forms import MenuCreateForm, MenuUpdateForm, Permission2UserForm, Permission2GroupForm
 
 from users.models import User, UserGroup
 
@@ -34,7 +34,7 @@ class MenuListView(AdminUserRequiredMixin, TemplateView):
 class MenuCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
     model = Menu
     template_name = 'rbac/menu_create_update.html'
-    form_class = MenuForm
+    form_class = MenuCreateForm
     success_url = reverse_lazy('rbac:menu-list')
     success_message = create_success_msg
 
@@ -50,7 +50,7 @@ class MenuCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
 class MenuUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Menu
     template_name = 'rbac/menu_create_update.html'
-    form_class = MenuForm
+    form_class = MenuUpdateForm
     success_url = reverse_lazy('rbac:menu-list')
     success_message = create_success_msg
 

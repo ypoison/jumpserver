@@ -4,22 +4,22 @@ from django import forms
 
 from .models import Menu, Permission2Group, Permission2User
 
-__all__ = ['MenuForm', 'Permission2GroupForm', 'Permission2UserForm']
+__all__ = ['MenuCreateForm', 'MenuUpdateForm', 'Permission2GroupForm', 'Permission2UserForm']
 
-class MenuForm(forms.ModelForm):
-    parent = forms.ModelChoiceField(
-        required=False, queryset=Menu.objects.filter(parent=None),
-        label="上级菜单",
-        widget=forms.Select(
-            attrs={
-                'class': 'select2',
-                'data-placeholder': '上级菜单'
-            }
-        )
-    )
+class MenuCreateForm(forms.ModelForm):
+    #parent = forms.ModelChoiceField(
+    #    required=False, queryset=Menu.objects.filter(parent=None),
+    #    label="上级菜单",
+    #    widget=forms.Select(
+    #        attrs={
+    #            'class': 'select2',
+    #            'data-placeholder': '上级菜单'
+    #        }
+    #    )
+    #)
     class Meta:
         model = Menu
-        fields = ['name', 'parent', 'icon', 'html_class', 'url']
+        fields = ['name', 'parent', 'icon', 'html_class', 'url', 'assist_url']
 
     def save(self, commit=True):
         parent = self.cleaned_data.get('parent')
@@ -35,6 +35,21 @@ class MenuForm(forms.ModelForm):
             menu.key = key + 1
             menu.save()
         return menu
+
+class MenuUpdateForm(forms.ModelForm):
+    #parent = forms.ModelChoiceField(
+    #    required=False, queryset=Menu.objects.filter(parent=None),
+    #    label="上级菜单",
+    #    widget=forms.Select(
+    #        attrs={
+    #            'class': 'select2',
+    #            'data-placeholder': '上级菜单'
+    #        }
+    #    )
+    #)
+    class Meta:
+        model = Menu
+        fields = ['name', 'parent', 'icon', 'html_class', 'url', 'assist_url']
 
 class Permission2GroupForm(forms.ModelForm):
     ACTION_CHOICES = (

@@ -110,6 +110,7 @@ MIDDLEWARE = [
     'jumpserver.middleware.DemoMiddleware',
     'jumpserver.middleware.RequestMiddleware',
     'orgs.middleware.OrgMiddleware',
+    'rbac.middleware.UserAuth'
 ]
 
 ROOT_URLCONF = 'jumpserver.urls'

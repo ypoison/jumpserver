@@ -14,6 +14,7 @@ class Menu(models.Model):
     icon = models.CharField(max_length=30,null=True,blank=True,verbose_name='小图标')
     html_class = models.CharField(max_length=200,null=True,blank=True,verbose_name='样式')
     url = models.CharField(max_length=200, verbose_name='链接')
+    assist_url = models.TextField(null=True,blank=True,verbose_name='辅助链接')
     key = models.CharField(max_length=128, verbose_name='键')
     child_mark = models.IntegerField(default=0)
 
@@ -30,6 +31,13 @@ class Menu(models.Model):
         self.child_mark += 1
         self.save()
         return "{}:{}".format(self.key, mark)
+
+    @property
+    def assist_url_list(self):
+        try:
+            return self.assist_url.split('\r\n')
+        except:
+            return []
 
 class Permission2Group(models.Model):
     target = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户组')

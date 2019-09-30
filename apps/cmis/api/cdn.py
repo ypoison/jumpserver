@@ -30,6 +30,20 @@ class CDNDomainViewSet(BulkModelViewSet):
     serializer_class = serializers.CDNDomainSerializer
     pagination_class = LimitOffsetPagination
 
+    def destroy(self, request, *args, **kwargs):
+        cdn = self.get_object()
+        data = {
+            'access_id': cdn.account.access_id,
+            'access_key': cdn.account.access_key,
+            'domain_name': cdn.domain_name
+        }
+        cdn_data = SetCDN.delete(**data)
+        if cdn_data['code']:
+            cdn.delete()
+            return Response({"msg": "ok"})
+        else:
+            Response({'error': '%s:%s' % (cdn.domain_name, cdn_data['msg'])}, status=400)
+
 class CDNDomainModifyApi(APIView):
     permission_classes = (IsValidUser,)
 
@@ -45,9 +59,7 @@ class CDNDomainModifyApi(APIView):
             'source_port': req.get('source_port'),
             'sources': req.get('sources'),
         }
-        print(data)
         cdn_data = SetCDN.cdn_modify(**data)
-        print(cdn_data)
         if cdn_data['code']:
             cdn.source_type = req.get('source_type')
             cdn.source_port = req.get('source_port')
@@ -150,10 +162,6 @@ class CDNDomainUpdateApi(APIView):
             cdn_data = SetCDN.start(**data)
             time.sleep(2)
             self.cdn_update(cdn, **data)
-        elif action == 'delete':
-            cdn_data = SetCDN.delete(**data)
-            if cdn_data['code']:
-                cdn.delete()
         elif action == 'stop':
             cdn_data = SetCDN.stop(**data)
             time.sleep(2)

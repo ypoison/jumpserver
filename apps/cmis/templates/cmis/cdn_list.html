@@ -103,7 +103,7 @@ function initTable() {
                 } else{
                     var stop_btn = ''
                 }
-                var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn-update"  data-uid="{{ DEFAULT_PK }}" data-action="delete">删除</a>'.replace('{{ DEFAULT_PK }}', cellData);
+                var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn-delete"  data-uid="{{ DEFAULT_PK }}" data-action="delete">删除</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 $(td).html(update_btn + detail_btn + stop_btn + del_btn)
              }}
         ],
@@ -140,6 +140,14 @@ $(document).ready(function(){
         success_message:'操作成功',
         success:success
     });
+})
+.on('click', '.btn-delete', function () {
+    var $this = $(this);
+    var name = $this.closest("tr").find(":nth-child(2)").children('a').html();
+    var uid = $this.data('uid');
+    var the_url = '{% url "api-cmis:cdn-detail" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', uid);
+
+    DySwalAjax($this, name, the_url,'DELETE');
 });
 </script>
 {% endblock %}

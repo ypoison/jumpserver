@@ -58,7 +58,6 @@ class PermsEditAPI(ListAPIView):
 
     def post(self, request, *args, **kwargs):
         data = self.request.data
-        print(data)
         id = data.get('id')
         model = data.get('model')
         if model == 'user':
@@ -69,20 +68,23 @@ class PermsEditAPI(ListAPIView):
             perm_model = Permission2Group
         try:
             target = get_object_or_none(target_model, id=id)
-            print(target)
             for menu_id, action in data.get('menu_perms').items():
-                if action:
-                    menu = get_object_or_none(Menu, id=menu_id)
-                    perms = get_object_or_none(perm_model, target=target, menu=menu)
-                    if perms:
+
+                menu = get_object_or_none(Menu, id=menu_id)
+                perms = get_object_or_none(perm_model, target=target, menu=menu)
+                if perms:
+                    if action:
                         perms.action = action
                         perms.save()
                     else:
-                        perm_model.objects.create(
-                            target=target,
-                            menu=menu,
-                            action=action
-                        )
+                        perms.delete()
+                        continue
+                else:
+                    perm_model.objects.create(
+                        target=target,
+                        menu=menu,
+                        action=action
+                    )
         except Exception as e:
             return Response({'code': 0, 'error': str(e)}, status=400)
         return Response({"code":1, "msg": 'ok'})

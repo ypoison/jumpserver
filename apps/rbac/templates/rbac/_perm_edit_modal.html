@@ -89,7 +89,7 @@ function initMenu(id, model) {
             var data = ret['msg'];
             var action_tag = ['add', 'del', 'change', 'view'];
             for (var i = 0; i < data.length; i++) {
-                if (!data[i].parent__name){
+                if (data[i].url === '#'){
                     $('#prems_checkbox_list').append(
                         '<div class="u-col-group u-mb8">'+
                             '<div class="u-col-4">' +

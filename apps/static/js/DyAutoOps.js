@@ -19,10 +19,13 @@ function DyAPIUpdateAttr(props) {
     }).done(function(data, textStatue, jqXHR) {
         if (flash_message) {
             var msg = "";
+            console.log(jqXHR.responseJSON);
             if (user_success_message) {
                 msg = user_success_message;
-            } else if (jqXHR.responseJSON.msg || false) {
-                msg = jqXHR.responseJSON.msg
+            } else if (jqXHR.responseJSON || false) {
+                if (jqXHR.responseJSON.msg || false) {
+                    msg = jqXHR.responseJSON.msg
+                }
             }
             if (msg === "") {
                 msg = default_success_message;
