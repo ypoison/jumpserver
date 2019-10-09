@@ -10,9 +10,9 @@ urlpatterns = [
     path('account/<uuid:pk>/update/', views.AccountUpdateView.as_view(), name='account-update'),
     path('account/<uuid:pk>/', views.AccountDetailView.as_view(), name='account-detail'),
 
+    path('chost/', views.CHostCreateRecordView.as_view(), name='chost-create-record-list'),
     path('chost/create/', views.CHostCreateView.as_view(), name='chost-create'),
     path('chost/bulk/create/', views.CHostBulkCreateView.as_view(), name='chost-bulk-create'),
-    path('chost/create/record/', views.CHostCreateRecordView.as_view(), name='chost-create-record-list'),
 
     path('cdn/', views.CDNDomainListView.as_view(), name='cdn-list'),
     path('cdn/create/', views.CDNDomainCreateView.as_view(), name='cdn-create'),

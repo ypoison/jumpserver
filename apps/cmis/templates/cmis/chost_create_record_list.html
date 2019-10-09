@@ -103,7 +103,7 @@ function initTable() {
                 }
              }}
         ],
-        ajax_url: '{% url "api-cmis:chost-create-record" %}',
+        ajax_url: '{% url "api-cmis:chost-list" %}',
         columns: [
             {data: "id"}, {data: "account_display"}, {data: "hid" }, {data: "asset_display" },
             {data: "created_by" }, {data: "date_created" },

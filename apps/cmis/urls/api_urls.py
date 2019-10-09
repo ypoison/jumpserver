@@ -12,12 +12,12 @@ router.register(r'account', api.AccountViewSet, 'account')
 router.register(r'cdn', api.CDNDomainViewSet, 'cdn')
 
 urlpatterns = [
+    path('chost/', api.ChostCreateRecordAPI.as_view(), name='chost-list'),
     path('chost/get/info/', api.CloudInfoAPI.as_view(), name='chost-get-info'),
-    path('chost/create/record/', api.ChostCreateRecordAPI.as_view(), name='chost-create-record'),
     path('chost/get/price/', api.GetPriceAPI.as_view(), name='chost-get-price'),
-    path('chost/set/model/', api.SetModelAPI.as_view(), name='chost-set-model'),
+    path('chost/create/model/', api.SetModelAPI.as_view(), name='chost-create-model'),
     path('chost/<uuid:pk>/get/status/', api.GetStatusAPI.as_view(), name='chost-get-status'),
-    path('chost/for/model/<pk>/', api.ForModelAPI.as_view(), name='chost-for-model'),
+    path('chost/from/model/<pk>/', api.ForModelAPI.as_view(), name='chost-from-model'),
     path('chost/create/isolation-group/', api.CreateIsolationGroupAPI.as_view(), name='chost-create-isolation-group'),
     path('chost/create/host-name/', api.CreateGameNameAPI.as_view(), name='chost-create-host_name'),
 

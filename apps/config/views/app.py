@@ -16,7 +16,7 @@ __all__ = (
     'AppListView', 'AppCreateView', 'AppUpdateView',
 )
 
-class AppListView(AdminUserRequiredMixin, TemplateView):
+class AppListView(LoginRequiredMixin, TemplateView):
     template_name = 'config/app_list.html'
 
     def get_context_data(self, **kwargs):

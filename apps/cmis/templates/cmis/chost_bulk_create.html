@@ -375,7 +375,7 @@ $(document).ready(function () {
     });
 
     $("#btn_model_name_confirm").click(function () {
-        var the_url = '{% url "api-cmis:chost-set-model" %}';
+        var the_url = '{% url "api-cmis:chost-create-model" %}';
         var model_name = $("#id_model_name").val();
         var success = function (data) {
             $("#chost-model label").remove();
@@ -412,7 +412,7 @@ $(document).ready(function () {
              return
         }
         var model_id =  $('#id_chost_model').val()
-        var the_url = '{% url "api-cmis:chost-for-model" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', model_id);
+        var the_url = '{% url "api-cmis:chost-from-model" pk=DEFAULT_PK %}'.replace('{{ DEFAULT_PK }}', model_id);
         var success = function (data) {
 
             $("#id_Region").val(data.region);
