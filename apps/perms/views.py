@@ -8,14 +8,14 @@ from django.views.generic.edit import DeleteView, SingleObjectMixin
 from django.urls import reverse_lazy
 from django.conf import settings
 
-from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from orgs.utils import current_org
 from .hands import Node, Asset, SystemUser, User, UserGroup
 from .models import AssetPermission
 from .forms import AssetPermissionForm
 
 
-class AssetPermissionListView(AdminUserRequiredMixin, TemplateView):
+class AssetPermissionListView(LoginRequiredMixin, TemplateView):
     template_name = 'perms/asset_permission_list.html'
 
     def get_context_data(self, **kwargs):
@@ -27,7 +27,7 @@ class AssetPermissionListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class AssetPermissionCreateView(AdminUserRequiredMixin, CreateView):
+class AssetPermissionCreateView(LoginRequiredMixin, CreateView):
     model = AssetPermission
     form_class = AssetPermissionForm
     template_name = 'perms/asset_permission_create_update.html'
@@ -57,7 +57,7 @@ class AssetPermissionCreateView(AdminUserRequiredMixin, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class AssetPermissionUpdateView(AdminUserRequiredMixin, UpdateView):
+class AssetPermissionUpdateView(LoginRequiredMixin, UpdateView):
     model = AssetPermission
     form_class = AssetPermissionForm
     template_name = 'perms/asset_permission_create_update.html'
@@ -72,7 +72,7 @@ class AssetPermissionUpdateView(AdminUserRequiredMixin, UpdateView):
         return super().get_context_data(**kwargs)
 
 
-class AssetPermissionDetailView(AdminUserRequiredMixin, DetailView):
+class AssetPermissionDetailView(LoginRequiredMixin, DetailView):
     model = AssetPermission
     form_class = AssetPermissionForm
     template_name = 'perms/asset_permission_detail.html'
@@ -90,13 +90,13 @@ class AssetPermissionDetailView(AdminUserRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class AssetPermissionDeleteView(AdminUserRequiredMixin, DeleteView):
+class AssetPermissionDeleteView(LoginRequiredMixin, DeleteView):
     model = AssetPermission
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('perms:asset-permission-list')
 
 
-class AssetPermissionUserView(AdminUserRequiredMixin,
+class AssetPermissionUserView(LoginRequiredMixin,
                               SingleObjectMixin,
                               ListView):
     template_name = 'perms/asset_permission_user.html'
@@ -128,7 +128,7 @@ class AssetPermissionUserView(AdminUserRequiredMixin,
         return super().get_context_data(**kwargs)
 
 
-class AssetPermissionAssetView(AdminUserRequiredMixin,
+class AssetPermissionAssetView(LoginRequiredMixin,
                                SingleObjectMixin,
                                ListView):
     template_name = 'perms/asset_permission_asset.html'

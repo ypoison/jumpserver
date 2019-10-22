@@ -155,6 +155,9 @@ function activeNav() {
     else if (app === 'settings'){
         $("#" + app).addClass('active');
     }
+    else if (resource === 'user-asset'){
+        $("#" + resource).addClass('active');
+    }
     else {
         $("#" + app).addClass('active');
         $('#' + app + ' #' + resource).addClass('active');

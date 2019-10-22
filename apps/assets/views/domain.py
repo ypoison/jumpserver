@@ -7,7 +7,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy, reverse
 
-from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg, update_success_msg
 from common.utils import get_object_or_none
 from ..models import Domain, Gateway
@@ -21,7 +21,7 @@ __all__ = (
 )
 
 
-class DomainListView(AdminUserRequiredMixin, TemplateView):
+class DomainListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/domain_list.html'
 
     def get_context_data(self, **kwargs):
@@ -33,7 +33,7 @@ class DomainListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class DomainCreateView(AdminUserRequiredMixin, CreateView):
+class DomainCreateView(LoginRequiredMixin, CreateView):
     model = Domain
     template_name = 'assets/domain_create_update.html'
     form_class = DomainForm
@@ -49,7 +49,7 @@ class DomainCreateView(AdminUserRequiredMixin, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class DomainUpdateView(AdminUserRequiredMixin, UpdateView):
+class DomainUpdateView(LoginRequiredMixin, UpdateView):
     model = Domain
     template_name = 'assets/domain_create_update.html'
     form_class = DomainForm
@@ -65,7 +65,7 @@ class DomainUpdateView(AdminUserRequiredMixin, UpdateView):
         return super().get_context_data(**kwargs)
 
 
-class DomainDetailView(AdminUserRequiredMixin, DetailView):
+class DomainDetailView(LoginRequiredMixin, DetailView):
     model = Domain
     template_name = 'assets/domain_detail.html'
 
@@ -78,13 +78,13 @@ class DomainDetailView(AdminUserRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class DomainDeleteView(AdminUserRequiredMixin, DeleteView):
+class DomainDeleteView(LoginRequiredMixin, DeleteView):
     model = Domain
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:domain-list')
 
 
-class DomainGatewayListView(AdminUserRequiredMixin, SingleObjectMixin, TemplateView):
+class DomainGatewayListView(LoginRequiredMixin, SingleObjectMixin, TemplateView):
     template_name = 'assets/domain_gateway_list.html'
     model = Domain
     object = None
@@ -103,7 +103,7 @@ class DomainGatewayListView(AdminUserRequiredMixin, SingleObjectMixin, TemplateV
         return super().get_context_data(**kwargs)
 
 
-class DomainGatewayCreateView(AdminUserRequiredMixin, CreateView):
+class DomainGatewayCreateView(LoginRequiredMixin, CreateView):
     model = Gateway
     template_name = 'assets/gateway_create_update.html'
     form_class = GatewayForm
@@ -130,7 +130,7 @@ class DomainGatewayCreateView(AdminUserRequiredMixin, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class DomainGatewayUpdateView(AdminUserRequiredMixin, UpdateView):
+class DomainGatewayUpdateView(LoginRequiredMixin, UpdateView):
     model = Gateway
     template_name = 'assets/gateway_create_update.html'
     form_class = GatewayForm

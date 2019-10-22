@@ -11,7 +11,7 @@ from rest_framework.generics import (
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
-from common.permissions import IsValidUser, IsOrgAdmin, IsOrgAdminOrAppUser
+from common.permissions import IsValidUser
 from common.tree import TreeNode, TreeNodeSerializer
 from common.utils import get_object_or_none
 from orgs.mixins import RootOrgViewMixin
@@ -46,7 +46,7 @@ class AssetPermissionViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.AssetPermissionCreateUpdateSerializer
     pagination_class = LimitOffsetPagination
     filter_fields = ['name', 'users__username']
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def get_serializer_class(self):
         if self.action in ("list", 'retrieve'):
@@ -175,7 +175,7 @@ class UserGrantedAssetsApi(AssetsFilterMixin, ListAPIView):
     """
     用户授权的所有资产
     """
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = AssetGrantedSerializer
     pagination_class = LimitOffsetPagination
     
@@ -213,7 +213,7 @@ class UserGrantedNodesApi(ListAPIView):
     """
     查询用户授权的所有节点的API, 如果是超级用户或者是 app，切换到root org
     """
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = NodeSerializer
     
     def change_org_if_need(self):
@@ -243,7 +243,7 @@ class UserGrantedNodesWithAssetsApi(AssetsFilterMixin, ListAPIView):
     """
     用户授权的节点并带着节点下资产的api
     """
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeGrantedSerializer
     
     def change_org_if_need(self):
@@ -285,7 +285,7 @@ class UserGrantedNodesWithAssetsApi(AssetsFilterMixin, ListAPIView):
 
 class UserGrantedNodesWithAssetsAsTreeApi(ListAPIView):
     serializer_class = TreeNodeSerializer
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     show_assets = True
     system_user_id = None
 
@@ -333,7 +333,7 @@ class UserGrantedNodeAssetsApi(AssetsFilterMixin, ListAPIView):
     """
     查询用户授权的节点下的资产的api, 与上面api不同的是，只返回某个节点下的资产
     """
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = AssetGrantedSerializer
     pagination_class = LimitOffsetPagination
 
@@ -369,7 +369,7 @@ class UserGrantedNodeAssetsApi(AssetsFilterMixin, ListAPIView):
 
 
 class UserGroupGrantedAssetsApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = AssetGrantedSerializer
 
     def get_queryset(self):
@@ -389,7 +389,7 @@ class UserGroupGrantedAssetsApi(ListAPIView):
 
 
 class UserGroupGrantedNodesApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = NodeSerializer
 
     def get_queryset(self):
@@ -405,7 +405,7 @@ class UserGroupGrantedNodesApi(ListAPIView):
 
 
 class UserGroupGrantedNodesWithAssetsApi(ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeGrantedSerializer
 
     def get_queryset(self):
@@ -429,7 +429,7 @@ class UserGroupGrantedNodesWithAssetsApi(ListAPIView):
 
 class UserGroupGrantedNodesWithAssetsAsTreeApi(ListAPIView):
     serializer_class = TreeNodeSerializer
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     show_assets = True
     system_user_id = None
 
@@ -466,7 +466,7 @@ class UserGroupGrantedNodesWithAssetsAsTreeApi(ListAPIView):
 
 
 class UserGroupGrantedNodeAssetsApi(ListAPIView):
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = AssetGrantedSerializer
 
     def get_queryset(self):
@@ -484,7 +484,7 @@ class UserGroupGrantedNodeAssetsApi(ListAPIView):
 
 
 class ValidateUserAssetPermissionApi(RootOrgViewMixin, APIView):
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
 
     @staticmethod
     def get(request):
@@ -508,7 +508,7 @@ class AssetPermissionRemoveUserApi(RetrieveUpdateAPIView):
     """
     将用户从授权中移除，Detail页面会调用
     """
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetPermissionUpdateUserSerializer
     queryset = AssetPermission.objects.all()
 
@@ -525,7 +525,7 @@ class AssetPermissionRemoveUserApi(RetrieveUpdateAPIView):
 
 
 class AssetPermissionAddUserApi(RetrieveUpdateAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetPermissionUpdateUserSerializer
     queryset = AssetPermission.objects.all()
 
@@ -545,7 +545,7 @@ class AssetPermissionRemoveAssetApi(RetrieveUpdateAPIView):
     """
     将用户从授权中移除，Detail页面会调用
     """
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetPermissionUpdateAssetSerializer
     queryset = AssetPermission.objects.all()
 
@@ -562,7 +562,7 @@ class AssetPermissionRemoveAssetApi(RetrieveUpdateAPIView):
 
 
 class AssetPermissionAddAssetApi(RetrieveUpdateAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetPermissionUpdateAssetSerializer
     queryset = AssetPermission.objects.all()
 

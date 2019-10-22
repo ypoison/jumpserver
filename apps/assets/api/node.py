@@ -22,7 +22,7 @@ from django.shortcuts import get_object_or_404
 
 from common.utils import get_logger, get_object_or_none
 from common.tree import TreeNodeSerializer
-from ..hands import IsOrgAdmin
+from ..hands import IsValidUser
 from ..models import Node
 from ..tasks import update_assets_hardware_info_util, test_asset_connectivity_util
 from .. import serializers
@@ -40,7 +40,7 @@ __all__ = [
 
 class NodeViewSet(viewsets.ModelViewSet):
     queryset = Node.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeSerializer
 
     def perform_create(self, serializer):
@@ -73,7 +73,7 @@ class NodeListAsTreeApi(generics.ListAPIView):
       }
     ]
     """
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = TreeNodeSerializer
 
     def get_queryset(self):
@@ -105,7 +105,7 @@ class NodeChildrenAsTreeApi(generics.ListAPIView):
     ]
 
     """
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = TreeNodeSerializer
     node = None
     is_root = False
@@ -147,7 +147,7 @@ class NodeChildrenAsTreeApi(generics.ListAPIView):
 
 class NodeChildrenApi(mixins.ListModelMixin, generics.CreateAPIView):
     queryset = Node.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeSerializer
     instance = None
 
@@ -199,7 +199,7 @@ class NodeChildrenApi(mixins.ListModelMixin, generics.CreateAPIView):
 
 
 class NodeAssetsApi(generics.ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetSerializer
 
     def get_queryset(self):
@@ -214,7 +214,7 @@ class NodeAssetsApi(generics.ListAPIView):
 
 class NodeAddChildrenApi(generics.UpdateAPIView):
     queryset = Node.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.NodeAddChildrenSerializer
     instance = None
 
@@ -232,7 +232,7 @@ class NodeAddChildrenApi(generics.UpdateAPIView):
 class NodeAddAssetsApi(generics.UpdateAPIView):
     serializer_class = serializers.NodeAssetsSerializer
     queryset = Node.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     instance = None
 
     def perform_update(self, serializer):
@@ -244,7 +244,7 @@ class NodeAddAssetsApi(generics.UpdateAPIView):
 class NodeRemoveAssetsApi(generics.UpdateAPIView):
     serializer_class = serializers.NodeAssetsSerializer
     queryset = Node.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     instance = None
 
     def perform_update(self, serializer):
@@ -260,7 +260,7 @@ class NodeRemoveAssetsApi(generics.UpdateAPIView):
 class NodeReplaceAssetsApi(generics.UpdateAPIView):
     serializer_class = serializers.NodeAssetsSerializer
     queryset = Node.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     instance = None
 
     def perform_update(self, serializer):
@@ -271,7 +271,7 @@ class NodeReplaceAssetsApi(generics.UpdateAPIView):
 
 
 class RefreshNodeHardwareInfoApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     model = Node
 
     def get(self, request, *args, **kwargs):
@@ -285,7 +285,7 @@ class RefreshNodeHardwareInfoApi(APIView):
 
 
 class TestNodeConnectiveApi(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     model = Node
 
     def get(self, request, *args, **kwargs):
@@ -299,7 +299,7 @@ class TestNodeConnectiveApi(APIView):
 
 
 class RefreshAssetsAmount(APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     model = Node
 
     def get(self, request, *args, **kwargs):

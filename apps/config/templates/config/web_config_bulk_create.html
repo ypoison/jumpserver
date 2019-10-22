@@ -59,6 +59,17 @@
                                             </div>
                                         </div>
                                         {% bootstrap_field form.game_domain layout="horizontal" %}
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label" for="id_Games">需部署游戏</label>
+	                                        <div style="padding-left: 35px;" class="col-md-9 input-group">
+                                                <select name="Games" class="select2 form-control m-b" multiple title="" id="id_Games">
+                                                    {% for game in games %}
+                                                        <option value ={{ game.name }}>{{ game.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            <div class="help-block">默认为全选</div>
+                                            </div>
+                                        </div>
                                         {% bootstrap_field form.pay_domain layout="horizontal" %}
                                         {% bootstrap_field form.h5_domain layout="horizontal" %}
                                         {% bootstrap_field form.net_type layout="horizontal" %}

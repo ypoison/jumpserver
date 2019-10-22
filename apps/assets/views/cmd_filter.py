@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, reverse
 
-from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg, update_success_msg
 from ..models import CommandFilter, CommandFilterRule, SystemUser
 from ..forms import CommandFilterForm, CommandFilterRuleForm
@@ -22,7 +22,7 @@ __all__ = (
 )
 
 
-class CommandFilterListView(AdminUserRequiredMixin, TemplateView):
+class CommandFilterListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/cmd_filter_list.html'
 
     def get_context_data(self, **kwargs):
@@ -34,7 +34,7 @@ class CommandFilterListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class CommandFilterCreateView(AdminUserRequiredMixin, CreateView):
+class CommandFilterCreateView(LoginRequiredMixin, CreateView):
     model = CommandFilter
     template_name = 'assets/cmd_filter_create_update.html'
     form_class = CommandFilterForm
@@ -50,7 +50,7 @@ class CommandFilterCreateView(AdminUserRequiredMixin, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class CommandFilterUpdateView(AdminUserRequiredMixin, UpdateView):
+class CommandFilterUpdateView(LoginRequiredMixin, UpdateView):
     model = CommandFilter
     template_name = 'assets/cmd_filter_create_update.html'
     form_class = CommandFilterForm
@@ -66,7 +66,7 @@ class CommandFilterUpdateView(AdminUserRequiredMixin, UpdateView):
         return super().get_context_data(**kwargs)
 
 
-class CommandFilterDetailView(AdminUserRequiredMixin, DetailView):
+class CommandFilterDetailView(LoginRequiredMixin, DetailView):
     model = CommandFilter
     template_name = 'assets/cmd_filter_detail.html'
 
@@ -83,7 +83,7 @@ class CommandFilterDetailView(AdminUserRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class CommandFilterRuleListView(AdminUserRequiredMixin, SingleObjectMixin, TemplateView):
+class CommandFilterRuleListView(LoginRequiredMixin, SingleObjectMixin, TemplateView):
     template_name = 'assets/cmd_filter_rule_list.html'
     model = CommandFilter
     object = None
@@ -102,7 +102,7 @@ class CommandFilterRuleListView(AdminUserRequiredMixin, SingleObjectMixin, Templ
         return super().get_context_data(**kwargs)
 
 
-class CommandFilterRuleCreateView(AdminUserRequiredMixin, CreateView):
+class CommandFilterRuleCreateView(LoginRequiredMixin, CreateView):
     template_name = 'assets/cmd_filter_rule_create_update.html'
     model = CommandFilterRule
     form_class = CommandFilterRuleForm
@@ -135,7 +135,7 @@ class CommandFilterRuleCreateView(AdminUserRequiredMixin, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class CommandFilterRuleUpdateView(AdminUserRequiredMixin, UpdateView):
+class CommandFilterRuleUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'assets/cmd_filter_rule_create_update.html'
     model = CommandFilterRule
     form_class = CommandFilterRuleForm

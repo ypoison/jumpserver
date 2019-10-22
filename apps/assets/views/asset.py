@@ -26,7 +26,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 
 from common.mixins import JSONResponseMixin
 from common.utils import get_object_or_none, get_logger
-from common.permissions import AdminUserRequiredMixin
+
 from common.const import create_success_msg, update_success_msg
 from orgs.utils import current_org
 from .. import forms
@@ -41,7 +41,7 @@ __all__ = [
 logger = get_logger(__file__)
 
 
-class AssetListView(AdminUserRequiredMixin, TemplateView):
+class AssetListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/asset_list.html'
 
     def get_context_data(self, **kwargs):
@@ -68,7 +68,7 @@ class UserAssetListView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class AssetCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class AssetCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Asset
     form_class = forms.AssetCreateForm
     template_name = 'assets/asset_create.html'
@@ -96,7 +96,7 @@ class AssetCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
         return create_success_msg % ({"name": cleaned_data["hostname"]})
 
 
-class AssetBulkUpdateView(AdminUserRequiredMixin, ListView):
+class AssetBulkUpdateView(LoginRequiredMixin, ListView):
     model = Asset
     form_class = forms.AssetBulkUpdateForm
     template_name = 'assets/asset_bulk_update.html'
@@ -139,7 +139,7 @@ class AssetBulkUpdateView(AdminUserRequiredMixin, ListView):
         return super().get_context_data(**kwargs)
 
 
-class AssetUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class AssetUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Asset
     form_class = forms.AssetUpdateForm
     template_name = 'assets/asset_update.html'
@@ -157,7 +157,7 @@ class AssetUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
         return update_success_msg % ({"name": cleaned_data["hostname"]})
 
 
-class AssetDeleteView(AdminUserRequiredMixin, DeleteView):
+class AssetDeleteView(LoginRequiredMixin, DeleteView):
     model = Asset
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:asset-list')
@@ -227,7 +227,7 @@ class AssetExportView(LoginRequiredMixin, View):
         return JsonResponse({'redirect': url})
 
 
-class BulkImportAssetView(AdminUserRequiredMixin, JSONResponseMixin, FormView):
+class BulkImportAssetView(LoginRequiredMixin, JSONResponseMixin, FormView):
     form_class = forms.FileForm
 
     def form_valid(self, form):

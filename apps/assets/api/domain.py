@@ -7,7 +7,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.views.generic.detail import SingleObjectMixin
 
 from common.utils import get_logger
-from common.permissions import IsOrgAdmin, IsAppUser, IsOrgAdminOrAppUser
+from common.permissions import IsValidUser
 from ..models import Domain, Gateway
 from .. import serializers
 
@@ -18,7 +18,7 @@ __all__ = ['DomainViewSet', 'GatewayViewSet', "GatewayTestConnectionApi"]
 
 class DomainViewSet(BulkModelViewSet):
     queryset = Domain.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.DomainSerializer
     pagination_class = LimitOffsetPagination
 
@@ -33,7 +33,7 @@ class DomainViewSet(BulkModelViewSet):
 
     def get_permissions(self):
         if self.request.query_params.get('gateway'):
-            self.permission_classes = (IsOrgAdminOrAppUser,)
+            self.permission_classes = (IsValidUser,)
         return super().get_permissions()
 
 
@@ -41,13 +41,13 @@ class GatewayViewSet(BulkModelViewSet):
     filter_fields = ("domain__name", "name", "username", "ip", "domain")
     search_fields = filter_fields
     queryset = Gateway.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.GatewaySerializer
     pagination_class = LimitOffsetPagination
 
 
 class GatewayTestConnectionApi(SingleObjectMixin, APIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     model = Gateway
     object = None
 

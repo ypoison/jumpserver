@@ -20,7 +20,7 @@ from rest_framework_bulk import BulkModelViewSet
 from rest_framework.pagination import LimitOffsetPagination
 
 from common.utils import get_logger
-from common.permissions import IsOrgAdmin, IsOrgAdminOrAppUser
+from common.permissions import IsValidUser
 from ..models import SystemUser, Asset
 from .. import serializers
 from ..tasks import push_system_user_to_assets_manual, \
@@ -46,7 +46,7 @@ class SystemUserViewSet(BulkModelViewSet):
     search_fields = filter_fields
     queryset = SystemUser.objects.all()
     serializer_class = serializers.SystemUserSerializer
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -59,7 +59,7 @@ class SystemUserAuthInfoApi(generics.RetrieveUpdateDestroyAPIView):
     Get system user auth info
     """
     queryset = SystemUser.objects.all()
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.SystemUserAuthSerializer
 
     def destroy(self, request, *args, **kwargs):
@@ -73,7 +73,7 @@ class SystemUserPushApi(generics.RetrieveAPIView):
     Push system user to cluster assets api
     """
     queryset = SystemUser.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def retrieve(self, request, *args, **kwargs):
         system_user = self.get_object()
@@ -89,7 +89,7 @@ class SystemUserTestConnectiveApi(generics.RetrieveAPIView):
     Push system user to cluster assets api
     """
     queryset = SystemUser.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def retrieve(self, request, *args, **kwargs):
         system_user = self.get_object()
@@ -98,7 +98,7 @@ class SystemUserTestConnectiveApi(generics.RetrieveAPIView):
 
 
 class SystemUserAssetsListView(generics.ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetSimpleSerializer
     pagination_class = LimitOffsetPagination
     filter_fields = ("hostname", "ip")
@@ -116,7 +116,7 @@ class SystemUserAssetsListView(generics.ListAPIView):
 
 class SystemUserPushToAssetApi(generics.RetrieveAPIView):
     queryset = SystemUser.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.TaskIDSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -129,7 +129,7 @@ class SystemUserPushToAssetApi(generics.RetrieveAPIView):
 
 class SystemUserTestAssetConnectivityApi(generics.RetrieveAPIView):
     queryset = SystemUser.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.TaskIDSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -141,7 +141,7 @@ class SystemUserTestAssetConnectivityApi(generics.RetrieveAPIView):
 
 
 class SystemUserCommandFilterRuleListApi(generics.ListAPIView):
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
 
     def get_serializer_class(self):
         from ..serializers import CommandFilterRuleSerializer

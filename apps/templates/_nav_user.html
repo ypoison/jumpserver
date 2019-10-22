@@ -8,7 +8,7 @@
         <div class="rect5"></div>
     </div>
 </div>
-<li id="assets">
+<li id="user-asset">
     <a href="{% url 'assets:user-asset-list' %}">
         <i class="fa fa-files-o" style="width: 14px"></i><span class="nav-label">{% trans 'My assets' %}</span><span class="label label-info pull-right"></span>
     </a>
@@ -33,6 +33,19 @@
         <span class="nav-label">{% trans 'File manager' %}</span>
     </a>
 </li>
+<li id="assets">
+    <a>
+        <i class="fa fa-inbox" style="width: 14px"></i> <span class="nav-label">{% trans 'Assets' %}</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="asset"><a href="{% url 'assets:asset-list' %}">{% trans 'Asset list' %}</a></li>
+        <li id="domain"><a href="{% url 'assets:domain-list' %}">{% trans 'Domain list' %}</a></li>
+        <li id="admin-user"><a href="{% url 'assets:admin-user-list' %}">{% trans 'Admin user' %}</a></li>
+        <li id="system-user"><a href="{% url 'assets:system-user-list' %}">{% trans 'System user' %}</a></li>
+        <li id="label"><a href="{% url 'assets:label-list' %}">{% trans 'Labels' %}</a></li>
+        <li id="cmd-filter"><a href="{% url 'assets:cmd-filter-list' %}">{% trans 'Command filters' %}</a></li>
+    </ul>
+</li>
 <li id="cmis">
     <a>
         <i class="fa fa-inbox" style="width: 14px"></i> <span class="nav-label">云管中心</span><span class="fa arrow"></span>
@@ -40,6 +53,14 @@
     <ul class="nav nav-second-level">
         <li id="cdn"><a href="{% url 'cmis:cdn-list' %}">CDN</a></li>
         <li id="chost"><a href="{% url 'cmis:chost-create' %}">采购云主机</a></li>
+    </ul>
+</li>
+<li id="perms">
+    <a href="#"><i class="fa fa-edit" style="width: 14px"></i> <span class="nav-label">{% trans 'Perms' %}</span><span class="fa arrow"></span></a>
+    <ul class="nav nav-second-level">
+        <li id="asset-permission">
+            <a href="{% url 'perms:asset-permission-list' %}">{% trans 'Asset permission' %}</a>
+        </li>
     </ul>
 </li>
 <li id="domain-name">

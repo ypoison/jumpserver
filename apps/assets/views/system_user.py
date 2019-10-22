@@ -10,7 +10,7 @@ from django.views.generic.detail import DetailView
 from common.const import create_success_msg, update_success_msg
 from ..forms import SystemUserForm
 from ..models import SystemUser, Node, CommandFilter
-from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 __all__ = [
@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-class SystemUserListView(AdminUserRequiredMixin, TemplateView):
+class SystemUserListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/system_user_list.html'
 
     def get_context_data(self, **kwargs):
@@ -32,7 +32,7 @@ class SystemUserListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class SystemUserCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class SystemUserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = SystemUser
     form_class = SystemUserForm
     template_name = 'assets/system_user_create.html'
@@ -48,7 +48,7 @@ class SystemUserCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateVi
         return super().get_context_data(**kwargs)
 
 
-class SystemUserUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class SystemUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = SystemUser
     form_class = SystemUserForm
     template_name = 'assets/system_user_update.html'
@@ -64,7 +64,7 @@ class SystemUserUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateVi
         return super().get_context_data(**kwargs)
 
 
-class SystemUserDetailView(AdminUserRequiredMixin, DetailView):
+class SystemUserDetailView(LoginRequiredMixin, DetailView):
     template_name = 'assets/system_user_detail.html'
     context_object_name = 'system_user'
     model = SystemUser
@@ -79,13 +79,13 @@ class SystemUserDetailView(AdminUserRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class SystemUserDeleteView(AdminUserRequiredMixin, DeleteView):
+class SystemUserDeleteView(LoginRequiredMixin, DeleteView):
     model = SystemUser
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:system-user-list')
 
 
-class SystemUserAssetView(AdminUserRequiredMixin, DetailView):
+class SystemUserAssetView(LoginRequiredMixin, DetailView):
     model = SystemUser
     template_name = 'assets/system_user_asset.html'
     context_object_name = 'system_user'

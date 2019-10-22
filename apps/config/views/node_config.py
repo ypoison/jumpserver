@@ -86,7 +86,9 @@ class WEBConfigBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVie
     success_message = "updated successfully."
 
     def form_valid(self, form):
+        games = self.request.POST.getlist('Games')
         req = form.cleaned_data
+        req['games'] = games
         job = bulk_config.delay(req)
         self.success_message = '配置任务已生成。 jobID: %s' % str(job).replace('-', '')
         messages.success(self.request, self.success_message)
@@ -96,7 +98,8 @@ class WEBConfigBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVie
         context = {
             'app': '配置管理',
             'action': '添加WEB配置',
-            'ports': App.objects.all()
+            'ports': App.objects.all(),
+            'games': App.objects.filter(type='game')
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

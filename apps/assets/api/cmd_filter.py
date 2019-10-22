@@ -5,7 +5,7 @@ from rest_framework_bulk import BulkModelViewSet
 from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 
-from ..hands import IsOrgAdmin
+from ..hands import IsValidUser
 from ..models import CommandFilter, CommandFilterRule
 from .. import serializers
 
@@ -16,7 +16,7 @@ __all__ = ['CommandFilterViewSet', 'CommandFilterRuleViewSet']
 class CommandFilterViewSet(BulkModelViewSet):
     filter_fields = ("name",)
     search_fields = filter_fields
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     queryset = CommandFilter.objects.all()
     serializer_class = serializers.CommandFilterSerializer
     pagination_class = LimitOffsetPagination
@@ -25,7 +25,7 @@ class CommandFilterViewSet(BulkModelViewSet):
 class CommandFilterRuleViewSet(BulkModelViewSet):
     filter_fields = ("content",)
     search_fields = filter_fields
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.CommandFilterRuleSerializer
     pagination_class = LimitOffsetPagination
 

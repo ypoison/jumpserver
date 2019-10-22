@@ -16,83 +16,80 @@ from common.utils import get_object_or_none
 import re
 
 white_list=[
-    #luna
-    r'^/[0-9a-z-/]*/terminal/[0-9a-z-/]*',
-    r'^/api/assets/v1/assets/[0-9a-z-]{36}/$',
-    r'^/api/assets/v1/system-user/[0-9a-z-]{36}[/auth-info/$|/$]',
-    r'^/api/perms/v1/asset-permission/user/validate/[0-9a-z-/]*',
+    #xshell
+    (r'^/api/users/v1/auth/', ['GET']),
 
-    #ftp
-    r'^/api/perms/v1/user/[0-9a-z-]{36}/assets/$',
-    r'^/api/audits/v1/ftp-log/$',
+    #luna,
+    (r'^/[0-9a-z-/]*/terminal/[0-9a-z-/]*', ['POST','PATCH']),
+    (r'^/api/assets/v1/domain/[0-9a-z-]{36}/$', ['GET']),
+    (r'^/api/assets/v1/assets/[0-9a-z-]{36}/$', ['GET']),
+    (r'^/api/assets/v1/system-user/[0-9a-z-]{36}[/auth-info/$|/$]', ['GET']),
+    (r'^/api/perms/v1/asset-permission/user/validate/[0-9a-z-/]*', ['GET']),
+    (r'^/api/perms/v1/user/[0-9a-z-]{36}/nodes-assets/', ['GET']),
 
-    # 用户身份验证
-    r'/users/profile/otp/enable/authentication/',
-    r'/users/profile/otp/enable/install-app/',
+    #ftp,
+    (r'^/api/perms/v1/user/[0-9a-z-]{36}/assets/$', ['GET']),
+    (r'^/api/audits/v1/ftp-log/$', ['GET','POST']),
 
-    r'^/api/users/v1/profile/$',
-    r'^/{1}$',
-    r'^/users/login/*',
-    r'/admin/*',
-    r'^/zh-hans/jsi18n/$',
-    r'^/favicon.ico$',
-    r'^/captcha/*',
+    # 用户身份验证,
+    (r'^/users/logout/', ['GET']),
+    (r'/users/profile/otp/enable/authentication/', ['GET', 'POST']),
+    (r'/users/profile/otp/enable/install-app/', ['GET']),
+
+    (r'^/api/users/v1/profile/$', ['GET']),
+    (r'^/ops/celery/task/[0-9a-z-]{36}/log/', ['GET']),
+    (r'^/api/ops/v1/celery/task/[0-9a-z-]{36}/log/', ['GET']),
+    (r'^/{1}$', ['GET']),
+    (r'^/users/login/*', ['GET','POST']),
+    (r'/admin/*', ['GET']),
+    (r'^/zh-hans/jsi18n/$', ['GET']),
+    (r'^/favicon.ico$', ['GET']),
+    (r'^/captcha/*', ['GET']),
 ]
 
 def format_url(path, method):
     rules = {
         'add': (
-            [
-                {'rule': r'(/api/ops/v1/command-executions/)', 'formatting_url': '%s'},
-                {'rule': r'(/users/profile/)(?:otp/enable/bind/$)', 'formatting_url': '%s'},
-                {
-                    'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:create/[0-9a-z-/]*)(?:/$)',
-                    'formatting_url': '%s/%s'},
-                {'rule': r'(/(?:[a-z-]*/){1,4})(?:create/$)', 'formatting_url': '%s'},
-                {'rule': r'(/[0-9a-z-]*/[0-9a-z-]*)(?:/[0-9a-z-/]*/create/[0-9a-z-/]*)', 'formatting_url': '%s/'},
-            ],
-            ['GET', 'POST'],
+            {'rule': r'(/api/ops/v1/command-executions/)', 'formatting_url': '%s', 'method':['POST']},
+            {'rule': r'(/users/profile/)(?:otp/enable/bind/$)', 'formatting_url': '%s', 'method':['POST']},
+            {'rule': r'(/[a-z-]*/[a-z-]*/)(?:import/)', 'formatting_url': '%s', 'method':['POST']},
+            {'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:create/[0-9a-z-/]*)(?:/$)','formatting_url': '%s/%s', 'method':['POST']},
+            {'rule': r'(/(?:[a-z-]*/){1,4})(?:create/$)', 'formatting_url': '%s', 'method':['GET', 'POST']},
+            {'rule': r'(/[0-9a-z-]*/[0-9a-z-]*)(?:/[0-9a-z-/]*/create/[0-9a-z-/]*)', 'formatting_url': '%s/', 'method':['GET','POST']},
         ),
         'del': (
-            [
-                {
-                    'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:[0-9a-z-]{36}|\d{1,4})(?:/$)',
-                    'formatting_url': '%s/%s'}
-            ],
-            ['DELETE']
+            {
+                'rule': r'(?:(?:/api)(/[a-z-]*)(?:/v1/)([a-z-]*/)(?:(?:[0-9a-z-]*/){0,3})?)(?:(?:[0-9a-z-]{36}|\d{1,4})?)(?:/$)?',
+                'formatting_url': '%s/%s',
+                'method':['DELETE']
+            },
         ),
         'change': (
-            [
-                {'rule': r'(/domain-name/domain-name)(?:/record)(?:/[0-9a-z-]{36}|\d{1,4})(?:/update/)','formatting_url': '%s/'},
-                {
-                    'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:[0-9a-z-]{36}|\d{1,4}|reload|full/update|set|modify/$)',
-                    'formatting_url': '%s/%s'},
-                {'rule': r'((?:/[0-9a-z-]*)+(?:(?:/[0-9a-z-]*){1,4}))+(?:/password|/pubkey)(?:/update/$)', 'formatting_url': '%s/'},
-                {'rule': r'(/[0-9a-z-]*/[0-9a-z-]*/)(?:[0-9a-z-]{36}|\d{1,4})(?:/update/$)', 'formatting_url': '%s'},
-                {'rule': r'(/[0-9a-z-]*/[0-9a-z-]*/)(?:[0-9a-z-]{36}|\d{1,4})(?:/$)', 'formatting_url': '%s'},
-                {'rule': r'((?:/[a-z-]*)+(?:(?:/[a-z-]*){1,4}))+(?:/update/$)', 'formatting_url': '%s/'},
-            ],
-            ['GET', 'POST', 'PUT', 'PATCH']
+            {
+                'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:[0-9a-z-]{36}|\d{1,4}|reload|full/update|set|modify/$)',
+                'formatting_url': '%s/%s', 'method':['PUT', 'PATCH','POST',]},
+            {'rule': r'((?:/[0-9a-z-]*)+(?:(?:/[0-9a-z-]*){1,4}))+(?:/password|/pubkey)(?:/update/$)', 'formatting_url': '%s/', 'method':['PUT', 'PATCH','GET','POST']},
+            {
+                'rule': r'(/[a-z-]*/[a-z-]*/)(?:(?:record/|gateway/)?)(?:[0-9a-z-]{36}|\d{1,4})(?:(?:/[a-z-]*/)?)(?:(?:[0-9a-z-]{36}|\d{1,4})?)(?:(?:/update|/rule)?)(?:/$)',
+                'formatting_url': '%s', 'method':['PUT', 'PATCH','GET','POST']},
+            {'rule': r'((?:/[a-z-]*)+(?:(?:/[a-z-]*){1,4}))+(?:/update/$)', 'formatting_url': '%s/', 'method':['PUT', 'PATCH','GET','POST']},
         ),
         'view': (
-            [
-                {'rule': r'(/domain-name/domain-name/)(?:[0-9a-z-]{36})(?:/records/)', 'formatting_url': '%s'},
-                {'rule': r'(/luna/)', 'formatting_url': '%s'},
-                {
-                    'rule': r'(?:(?:/api)(/[a-z-]*)(?:/v1/)([a-z-]*/)(?:[a-z-]*/){0,2})(?: ?|[0-9a-z-]{36}|\d{1,4})(?: ?|(?:[0-9a-z-]*){1,4})',
-                    'formatting_url': '%s/%s'},
-                {'rule': r'((?:/[0-9a-z-]*)+(?:(?:/[0-9a-z-]*){1,6})+(?:/$))', 'formatting_url': '%s'},
-            ],
-            ['GET', 'POST']
+            {'rule': r'(/[a-z-]*/[a-z-]*)(?:(?:/[0-9a-z-]{36})?)(?:/(?:export|records|gateway)/$)', 'formatting_url': '%s/', 'method':['GET']},
+            {'rule': r'(/luna/)', 'formatting_url': '%s', 'method':['GET']},
+            {
+                'rule': r'(?:(?:/api)(/[a-z-]*)(?:/v1/)([a-z-]*/)(?:[a-z-]*/){0,2})(?:(?:[0-9a-z-]{36}|\d{1,4})?)(?:(?:[0-9a-z-]*){1,4}?)',
+                'formatting_url': '%s/%s', 'method':['GET','POST']},
+            {'rule': r'((?:/[0-9a-z-]*)+(?:(?:/[0-9a-z-]*){1,6})+(?:/$))', 'formatting_url': '%s', 'method':['GET']},
         )
     }
     for action, rule in rules.items():
-        for r in rule[0]:
+        for r in rule:
             regex = re.compile(
                 r['rule'],
                 re.IGNORECASE)
             m = regex.match(path)
-            if m and method in rule[1]:
+            if m and method in r['method']:
                 url = r['formatting_url'] % m.groups()
                 menu_prem = {'url': url, 'action': action}
                 return menu_prem
@@ -110,16 +107,14 @@ class UserAuth(MiddlewareMixin):
 
         for per in white_list:
             regex = re.compile(
-                per,
+                per[0],
                 re.IGNORECASE)
             ret = regex.match(path)
-            if ret:
+            if ret and method in per[1]:
                 return None
-
         if str(user) == 'AnonymousUser' and path != '/users/login/':
             return redirect('/users/login/')
         url_info = format_url(path, method)
-
         if url_info:
             user_menu_perms = get_object_or_none(Permission2User, target=request.user, menu__url=url_info['url'])
             if user_menu_perms:
@@ -142,22 +137,20 @@ class UserAuth(MiddlewareMixin):
                     referer_url = '/terminal/web-terminal/'
                 referer_url_info = format_url(referer_url, 'GET')
                 if referer_url_info:
-                    user_menu_perms = get_object_or_none(Permission2User, target=request.user,
-                                                         menu__url=referer_url_info['url'])
+                    user_menu_perms = get_object_or_none(Permission2User, target=request.user,menu__url=referer_url_info['url'])
                     if user_menu_perms:
 
                         if url_info['url'] in user_menu_perms.menu.assist_url_list:
                             if url_info['action'] in user_menu_perms.action_list:
                                 return None
                     for group in request.user.groups.all():
-                        group_menu_perms = get_object_or_none(Permission2Group, target=group,
-                                                              menu__url=referer_url_info['url'])
+                        group_menu_perms = get_object_or_none(Permission2Group, target=group,menu__url=referer_url_info['url'])
                         if group_menu_perms:
                             if url_info['url'] in group_menu_perms.menu.assist_url_list:
                                 if url_info['action'] in group_menu_perms.action_list:
                                     return None
-            print('referer', referer, url_info)
+            print(referer, path, url_info)
             return HttpResponse('无权限访问')
         else:
-            print('referer', referer, url_info)
+            print(referer, path, url_info)
             return HttpResponse('无权限访问')

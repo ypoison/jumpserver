@@ -6,7 +6,7 @@ from django.views.generic import TemplateView, CreateView, \
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy
 
-from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg, update_success_msg
 from ..models import Label
 from ..forms import LabelForm
@@ -18,7 +18,7 @@ __all__ = (
 )
 
 
-class LabelListView(AdminUserRequiredMixin, TemplateView):
+class LabelListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/label_list.html'
 
     def get_context_data(self, **kwargs):
@@ -30,7 +30,7 @@ class LabelListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class LabelCreateView(AdminUserRequiredMixin, CreateView):
+class LabelCreateView(LoginRequiredMixin, CreateView):
     model = Label
     template_name = 'assets/label_create_update.html'
     form_class = LabelForm
@@ -57,7 +57,7 @@ class LabelCreateView(AdminUserRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class LabelUpdateView(AdminUserRequiredMixin, UpdateView):
+class LabelUpdateView(LoginRequiredMixin, UpdateView):
     model = Label
     template_name = 'assets/label_create_update.html'
     form_class = LabelForm
@@ -73,11 +73,11 @@ class LabelUpdateView(AdminUserRequiredMixin, UpdateView):
         return super().get_context_data(**kwargs)
 
 
-class LabelDetailView(AdminUserRequiredMixin, DetailView):
+class LabelDetailView(LoginRequiredMixin, DetailView):
     pass
 
 
-class LabelDeleteView(AdminUserRequiredMixin, DeleteView):
+class LabelDeleteView(LoginRequiredMixin, DeleteView):
     model = Label
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:label-list')

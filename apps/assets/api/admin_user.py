@@ -22,7 +22,7 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from common.mixins import IDInFilterMixin
 from common.utils import get_logger
-from ..hands import IsOrgAdmin
+from ..hands import IsValidUser
 from ..models import AdminUser, Asset
 from .. import serializers
 from ..tasks import test_admin_user_connectivity_manual
@@ -45,7 +45,7 @@ class AdminUserViewSet(IDInFilterMixin, BulkModelViewSet):
     search_fields = filter_fields
     queryset = AdminUser.objects.all()
     serializer_class = serializers.AdminUserSerializer
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -56,13 +56,13 @@ class AdminUserViewSet(IDInFilterMixin, BulkModelViewSet):
 class AdminUserAuthApi(generics.UpdateAPIView):
     queryset = AdminUser.objects.all()
     serializer_class = serializers.AdminUserAuthSerializer
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
 
 class ReplaceNodesAdminUserApi(generics.UpdateAPIView):
     queryset = AdminUser.objects.all()
     serializer_class = serializers.ReplaceNodeAdminUserSerializer
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def update(self, request, *args, **kwargs):
         admin_user = self.get_object()
@@ -86,7 +86,7 @@ class AdminUserTestConnectiveApi(generics.RetrieveAPIView):
     Test asset admin user assets_connectivity
     """
     queryset = AdminUser.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.TaskIDSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -96,7 +96,7 @@ class AdminUserTestConnectiveApi(generics.RetrieveAPIView):
 
 
 class AdminUserAssetsListView(generics.ListAPIView):
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.AssetSimpleSerializer
     pagination_class = LimitOffsetPagination
     filter_fields = ("hostname", "ip")

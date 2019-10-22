@@ -13,7 +13,7 @@ from django.db.models import Q
 
 from common.mixins import IDInFilterMixin
 from common.utils import get_logger
-from common.permissions import IsOrgAdmin, IsOrgAdminOrAppUser
+from common.permissions import IsValidUser
 from ..models import Asset, AdminUser, Node
 from .. import serializers
 from ..tasks import update_asset_hardware_info_manual, \
@@ -39,7 +39,7 @@ class AssetViewSet(IDInFilterMixin, LabelFilter, BulkModelViewSet):
     queryset = Asset.objects.all()
     serializer_class = serializers.AssetSerializer
     pagination_class = LimitOffsetPagination
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
 
     def filter_node(self, queryset):
         node_id = self.request.query_params.get("node_id")
@@ -89,7 +89,7 @@ class AssetListUpdateApi(IDInFilterMixin, ListBulkCreateUpdateDestroyAPIView):
     """
     queryset = Asset.objects.all()
     serializer_class = serializers.AssetSerializer
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
 
 class AssetRefreshHardwareApi(generics.RetrieveAPIView):
@@ -98,7 +98,7 @@ class AssetRefreshHardwareApi(generics.RetrieveAPIView):
     """
     queryset = Asset.objects.all()
     serializer_class = serializers.AssetSerializer
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
 
     def retrieve(self, request, *args, **kwargs):
         asset_id = kwargs.get('pk')
@@ -112,7 +112,7 @@ class AssetAdminUserTestApi(generics.RetrieveAPIView):
     Test asset admin user assets_connectivity
     """
     queryset = Asset.objects.all()
-    permission_classes = (IsOrgAdmin,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.TaskIDSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -124,7 +124,7 @@ class AssetAdminUserTestApi(generics.RetrieveAPIView):
 
 class AssetGatewayApi(generics.RetrieveAPIView):
     queryset = Asset.objects.all()
-    permission_classes = (IsOrgAdminOrAppUser,)
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.GatewayWithAuthSerializer
 
     def retrieve(self, request, *args, **kwargs):

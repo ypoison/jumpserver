@@ -11,7 +11,7 @@ from django.views.generic.detail import DetailView, SingleObjectMixin
 from common.const import create_success_msg, update_success_msg
 from .. import forms
 from ..models import AdminUser, Node
-from common.permissions import AdminUserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 __all__ = [
     'AdminUserCreateView', 'AdminUserDetailView',
@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-class AdminUserListView(AdminUserRequiredMixin, TemplateView):
+class AdminUserListView(LoginRequiredMixin, TemplateView):
     model = AdminUser
     template_name = 'assets/admin_user_list.html'
 
@@ -33,7 +33,7 @@ class AdminUserListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class AdminUserCreateView(AdminUserRequiredMixin,
+class AdminUserCreateView(LoginRequiredMixin,
                           SuccessMessageMixin,
                           CreateView):
     model = AdminUser
@@ -51,7 +51,7 @@ class AdminUserCreateView(AdminUserRequiredMixin,
         return super().get_context_data(**kwargs)
 
 
-class AdminUserUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class AdminUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = AdminUser
     form_class = forms.AdminUserForm
     template_name = 'assets/admin_user_create_update.html'
@@ -67,7 +67,7 @@ class AdminUserUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateVie
         return super().get_context_data(**kwargs)
 
 
-class AdminUserDetailView(AdminUserRequiredMixin, DetailView):
+class AdminUserDetailView(LoginRequiredMixin, DetailView):
     model = AdminUser
     template_name = 'assets/admin_user_detail.html'
     context_object_name = 'admin_user'
@@ -83,7 +83,7 @@ class AdminUserDetailView(AdminUserRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class AdminUserAssetsView(AdminUserRequiredMixin, SingleObjectMixin, ListView):
+class AdminUserAssetsView(LoginRequiredMixin, SingleObjectMixin, ListView):
     paginate_by = settings.DISPLAY_PER_PAGE
     template_name = 'assets/admin_user_assets.html'
     context_object_name = 'admin_user'
@@ -108,7 +108,7 @@ class AdminUserAssetsView(AdminUserRequiredMixin, SingleObjectMixin, ListView):
         return super().get_context_data(**kwargs)
 
 
-class AdminUserDeleteView(AdminUserRequiredMixin, DeleteView):
+class AdminUserDeleteView(LoginRequiredMixin, DeleteView):
     model = AdminUser
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:admin-user-list')
