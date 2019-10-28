@@ -287,8 +287,8 @@ class AliyunCDN:
 if __name__ == '__main__':
     a=AliyunCDN()
     data = {
-        'access_id':'LTAIsqupmY8GlhNG',
-        'access_key':'YHsR8d6P6ouRP7Vk2kKVDFBUzROlXw',
+        'access_id':'xxxx',
+        'access_key':'xxxx',
         'domain_name': 'image1.vivi.com',
         'https': 'on'
     }
