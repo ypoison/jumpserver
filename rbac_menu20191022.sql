@@ -27,8 +27,6 @@ INSERT INTO `rbac_menu` (`id`,`name`,`icon`,`html_class`,`url`,`parent_id`,`key`
 ('297f7b5b97a94f51a4a08785db99d2d5','系统用户',NULL,NULL,'/assets/system-user/','2f7cda06da5d452bb01e65252013c971','9:3',0,''),
 ('2f7cda06da5d452bb01e65252013c971','资产管理',NULL,NULL,'#',NULL,'9',6,''),
 ('3018dee01745447d861f72c42ff87fd8','资产授权',NULL,NULL,'/perms/asset-permission/','b1bd0074b6924baaa2a1542becaa150c','10:0',0,'/assets/nodes/\r\n/assets/assets/\r\n/perms/asset-permissions/'),
-('5818f5b5e18d434d9cae163559ef626a','域名管理',NULL,NULL,'#',NULL,'7',0,''),
-('5d4abbbc141d4398961f622983e6a2f7','配置管理',NULL,NULL,'#',NULL,'8',2,''),
 ('840cc6877f65485abe105ff00f4e2ca2','网域列表',NULL,NULL,'/assets/domain/','2f7cda06da5d452bb01e65252013c971','9:1',0,'/assets/assets/\r\n/assets/nodes/\r\n/assets/gateway/'),
 ('9e6c796213c54a4c89657f5b447b8848','命令过滤',NULL,NULL,'/assets/cmd-filter/','2f7cda06da5d452bb01e65252013c971','9:5',0,''),
 ('a4862242ea7b486083726f5accb8d690','管理用户',NULL,NULL,'/assets/admin-user/','2f7cda06da5d452bb01e65252013c971','9:2',0,''),
