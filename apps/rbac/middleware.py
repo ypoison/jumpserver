@@ -70,7 +70,7 @@ def format_url(path, method):
                 'formatting_url': '%s/%s', 'method':['PUT', 'PATCH','POST',]},
             {'rule': r'((?:/[0-9a-z-]*)+(?:(?:/[0-9a-z-]*){1,4}))+(?:/password|/pubkey)(?:/update/$)', 'formatting_url': '%s/', 'method':['PUT', 'PATCH','GET','POST']},
             {
-                'rule': r'(/[a-z-]*/[a-z-]*/)(?:(?:record/|gateway/)?)(?:[0-9a-z-]{36}|\d{1,4})(?:(?:/[a-z-]*/)?)(?:(?:[0-9a-z-]{36}|\d{1,4})?)(?:(?:/update|/rule)?)(?:/$)',
+                'rule': r'(/[a-z-]*/[a-z-]*/)(?:(?:record/|gateway/)?)(?:[0-9a-z-]{36}|\d{1,4})(?:(?:/[a-z-]*/)?)(?:(?:[0-9a-z-]{36}|\d{1,4})?)(?:(?:/update|/rule|/user|/asset)?)(?:/$)',
                 'formatting_url': '%s', 'method':['PUT', 'PATCH','GET','POST']},
             {'rule': r'((?:/[a-z-]*)+(?:(?:/[a-z-]*){1,4}))+(?:/update/$)', 'formatting_url': '%s/', 'method':['PUT', 'PATCH','GET','POST']},
         ),
