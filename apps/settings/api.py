@@ -5,9 +5,9 @@ import os
 import json
 import jms_storage
 
+from smtplib import SMTPSenderRefused
 from rest_framework import generics
 from rest_framework.views import Response, APIView
-from rest_framework.pagination import LimitOffsetPagination
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.translation import ugettext_lazy as _
@@ -16,7 +16,7 @@ from .models import Setting
 from .utils import LDAPUtil
 from common.permissions import IsOrgAdmin, IsSuperUser
 from common.utils import get_logger
-from .serializers import MailTestSerializer, LDAPTestSerializer
+from .serializers import MailTestSerializer, LDAPTestSerializer, LDAPUserSerializer
 
 
 logger = get_logger(__file__)
@@ -31,6 +31,7 @@ class MailTestingAPI(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             email_from = serializer.validated_data["EMAIL_FROM"]
+            email_recipient = serializer.validated_data["EMAIL_RECIPIENT"]
             email_host_user = serializer.validated_data["EMAIL_HOST_USER"]
             for k, v in serializer.validated_data.items():
                 if k.startswith('EMAIL'):
@@ -39,11 +40,23 @@ class MailTestingAPI(APIView):
                 subject = "Test"
                 message = "Test smtp setting"
                 email_from = email_from or email_host_user
-                send_mail(subject, message,  email_from, [email_from])
+                email_recipient = email_recipient or email_from
+                send_mail(subject, message,  email_from, [email_recipient])
+            except SMTPSenderRefused as e:
+                resp = e.smtp_error
+                if isinstance(resp, bytes):
+                    for coding in ('gbk', 'utf8'):
+                        try:
+                            resp = resp.decode(coding)
+                        except UnicodeDecodeError:
+                            continue
+                        else:
+                            break
+                return Response({"error": str(resp)}, status=401)
             except Exception as e:
+                print(e)
                 return Response({"error": str(e)}, status=401)
-
-            return Response({"msg": self.success_message.format(email_host_user)})
+            return Response({"msg": self.success_message.format(email_recipient)})
         else:
             return Response({"error": str(serializer.errors)}, status=401)
 
@@ -94,34 +107,24 @@ class LDAPTestingAPI(APIView):
 
 
 class LDAPUserListApi(generics.ListAPIView):
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsOrgAdmin,)
+    serializer_class = LDAPUserSerializer
 
     def get_queryset(self):
-        util = LDAPUtil()
+        if hasattr(self, 'swagger_fake_view'):
+            return []
+        q = self.request.query_params.get('search')
         try:
-            users = util.search_user_items()
+            util = LDAPUtil()
+            extra_filter = util.construct_extra_filter(util.SEARCH_FIELD_ALL, q)
+            users = util.search_user_items(extra_filter)
         except Exception as e:
             users = []
-            logger.error(e, exc_info=True)
+            logger.error(e)
         # 前端data_table会根据row.id对table.selected值进行操作
         for user in users:
             user['id'] = user['username']
         return users
-
-    def filter_queryset(self, queryset):
-        search = self.request.query_params.get('search')
-        if not search:
-            return queryset
-        search = search.lower()
-        queryset = [
-            q for q in queryset
-            if
-            search in q['username'].lower()
-            or search in q['name'].lower()
-            or search in q['email'].lower()
-        ]
-        return queryset
 
     def sort_queryset(self, queryset):
         order_by = self.request.query_params.get('order')
@@ -136,7 +139,7 @@ class LDAPUserListApi(generics.ListAPIView):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
         queryset = self.sort_queryset(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -242,22 +245,3 @@ class CommandStorageDeleteAPI(APIView):
         storage_name = str(request.data.get('name'))
         Setting.delete_storage('TERMINAL_COMMAND_STORAGE', storage_name)
         return Response({"msg": _('Delete succeed')}, status=200)
-
-
-class DjangoSettingsAPI(APIView):
-    def get(self, request):
-        if not settings.DEBUG:
-            return Response("Not in debug mode")
-
-        data = {}
-        for i in [settings, getattr(settings, '_wrapped')]:
-            if not i:
-                continue
-            for k, v in i.__dict__.items():
-                if k and k.isupper():
-                    try:
-                        json.dumps(v)
-                        data[k] = v
-                    except (json.JSONDecodeError, TypeError):
-                        data[k] = str(v)
-        return Response(data)

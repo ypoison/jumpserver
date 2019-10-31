@@ -22,11 +22,11 @@
                                 <a href="{% url 'users:user-granted-asset' pk=user_object.id %}" class="text-center"><i class="fa fa-cubes"></i> {% trans 'Asset granted' %}</a>
                             </li>
                             <li class="pull-right">
-                                <a class="btn btn-outline {% if user_object.is_superuser and not request.user.is_superuser %} disabled {% else %} btn-default {% endif %}" href="{% url 'users:user-update' pk=user_object.id %}"><i class="fa fa-edit"></i>{% trans 'Update' %}</a>
+                                <a class="btn btn-outline {% if can_update %} btn-default {% else %} disabled {% endif %}" href="{% url 'users:user-update' pk=user_object.id %}"><i class="fa fa-edit"></i>{% trans 'Update' %}</a>
                             </li>
 
                             <li class="pull-right">
-                                <a class="btn btn-outline {% if request.user == user_object or user_object.username == "admin" or user_object.is_superuser and not request.user.is_superuser %} disabled  {% else %} btn-danger btn-delete-user {% endif %}">
+                                <a class="btn btn-outline {% if can_delete %} btn-danger btn-delete-user {% else %} disabled {% endif %}">
                                     <i class="fa fa-trash-o"></i>{% trans 'Delete' %}
                                 </a>
                             </li>
@@ -85,7 +85,7 @@
                                         {% endif %}
                                         <tr>
                                             <td>{% trans 'Role' %}:</td>
-                                            <td><b>{{ user_object.get_role_display }}</b></td>
+                                            <td><b>{{ user_object.role_display }}</b></td>
                                         </tr>
                                         <tr>
                                             <td>{% trans 'MFA certification' %}:</td>
@@ -119,10 +119,12 @@
                                             <td>{% trans 'Last login' %}:</td>
                                             <td><b>{{ user_object.last_login|date:"Y-m-j H:i:s" }}</b></td>
                                         </tr>
+                                        {% if user_object.can_update_password %}
                                         <tr>
                                             <td>{% trans 'Last password updated' %}:</td>
                                             <td><b>{{ user_object.date_password_last_updated|date:"Y-m-j H:i:s" }}</b></td>
                                         </tr>
+                                        {% endif %}
                                         <tr>
                                             <td>{% trans 'Comment' %}:</td>
                                             <td><b>{{ user_object.comment }}</b></td>
@@ -187,6 +189,7 @@
                                             </td>
                                         </tr>
                                         {% endif %}
+                                        {% if user_object.can_update_ssh_key %}
                                         <tr>
                                             <td>{% trans 'Send reset ssh key mail' %}:</td>
                                             <td>
@@ -195,6 +198,7 @@
                                                 </span>
                                             </td>
                                         </tr>
+                                        {% endif %}
                                         <tr style="{% if not unblock %}display:none{% endif %}">
                                             <td>{% trans 'Unblock user' %}</td>
                                             <td>
@@ -208,44 +212,46 @@
                                 </div>
                             </div>
 
-                            <div class="panel panel-info">
-                                <div class="panel-heading">
-                                    <i class="fa fa-info-circle"></i> {% trans 'User group' %}
-                                </div>
-                                <div class="panel-body">
-                                    <table class="table group_edit">
-                                        <tbody>
-                                        <form>
-                                            <tr>
-                                                <td colspan="2" class="no-borders">
-                                                    <select data-placeholder="{% trans 'Join user groups' %}" id="groups_selected" class="select2" style="width: 100%" multiple="" tabindex="4">
-                                                        {% for group in groups %}
-                                                        <option value="{{ group.id }}" id="opt_{{ group.id }}" >{{ group.name }}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2" class="no-borders">
-                                                    <button type="button" class="btn btn-info btn-small" id="btn_join_group">{% trans 'Join' %}</button>
-                                                </td>
-                                            </tr>
-                                        </form>
+                            {% if user_object.is_current_org_admin %}
+                                <div class="panel panel-info">
+                                    <div class="panel-heading">
+                                        <i class="fa fa-info-circle"></i> {% trans 'User group' %}
+                                    </div>
+                                    <div class="panel-body">
+                                        <table class="table group_edit">
+                                            <tbody>
+                                                <form>
+                                                    <tr>
+                                                        <td colspan="2" class="no-borders">
+                                                            <select data-placeholder="{% trans 'Join user groups' %}" id="groups_selected" class="select2" style="width: 100%" multiple="" tabindex="4">
+                                                                {% for group in groups %}
+                                                                    <option value="{{ group.id }}" id="opt_{{ group.id }}" >{{ group.name }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2" class="no-borders">
+                                                            <button type="button" class="btn btn-info btn-small" id="btn_join_group">{% trans 'Join' %}</button>
+                                                        </td>
+                                                    </tr>
+                                                </form>
 
-                                        {% for group in user_object.groups.all %}
-                                        <tr>
-                                          <td >
-                                              <b class="bdg_group" data-gid={{ group.id }}>{{ group.name }}</b>
-                                          </td>
-                                          <td>
-                                              <button class="btn btn-danger pull-right btn-xs btn_leave_group" type="button"><i class="fa fa-minus"></i></button>
-                                          </td>
-                                        </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
+                                                {% for group in user_object.groups.all %}
+                                                    <tr>
+                                                        <td >
+                                                            <b class="bdg_group" data-gid={{ group.id }}>{{ group.name }}</b>
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-danger pull-right btn-xs btn_leave_group" type="button"><i class="fa fa-minus"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -280,7 +286,7 @@ function updateUserGroups(groups) {
         // clear jumpserver.groups_selected
         jumpserver.nodes_selected = {};
     };
-    APIUpdateAttr({
+    requestApi({
         url: the_url,
         body: JSON.stringify(body),
         success: success
@@ -305,7 +311,7 @@ $(document).ready(function() {
         'is_active': checked
     };
     var success = '{% trans "Update successfully!" %}';
-    APIUpdateAttr({
+    requestApi({
         url: the_url,
         body: JSON.stringify(body),
         success_message: success
@@ -332,7 +338,7 @@ $(document).ready(function() {
         'otp_secret_key': otp_secret_key
     };
     var success = '{% trans "Update successfully!" %}';
-    APIUpdateAttr({
+    requestApi({
         url: the_url,
         body: JSON.stringify(body),
         success_message: success
@@ -372,7 +378,7 @@ $(document).ready(function() {
             var msg = "{% trans "An e-mail has been sent to the user`s mailbox." %}";
             swal("{% trans 'Reset password' %}", msg, "success");
         };
-        APIUpdateAttr({
+        requestApi({
             url: the_url,
             body: JSON.stringify(body),
             success: success
@@ -398,7 +404,7 @@ $(document).ready(function() {
             var msg = "{% trans 'The reset-ssh-public-key E-mail has been sent successfully. Please inform the user to update his new ssh public key.' %}";
             swal("{% trans 'Reset SSH public key' %}", msg, "success");
         };
-        APIUpdateAttr({
+        requestApi({
             url: the_url,
             body: body,
             success: success
@@ -441,7 +447,7 @@ $(document).ready(function() {
             }
         );
     };
-    APIUpdateAttr({ url: the_url, body: JSON.stringify(body), success: success, error: fail});
+    requestApi({ url: the_url, body: JSON.stringify(body), success: success, error: fail});
 }).on('click', '.btn-delete-user', function () {
     var $this = $(this);
     var name = "{{ user_object.name }}";
@@ -466,7 +472,7 @@ $(document).ready(function() {
                 }
             );
         };
-        APIUpdateAttr({
+        requestApi({
             url: the_url,
             body: JSON.stringify(body),
             success: success
@@ -485,7 +491,7 @@ $(document).ready(function() {
         doReset();
     });
 }).on('click', '#btn-reset-mfa', function () {
-    APIUpdateAttr({
+    requestApi({
         url: "{% url 'api-users:user-reset-otp' pk=user_object.id %}",
         method: "GET",
         success_message: "{% trans 'Reset user MFA success' %}"

@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from users.models import User
 from users.utils import construct_user_email
 from common.utils import get_logger
+from common.const import LDAP_AD_ACCOUNT_DISABLE
 
 from .models import settings
 
@@ -21,10 +22,15 @@ class LDAPOUGroupException(Exception):
 class LDAPUtil:
     _conn = None
 
+    SEARCH_FIELD_ALL = 'all'
+    SEARCH_FIELD_USERNAME = 'username'
+
     def __init__(self, use_settings_config=True, server_uri=None, bind_dn=None,
                  password=None, use_ssl=None, search_ougroup=None,
                  search_filter=None, attr_map=None, auth_ldap=None):
         # config
+        self.paged_size = settings.AUTH_LDAP_SEARCH_PAGED_SIZE
+
         if use_settings_config:
             self._load_config_from_settings()
         else:
@@ -70,30 +76,82 @@ class LDAPUtil:
         for attr, mapping in self.attr_map.items():
             if not hasattr(entry, mapping):
                 continue
-            user_item[attr] = getattr(entry, mapping).value or ''
+            value = getattr(entry, mapping).value or ''
+            if mapping.lower() == 'useraccountcontrol' and attr == 'is_active'\
+                    and value:
+                value = int(value) & LDAP_AD_ACCOUNT_DISABLE \
+                        != LDAP_AD_ACCOUNT_DISABLE
+            user_item[attr] = value
         return user_item
 
-    def search_user_items(self):
+    def _search_user_items_ou(self, search_ou, extra_filter=None, cookie=None):
+        search_filter = self.search_filter % {"user": "*"}
+        if extra_filter:
+            search_filter = '(&{}{})'.format(search_filter, extra_filter)
+
+        ok = self.connection.search(
+            search_ou, search_filter,
+            attributes=list(self.attr_map.values()),
+            paged_size=self.paged_size, paged_cookie=cookie
+        )
+        if not ok:
+            error = _("Search no entry matched in ou {}".format(search_ou))
+            raise LDAPOUGroupException(error)
+
         user_items = []
-        for search_ou in str(self.search_ougroup).split("|"):
-            ok = self.connection.search(
-                search_ou, self.search_filter % ({"user": "*"}),
-                attributes=list(self.attr_map.values())
-            )
-            if not ok:
-                error = _("Search no entry matched in ou {}".format(search_ou))
-                raise LDAPOUGroupException(error)
-            for entry in self.connection.entries:
-                user_item = self._ldap_entry_to_user_item(entry)
-                user = self.get_user_by_username(user_item['username'])
-                user_item['existing'] = bool(user)
-                user_items.append(user_item)
+        for entry in self.connection.entries:
+            user_item = self._ldap_entry_to_user_item(entry)
+            user = self.get_user_by_username(user_item['username'])
+            user_item['existing'] = bool(user)
+            if user_item in user_items:
+                continue
+            user_items.append(user_item)
         return user_items
 
+    def _cookie(self):
+        if self.paged_size is None:
+            cookie = None
+        else:
+            cookie = self.connection.result['controls']['1.2.840.113556.1.4.319']['value']['cookie']
+        return cookie
+
+    def search_user_items(self, extra_filter=None):
+        user_items = []
+        logger.info("Search user items")
+
+        for search_ou in str(self.search_ougroup).split("|"):
+            logger.info("Search user search ou: {}".format(search_ou))
+            _user_items = self._search_user_items_ou(search_ou, extra_filter=extra_filter)
+            user_items.extend(_user_items)
+            while self._cookie():
+                logger.info("Page Search user search ou: {}".format(search_ou))
+                _user_items = self._search_user_items_ou(search_ou, extra_filter, self._cookie())
+                user_items.extend(_user_items)
+        logger.info("Search user items end")
+        return user_items
+
+    def construct_extra_filter(self, field, q):
+        if not q:
+            return None
+        extra_filter = ''
+        if field == self.SEARCH_FIELD_ALL:
+            for attr in self.attr_map.values():
+                extra_filter += '({}={})'.format(attr, q)
+            extra_filter = '(|{})'.format(extra_filter)
+            return extra_filter
+
+        if field == self.SEARCH_FIELD_USERNAME and isinstance(q, list):
+            attr = self.attr_map.get('username')
+            for username in q:
+                extra_filter += '({}={})'.format(attr, username)
+            extra_filter = '(|{})'.format(extra_filter)
+            return extra_filter
+
     def search_filter_user_items(self, username_list):
-        user_items = self.search_user_items()
-        if username_list:
-            user_items = [u for u in user_items if u['username'] in username_list]
+        extra_filter = self.construct_extra_filter(
+            self.SEARCH_FIELD_USERNAME, username_list
+        )
+        user_items = self.search_user_items(extra_filter)
         return user_items
 
     @staticmethod
@@ -102,7 +160,9 @@ class LDAPUtil:
             if not hasattr(user, field):
                 continue
             if isinstance(getattr(user, field), bool):
-                value = value.lower() in ['true', 1]
+                if isinstance(value, str):
+                    value = value.lower()
+                value = value in ['true', 1, True]
             setattr(user, field, value)
         user.save()
 
@@ -136,7 +196,7 @@ class LDAPUtil:
         email = construct_user_email(username, email)
         return email
 
-    def create_or_update_users(self, user_items, force_update=True):
+    def create_or_update_users(self, user_items):
         succeed = failed = 0
         for user_item in user_items:
             exist = user_item.pop('existing', False)
@@ -146,13 +206,14 @@ class LDAPUtil:
             else:
                 ok, error = self.update_user(user_item)
             if not ok:
+                logger.info("Failed User: {}".format(user_item))
                 failed += 1
             else:
                 succeed += 1
         result = {'total': len(user_items), 'succeed': succeed, 'failed': failed}
         return result
 
-    def sync_users(self, username_list):
+    def sync_users(self, username_list=None):
         user_items = self.search_filter_user_items(username_list)
         result = self.create_or_update_users(user_items)
         return result

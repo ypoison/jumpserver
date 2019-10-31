@@ -10,10 +10,9 @@ from django.conf import settings
 
 from common.permissions import PermissionsMixin, IsOrgAdmin
 from orgs.utils import current_org
-from perms.hands import Node, Asset, SystemUser, User, UserGroup
-from perms.models import AssetPermission, Action
+from perms.hands import Node, Asset, SystemUser, UserGroup
+from perms.models import AssetPermission
 from perms.forms import AssetPermissionForm
-from perms.const import PERMS_ACTION_NAME_ALL
 
 
 __all__ = [
@@ -52,20 +51,20 @@ class AssetPermissionCreateView(PermissionsMixin, CreateView):
 
         if nodes_id:
             nodes_id = nodes_id.split(",")
-            nodes = Node.objects.filter(id__in=nodes_id).exclude(id=Node.root().id)
-            form['nodes'].initial = nodes
+            nodes = Node.objects.filter(id__in=nodes_id)\
+                .exclude(id=Node.org_root().id)
+            form.set_nodes_initial(nodes)
         if assets_id:
             assets_id = assets_id.split(",")
             assets = Asset.objects.filter(id__in=assets_id)
-            form['assets'].initial = assets
-        form['actions'].initial = Action.objects.get(name=PERMS_ACTION_NAME_ALL)
-
+            form.set_assets_initial(assets)
         return form
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Perms'),
             'action': _('Create asset permission'),
+            'api_action': "create",
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -81,7 +80,8 @@ class AssetPermissionUpdateView(PermissionsMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Perms'),
-            'action': _('Update asset permission')
+            'action': _('Update asset permission'),
+            'api_action': "update",
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -131,16 +131,15 @@ class AssetPermissionUserView(PermissionsMixin,
         return queryset
 
     def get_context_data(self, **kwargs):
-
+        user_remain = current_org.get_org_members(exclude=('Auditor',)).exclude(
+            assetpermission=self.object)
+        user_groups_remain = UserGroup.objects.exclude(
+            assetpermission=self.object)
         context = {
             'app': _('Perms'),
             'action': _('Asset permission user list'),
-            'users_remain': current_org.get_org_users().exclude(
-                assetpermission=self.object
-            ),
-            'user_groups_remain': UserGroup.objects.exclude(
-                assetpermission=self.object
-            )
+            'users_remain': user_remain,
+            'user_groups_remain': user_groups_remain,
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -156,7 +155,7 @@ class AssetPermissionAssetView(PermissionsMixin,
     permission_classes = [IsOrgAdmin]
 
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object(queryset = AssetPermission.objects.all())
+        self.object = self.get_object(queryset=AssetPermission.objects.all())
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -164,12 +163,13 @@ class AssetPermissionAssetView(PermissionsMixin,
         return queryset
 
     def get_context_data(self, **kwargs):
-        assets_granted = self.get_queryset()
+        nodes_remain = Node.objects.exclude(
+            id__in=self.object.nodes.all().values_list('id', flat=True)
+        ).only('key')
         context = {
             'app': _('Perms'),
             'action': _('Asset permission asset list'),
-            'assets_remain': Asset.objects.exclude(id__in=[a.id for a in assets_granted]),
-            'nodes_remain': Node.objects.exclude(granted_by_permissions=self.object),
+            'nodes_remain': nodes_remain,
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

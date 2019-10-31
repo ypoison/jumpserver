@@ -1,3 +1,4 @@
+from rest_framework.request import Request
 from django.http.request import QueryDict
 from django.conf import settings
 from django.dispatch import receiver
@@ -18,19 +19,17 @@ from .signals import post_auth_success, post_auth_failed
 def on_user_logged_out(sender, request, user, **kwargs):
     if not settings.AUTH_OPENID:
         return
-
+    if not settings.AUTH_OPENID_SHARE_SESSION:
+        return
     query = QueryDict('', mutable=True)
     query.update({
         'redirect_uri': settings.BASE_SITE_URL
     })
-
     client = new_client()
     openid_logout_url = "%s?%s" % (
-        client.openid_connect_client.get_url(
-            name='end_session_endpoint'),
+        client.get_url_end_session_endpoint(),
         query.urlencode()
     )
-
     request.COOKIES['next'] = openid_logout_url
 
 
@@ -48,20 +47,21 @@ def on_openid_login_success(sender, user=None, request=None, **kwargs):
 
 @receiver(populate_user)
 def on_ldap_create_user(sender, user, ldap_user, **kwargs):
-    if user and user.name != 'admin':
+    if user and user.username != 'admin':
         user.source = user.SOURCE_LDAP
         user.save()
 
 
 def generate_data(username, request):
-    if not request.user.is_anonymous and request.user.is_app:
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    if isinstance(request, Request):
         login_ip = request.data.get('remote_addr', None)
         login_type = request.data.get('login_type', '')
-        user_agent = request.data.get('HTTP_USER_AGENT', '')
     else:
         login_ip = get_request_ip(request)
-        user_agent = request.META.get('HTTP_USER_AGENT', '')
         login_type = 'W'
+
     data = {
         'username': username,
         'ip': login_ip,

@@ -4,9 +4,9 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from common.utils import validate_ssh_public_key
-from orgs.mixins import OrgModelForm
-from orgs.utils import current_org
+from orgs.mixins.forms import OrgModelForm
 from .models import User, UserGroup
+from .utils import check_password_rules, get_current_org_members
 
 
 class UserCheckPasswordForm(forms.Form):
@@ -90,6 +90,20 @@ class UserCreateUpdateFormMixin(OrgModelForm):
             raise forms.ValidationError(_('Not a valid ssh public key'))
         return public_key
 
+    def clean_password(self):
+        password_strategy = self.data.get('password_strategy')
+        # 创建-不设置密码
+        if password_strategy == '0':
+            return
+        password = self.data.get('password')
+        # 更新-密码为空
+        if password_strategy is None and not password:
+            return
+        if not check_password_rules(password):
+            msg = _('* Your password does not meet the requirements')
+            raise forms.ValidationError(msg)
+        return password
+
     def save(self, commit=True):
         password = self.cleaned_data.get('password')
         otp_level = self.cleaned_data.get('otp_level')
@@ -142,7 +156,7 @@ UserProfileForm.verbose_name = _("Profile")
 class UserMFAForm(forms.ModelForm):
 
     mfa_description = _(
-        'Tip: when enabled, '
+        'When enabled, '
         'you will enter the MFA binding process the next time you log in. '
         'you can also directly bind in '
         '"personal information -> quick modification -> change MFA Settings"!')
@@ -252,14 +266,22 @@ class UserBulkUpdateForm(OrgModelForm):
     users = forms.ModelMultipleChoiceField(
         required=True,
         label=_('Select users'),
-        queryset=User.objects.all(),
+        queryset=User.objects.none(),
         widget=forms.SelectMultiple(
             attrs={
-                'class': 'select2',
+                'class': 'users-select2',
                 'data-placeholder': _('Select users')
             }
         )
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_fields_queryset()
+
+    def set_fields_queryset(self):
+        users_field = self.fields['users']
+        users_field.queryset = get_current_org_members()
 
     class Meta:
         model = User
@@ -291,42 +313,33 @@ class UserBulkUpdateForm(OrgModelForm):
         return users
 
 
-def user_limit_to():
-    return {"orgs": current_org}
-
-
 class UserGroupForm(OrgModelForm):
     users = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(),
+        queryset=User.objects.none(),
         label=_("User"),
         widget=forms.SelectMultiple(
             attrs={
-                'class': 'select2',
+                'class': 'users-select2',
                 'data-placeholder': _('Select users')
             }
         ),
         required=False,
-        limit_choices_to=user_limit_to
     )
 
     def __init__(self, **kwargs):
-        instance = kwargs.get('instance')
-        if instance:
-            initial = kwargs.get('initial', {})
-            initial.update({'users': instance.users.all()})
-            kwargs['initial'] = initial
         super().__init__(**kwargs)
-        if 'initial' not in kwargs:
-            return
+        self.set_fields_queryset()
+
+    def set_fields_queryset(self):
         users_field = self.fields.get('users')
-        if hasattr(users_field, 'queryset'):
-            users_field.queryset = current_org.get_org_users()
+        if self.instance:
+            users_field.initial = self.instance.users.all()
+            users_field.queryset = self.instance.users.all()
+        else:
+            users_field.queryset = User.objects.none()
 
     def save(self, commit=True):
-        group = super().save(commit=commit)
-        users = self.cleaned_data['users']
-        group.users.set(users)
-        return group
+        raise Exception("Save by restful api")
 
     class Meta:
         model = UserGroup

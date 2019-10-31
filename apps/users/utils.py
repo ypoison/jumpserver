@@ -7,18 +7,14 @@ import pyotp
 import base64
 import logging
 
-import ipaddress
 from django.http import Http404
 from django.conf import settings
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth import authenticate
 from django.utils.translation import ugettext as _
 from django.core.cache import cache
 from datetime import datetime
 
 from common.tasks import send_mail_async
-from common.utils import reverse, get_object_or_none, get_ip_city
-from .models import User
+from common.utils import reverse
 
 
 logger = logging.getLogger('jumpserver')
@@ -26,21 +22,20 @@ logger = logging.getLogger('jumpserver')
 
 def construct_user_created_email_body(user):
     default_body = _("""
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-        <p style="text-indent:2em;">
-            <span>
-                Username: %(username)s.
-            </span>
-            <span>
-                <a href="%(rest_password_url)s?token=%(rest_password_token)s">click here to set your password</a>
-            </span>    
-            <span>
-                This link is valid for 1 hour. After it expires, <a href="%(forget_password_url)s?email=%(email)s">request new one</a>
-            </span> 
-            <span>
+        <div>
+            <p>Your account has been created successfully</p>
+            <div>
+                Username: %(username)s
+                <br/>
+                Password: <a href="%(rest_password_url)s?token=%(rest_password_token)s">
+                click here to set your password</a> 
+                (This link is valid for 1 hour. After it expires, <a href="%(forget_password_url)s?email=%(email)s">request new one</a>)
+            </div>
+            <div>
+                <p>---</p>
                 <a href="%(login_url)s">Login direct</a>
-            </span>
-        </p>
+            </div>
+        </div>
         """) % {
         'username': user.username,
         'rest_password_url': reverse('users:reset-password', external=True),
@@ -89,20 +84,20 @@ def send_reset_password_mail(user):
     recipient_list = [user.email]
     message = _("""
     Hello %(name)s:
-    </br>
+    <br>
     Please click the link below to reset your password, if not your request, concern your account security
-    </br>
+    <br>
     <a href="%(rest_password_url)s?token=%(rest_password_token)s">Click here reset password</a>
-    </br>
+    <br>
     This link is valid for 1 hour. After it expires, <a href="%(forget_password_url)s?email=%(email)s">request new one</a>
 
-    </br>
+    <br>
     ---
 
-    </br>
+    <br>
     <a href="%(login_url)s">Login direct</a>
 
-    </br>
+    <br>
     """) % {
         'name': user.name,
         'rest_password_url': reverse('users:reset-password', external=True),
@@ -122,24 +117,24 @@ def send_password_expiration_reminder_mail(user):
     recipient_list = [user.email]
     message = _("""
     Hello %(name)s:
-    </br>
+    <br>
     Your password will expire in %(date_password_expired)s,
-    </br>
+    <br>
     For your account security, please click on the link below to update your password in time
-    </br>
+    <br>
     <a href="%(update_password_url)s">Click here update password</a>
-    </br>
+    <br>
     If your password has expired, please click 
     <a href="%(forget_password_url)s?email=%(email)s">Password expired</a> 
     to apply for a password reset email.
 
-    </br>
+    <br>
     ---
 
-    </br>
+    <br>
     <a href="%(login_url)s">Login direct</a>
 
-    </br>
+    <br>
     """) % {
         'name': user.name,
         'date_password_expired': datetime.fromtimestamp(datetime.timestamp(
@@ -155,18 +150,39 @@ def send_password_expiration_reminder_mail(user):
     send_mail_async.delay(subject, message, recipient_list, html_message=message)
 
 
+def send_user_expiration_reminder_mail(user):
+    subject = _('Expiration notice')
+    recipient_list = [user.email]
+    message = _("""
+       Hello %(name)s:
+       <br>
+       Your account will expire in %(date_expired)s,
+       <br>
+       In order not to affect your normal work, please contact the administrator for confirmation.
+       <br>
+       """) % {
+        'name': user.name,
+        'date_expired': datetime.fromtimestamp(datetime.timestamp(
+            user.date_expired)).strftime('%Y-%m-%d %H:%M'),
+    }
+    if settings.DEBUG:
+        logger.debug(message)
+
+    send_mail_async.delay(subject, message, recipient_list, html_message=message)
+
+
 def send_reset_ssh_key_mail(user):
     subject = _('SSH Key Reset')
     recipient_list = [user.email]
     message = _("""
     Hello %(name)s:
-    </br>
+    <br>
     Your ssh public key has been reset by site administrator.
     Please login and reset your ssh public key.
-    </br>
+    <br>
     <a href="%(login_url)s">Login direct</a>
 
-    </br>
+    <br>
     """) % {
         'name': user.name,
         'login_url': reverse('authentication:login', external=True),
@@ -176,37 +192,6 @@ def send_reset_ssh_key_mail(user):
 
     send_mail_async.delay(subject, message, recipient_list, html_message=message)
 
-
-def check_user_valid(**kwargs):
-    password = kwargs.pop('password', None)
-    public_key = kwargs.pop('public_key', None)
-    email = kwargs.pop('email', None)
-    username = kwargs.pop('username', None)
-
-    if username:
-        user = get_object_or_none(User, username=username)
-    elif email:
-        user = get_object_or_none(User, email=email)
-    else:
-        user = None
-
-    if user is None:
-        return None, _('User not exist')
-    elif not user.is_valid:
-        return None, _('Disabled or expired')
-
-    if password and authenticate(username=username, password=password):
-        return user, ''
-
-    if public_key and user.public_key:
-        public_key_saved = user.public_key.split()
-        if len(public_key_saved) == 1:
-            if public_key == public_key_saved[0]:
-                return user, ''
-        elif len(public_key_saved) > 1:
-            if public_key == public_key_saved[1]:
-                return user, ''
-    return None, _('Password or SSH public key invalid')
 
 
 def get_user_or_tmp_user(request):
@@ -299,6 +284,12 @@ def increase_login_failed_count(username, ip):
     cache.set(key_limit, count, int(limit_time)*60)
 
 
+def get_login_failed_count(username, ip):
+    key_limit = key_prefix_limit.format(username, ip)
+    count = cache.get(key_limit, 0)
+    return count
+
+
 def clean_failed_count(username, ip):
     key_limit = key_prefix_limit.format(username, ip)
     key_block = key_prefix_block.format(username)
@@ -307,9 +298,8 @@ def clean_failed_count(username, ip):
 
 
 def is_block_login(username, ip):
-    key_limit = key_prefix_limit.format(username, ip)
+    count = get_login_failed_count(username, ip)
     key_block = key_prefix_block.format(username)
-    count = cache.get(key_limit, 0)
 
     limit_count = settings.SECURITY_LOGIN_LIMIT_COUNT
     limit_time = settings.SECURITY_LOGIN_LIMIT_TIME
@@ -334,3 +324,7 @@ def construct_user_email(username, email):
             email = '{}@{}'.format(username, settings.EMAIL_SUFFIX)
     return email
 
+
+def get_current_org_members(exclude=()):
+    from orgs.utils import current_org
+    return current_org.get_org_members(exclude=exclude)

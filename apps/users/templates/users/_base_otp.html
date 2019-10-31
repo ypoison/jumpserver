@@ -9,7 +9,7 @@
         <link rel="shortcut icon" href="{{ FAVICON_URL }}" type="image/x-icon">
 		<link rel="stylesheet" href="{% static 'fonts/font_otp/iconfont.css' %}" />
 		<link rel="stylesheet" href="{% static 'css/otp.css' %}" />
-        <script src="{% static 'js/jquery-2.1.1.js' %}"></script>
+        <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
         <script src="{% static "js/plugins/qrcode/qrcode.min.js" %}"></script>
         <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
 	</head>
@@ -42,8 +42,7 @@
             </div>
 		 	<div >
                 <div class="verify">{% trans 'Security token validation' %}&nbsp;&nbsp;{% trans 'Account' %}&nbsp;<span>{{ user.username }}</span>&nbsp;&nbsp;{% trans 'Follow these steps to complete the binding operation' %}</div>
-		 		<div class="line"></div>
-
+                <hr style="width: 500px; margin: auto; margin-top: 10px;">
                 {% block content %}
                 {% endblock %}
 		 	</div>

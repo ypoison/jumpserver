@@ -5,21 +5,19 @@ from django.core.cache import cache
 from django.contrib.auth import logout
 from django.utils.translation import ugettext as _
 
-from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_bulk import BulkModelViewSet
-from rest_framework.pagination import LimitOffsetPagination
 
 from common.permissions import (
-    IsOrgAdmin, IsCurrentUserOrReadOnly, IsOrgAdminOrAppUser
+    IsOrgAdmin, IsCurrentUserOrReadOnly, IsOrgAdminOrAppUser,
+    CanUpdateDeleteUser, IsSuperUser
 )
-from common.mixins import IDInCacheFilterMixin
+from common.mixins import CommonApiMixin
 from common.utils import get_logger
 from orgs.utils import current_org
-from ..serializers import UserSerializer, UserPKUpdateSerializer, \
-    UserUpdateGroupSerializer, ChangeUserPasswordSerializer
+from .. import serializers, utils
 from ..models import User
 from ..signals import post_user_create
 
@@ -32,13 +30,20 @@ __all__ = [
 ]
 
 
-class UserViewSet(IDInCacheFilterMixin, BulkModelViewSet):
+class UserQuerysetMixin:
+    def get_queryset(self):
+        queryset = utils.get_current_org_members()
+        return queryset
+
+
+class UserViewSet(CommonApiMixin, UserQuerysetMixin, BulkModelViewSet):
     filter_fields = ('username', 'email', 'name', 'id')
     search_fields = filter_fields
-    queryset = User.objects.exclude(role=User.ROLE_APP)
-    serializer_class = UserSerializer
-    permission_classes = (IsOrgAdmin,)
-    pagination_class = LimitOffsetPagination
+    serializer_class = serializers.UserSerializer
+    permission_classes = (IsOrgAdmin, CanUpdateDeleteUser)
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('groups')
 
     def send_created_signal(self, users):
         if not isinstance(users, list):
@@ -48,91 +53,38 @@ class UserViewSet(IDInCacheFilterMixin, BulkModelViewSet):
 
     def perform_create(self, serializer):
         users = serializer.save()
-        for user in users:
-            if current_org and current_org.is_real():
-                user.orgs.add(current_org.id)
+        if isinstance(users, User):
+            users = [users]
+        if current_org and current_org.is_real():
+            current_org.users.add(*users)
         self.send_created_signal(users)
 
-    def get_queryset(self):
-        queryset = current_org.get_org_users()
-        return queryset
-
     def get_permissions(self):
-        if self.action == "retrieve":
+        if self.action in ["retrieve", "list"]:
             self.permission_classes = (IsOrgAdminOrAppUser,)
+        if self.request.query_params.get('all'):
+            self.permission_classes = (IsSuperUser,)
         return super().get_permissions()
 
-    def _deny_permission(self, instance):
-        """
-        check current user has permission to handle instance
-        (update, destroy, bulk_update, bulk destroy)
-        """
-        return not self.request.user.is_superuser and instance.is_superuser
+    def perform_bulk_destroy(self, objects):
+        for obj in objects:
+            self.check_object_permissions(self.request, obj)
+            self.perform_destroy(obj)
 
-    def destroy(self, request, *args, **kwargs):
-        """
-        rewrite because limit org_admin destroy superuser
-        """
-        instance = self.get_object()
-        if self._deny_permission(instance):
-            data = {'msg': _("You do not have permission.")}
-            return Response(data=data, status=status.HTTP_403_FORBIDDEN)
-
-        return super().destroy(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        """
-        rewrite because limit org_admin update superuser
-        """
-        instance = self.get_object()
-        if self._deny_permission(instance):
-            data = {'msg': _("You do not have permission.")}
-            return Response(data=data, status=status.HTTP_403_FORBIDDEN)
-
-        return super().update(request, *args, **kwargs)
-
-    def _bulk_deny_permission(self, instances):
-        deny_instances = [i for i in instances if self._deny_permission(i)]
-        if len(deny_instances) > 0:
-            return True
-        else:
-            return False
-
-    def allow_bulk_destroy(self, qs, filtered):
-        if self._bulk_deny_permission(filtered):
-            return False
-        return qs.count() != filtered.count()
-
-    def bulk_update(self, request, *args, **kwargs):
-        """
-        rewrite because limit org_admin update superuser
-        """
-        partial = kwargs.pop('partial', False)
-
-        # restrict the update to the filtered queryset
-        queryset = self.filter_queryset(self.get_queryset())
-        if self._bulk_deny_permission(queryset):
-            data = {'msg': _("You do not have permission.")}
-            return Response(data=data, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = self.get_serializer(
-            queryset, data=request.data, many=True, partial=partial,
-        )
-
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception as e:
-            data = {'error': str(e)}
-            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-
-        self.perform_bulk_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def perform_bulk_update(self, serializer):
+        # TODO: 需要测试
+        users_ids = [
+            d.get("id") or d.get("pk") for d in serializer.validated_data
+        ]
+        users = current_org.get_org_members().filter(id__in=users_ids)
+        for user in users:
+            self.check_object_permissions(self.request, user)
+        return super().perform_bulk_update(serializer)
 
 
-class UserChangePasswordApi(generics.RetrieveUpdateAPIView):
+class UserChangePasswordApi(UserQuerysetMixin, generics.RetrieveUpdateAPIView):
     permission_classes = (IsOrgAdmin,)
-    queryset = User.objects.all()
-    serializer_class = ChangeUserPasswordSerializer
+    serializer_class = serializers.ChangeUserPasswordSerializer
 
     def perform_update(self, serializer):
         user = self.get_object()
@@ -140,15 +92,14 @@ class UserChangePasswordApi(generics.RetrieveUpdateAPIView):
         user.save()
 
 
-class UserUpdateGroupApi(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserUpdateGroupSerializer
+class UserUpdateGroupApi(UserQuerysetMixin, generics.RetrieveUpdateAPIView):
+    serializer_class = serializers.UserUpdateGroupSerializer
     permission_classes = (IsOrgAdmin,)
 
 
-class UserResetPasswordApi(generics.UpdateAPIView):
+class UserResetPasswordApi(UserQuerysetMixin, generics.UpdateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
     permission_classes = (IsAuthenticated,)
 
     def perform_update(self, serializer):
@@ -161,9 +112,8 @@ class UserResetPasswordApi(generics.UpdateAPIView):
         send_reset_password_mail(user)
 
 
-class UserResetPKApi(generics.UpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class UserResetPKApi(UserQuerysetMixin, generics.UpdateAPIView):
+    serializer_class = serializers.UserSerializer
     permission_classes = (IsAuthenticated,)
 
     def perform_update(self, serializer):
@@ -174,21 +124,20 @@ class UserResetPKApi(generics.UpdateAPIView):
         send_reset_ssh_key_mail(user)
 
 
-class UserUpdatePKApi(generics.UpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserPKUpdateSerializer
+# 废弃
+class UserUpdatePKApi(UserQuerysetMixin, generics.UpdateAPIView):
+    serializer_class = serializers.UserPKUpdateSerializer
     permission_classes = (IsCurrentUserOrReadOnly,)
 
     def perform_update(self, serializer):
         user = self.get_object()
-        user.public_key = serializer.validated_data['_public_key']
+        user.public_key = serializer.validated_data['public_key']
         user.save()
 
 
-class UserUnblockPKApi(generics.UpdateAPIView):
-    queryset = User.objects.all()
+class UserUnblockPKApi(UserQuerysetMixin, generics.UpdateAPIView):
     permission_classes = (IsOrgAdmin,)
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
     key_prefix_limit = "_LOGIN_LIMIT_{}_{}"
     key_prefix_block = "_LOGIN_BLOCK_{}"
 
@@ -203,15 +152,20 @@ class UserUnblockPKApi(generics.UpdateAPIView):
 
 class UserProfileApi(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
 
     def get_object(self):
         return self.request.user
 
+    def retrieve(self, request, *args, **kwargs):
+        age = request.session.get_expiry_age()
+        request.session.set_expiry(age)
+        return super().retrieve(request, *args, **kwargs)
 
-class UserResetOTPApi(generics.RetrieveAPIView):
-    queryset = User.objects.all()
+
+class UserResetOTPApi(UserQuerysetMixin, generics.RetrieveAPIView):
     permission_classes = (IsOrgAdmin,)
+    serializer_class = serializers.ResetOTPSerializer
 
     def retrieve(self, request, *args, **kwargs):
         user = self.get_object() if kwargs.get('pk') else request.user

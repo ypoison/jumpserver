@@ -3,7 +3,7 @@
 
 from django.utils.translation import ugettext as _
 from django import forms
-from orgs.mixins import OrgModelForm
+from orgs.mixins.forms import OrgModelForm
 from orgs.utils import current_org
 
 from ..models import RemoteAppPermission
@@ -17,9 +17,12 @@ __all__ = [
 class RemoteAppPermissionCreateUpdateForm(OrgModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         users_field = self.fields.get('users')
-        if hasattr(users_field, 'queryset'):
-            users_field.queryset = current_org.get_org_users()
+        if self.instance:
+            users_field.queryset = self.instance.users.all()
+        else:
+            users_field.queryset = []
 
     class Meta:
         model = RemoteAppPermission
@@ -28,13 +31,16 @@ class RemoteAppPermissionCreateUpdateForm(OrgModelForm):
         )
         widgets = {
             'users': forms.SelectMultiple(
-                attrs={'class': 'select2', 'data-placeholder': _('User')}
+                attrs={'class': 'users-select2', 'data-placeholder': _('User')}
             ),
             'user_groups': forms.SelectMultiple(
                 attrs={'class': 'select2', 'data-placeholder': _('User group')}
             ),
             'remote_apps': forms.SelectMultiple(
                 attrs={'class': 'select2', 'data-placeholder': _('RemoteApp')}
+            ),
+            'system_users': forms.SelectMultiple(
+                attrs={'class': 'select2', 'data-placeholder': _('System user')}
             )
         }
 

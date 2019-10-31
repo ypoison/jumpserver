@@ -1,28 +1,28 @@
 {% extends '_base_list.html' %}
 {% load i18n static %}
 {% block table_search %}
-    <div class="" style="float: right">
-                   <div class=" btn-group">
-                        <button data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle">CSV <span class="caret"></span></button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class=" btn_export" tabindex="0">
-                                <span>{% trans "Export" %}</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class=" btn_import" data-toggle="modal" data-target="#import_modal" tabindex="0">
-                                <span>{% trans "Import" %}</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class=" btn_update" data-toggle="modal" data-target="#update_modal" tabindex="0">
-                                <span>{% trans "Update" %}</span>
-                                </a>
-                            </li>
-                        </ul>
-                   </div>
-               </div>
+    <div class="pull-right" >
+       <div class=" btn-group">
+            <button data-toggle="dropdown" class="btn btn-default btn-sm dropdown-toggle">CSV <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class=" btn_export" tabindex="0">
+                    <span>{% trans "Export" %}</span>
+                    </a>
+                </li>
+                <li>
+                    <a class=" btn_import" data-toggle="modal" data-target="#import_modal" tabindex="0">
+                    <span>{% trans "Import" %}</span>
+                    </a>
+                </li>
+                <li>
+                    <a class=" btn_update" data-toggle="modal" data-target="#update_modal" tabindex="0">
+                    <span>{% trans "Update" %}</span>
+                    </a>
+                </li>
+            </ul>
+       </div>
+   </div>
 {% endblock %}
 {% block table_container %}
 <div class="uc pull-left m-r-5"><a href="{% url "users:user-create" %}" class="btn btn-sm btn-primary"> {% trans "Create user" %} </a></div>
@@ -76,9 +76,15 @@ function initTable() {
                 var detail_btn = '<a href="{% url "users:user-detail" pk=DEFAULT_PK %}">' + cellData + '</a>';
                 $(td).html(detail_btn.replace("{{ DEFAULT_PK }}", rowData.id));
              }},
+            {targets: 3, createdCell: function (td, cellData, rowData) {
+                $(td).html(rowData.role_display);
+             }},
             {targets: 4, createdCell: function (td, cellData) {
                 var innerHtml = cellData.length > 20 ? cellData.substring(0, 20) + '...': cellData;
                 $(td).html('<span href="javascript:void(0);" data-toggle="tooltip" title="' + cellData + '">' + innerHtml + '</span>');
+             }},
+            {targets: 5, createdCell: function (td, cellData, rowData) {
+                $(td).html(rowData.source_display);
              }},
             {targets: 6, createdCell: function (td, cellData, rowData) {
                 if (cellData) {
@@ -91,8 +97,9 @@ function initTable() {
                 }
              }},
             {targets: 7, createdCell: function (td, cellData, rowData) {
+                var name = htmlEscape(rowData.name);
                 var update_btn = "";
-                if (rowData.role === 'Admin' && ('{{ request.user.role }}' !== 'Admin')) {
+                if (rowData.can_update === false){
                     update_btn = '<a class="btn btn-xs disabled btn-info">{% trans "Update" %}</a>';
                 }
                 else{
@@ -100,25 +107,25 @@ function initTable() {
                 }
 
                 var del_btn = "";
-                if (rowData.id === 1 || rowData.username === "admin" || rowData.username === "{{ request.user.username }}" || (rowData.role === 'Admin' && ('{{ request.user.role }}' !== 'Admin'))) {
+                if (rowData.can_delete === false){
                     del_btn = '<a class="btn btn-xs btn-danger m-l-xs" disabled>{% trans "Delete" %}</a>'
                             .replace('{{ DEFAULT_PK }}', cellData)
-                            .replace('99991938', rowData.name);
+                            .replace('99991938', name);
                 } else {
                     del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn_user_delete" data-uid="{{ DEFAULT_PK }}" data-name="99991938">{% trans "Delete" %}</a>'
                             .replace('{{ DEFAULT_PK }}', cellData)
-                            .replace('99991938', rowData.name);
+                            .replace('99991938', name);
                 }
                 $(td).html(update_btn + del_btn)
              }}],
         ajax_url: '{% url "api-users:user-list" %}',
         columns: [
             {data: "id"}, {data: "name" }, {data: "username" },
-            {data: "role_display", orderable: false},
+            {data: "role"},
             {data: "groups_display", orderable: false},
-            {data: "source_display", orderable: false},
+            {data: "source"},
             {data: "is_valid", orderable: false},
-            {data: "id", orderable: false}
+            {data: "id", orderable: false, width: "100px"}
         ],
         op_html: $('#actions').html()
     };
@@ -209,8 +216,8 @@ $(document).ready(function(){
     var data = {
         'resources': id_list
     };
-    function refreshTag() {
-        $('#user_list_table').DataTable().ajax.reload()
+    function reloadPage() {
+        setTimeout( function () {window.location.reload();}, 300);
     }
     function doDeactive() {
         var data = [];
@@ -218,15 +225,11 @@ $(document).ready(function(){
             var obj = {"pk": object_id, "is_active": false};
             data.push(obj);
         });
-        function success() {
-            setTimeout( function () {
-                window.location.reload();}, 300);
-        }
-        APIUpdateAttr({
+        requestApi({
             url: the_url,
             method: 'PATCH',
             body: JSON.stringify(data),
-            success: success
+            success: reloadPage
         });
     }
     function doActive() {
@@ -235,15 +238,11 @@ $(document).ready(function(){
             var obj = {"pk": object_id, "is_active": true};
             data.push(obj);
         });
-        function success() {
-            setTimeout( function () {
-                window.location.reload();}, 300);
-        }
-        APIUpdateAttr({
+        requestApi({
             url: the_url,
             method: 'PATCH',
             body: JSON.stringify(data),
-            success: success
+            success: reloadPage
         });
     }
     function doDelete() {
@@ -259,25 +258,28 @@ $(document).ready(function(){
         },function () {
             function success(data) {
                 url = setUrlParam(the_url, 'spm', data.spm);
-                APIUpdateAttr({
+                function success() {
+                    var msg = "{% trans 'User Deleted.' %}";
+                    swal("{% trans 'User Delete' %}", msg, "success");
+                }
+                function fail() {
+                    var msg = "{% trans 'User Deleting failed.' %}";
+                    swal("{% trans 'User Delete' %}", msg, "error");
+                }
+                requestApi({
                     url:url,
                     method:'DELETE',
-                    success:refreshTag,
-                    flash_message:false,
+                    flash_message:true,
+                    success:reloadPage,
+                    error: fail
                  });
-                var msg = "{% trans 'User Deleted.' %}";
-                swal("{% trans 'User Delete' %}", msg, "success");
             }
-            function fail() {
-                var msg = "{% trans 'User Deleting failed.' %}";
-                swal("{% trans 'User Delete' %}", msg, "error");
-            }
-            APIUpdateAttr({
+            requestApi({
                 url: "{% url 'api-common:resources-cache' %}",
                 method:'POST',
                 body:JSON.stringify(data),
+                flash_message:false,
                 success:success,
-                error:fail
              })
         })
     }
@@ -290,7 +292,7 @@ $(document).ready(function(){
             var url = "{% url 'users:user-bulk-update' %}";
             location.href= setUrlParam(url, 'spm', data.spm);
          }
-        APIUpdateAttr({
+        requestApi({
                 url: "{% url 'api-common:resources-cache' %}",
                 method:'POST',
                 body:JSON.stringify(data),

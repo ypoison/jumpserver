@@ -2,40 +2,33 @@
 
 from __future__ import unicode_literals
 
-import json
-import uuid
-import csv
-import codecs
-import chardet
-from io import StringIO
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.cache import cache
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
-from django.utils import timezone
 from django.utils.translation import ugettext as _
-from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic.base import TemplateView
-from django.db import transaction
 from django.views.generic.edit import (
     CreateView, UpdateView, FormView
 )
 from django.views.generic.detail import DetailView
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout as auth_logout
 
 from common.const import (
     create_success_msg, update_success_msg, KEY_CACHE_RESOURCES_ID
 )
-from common.mixins import JSONResponseMixin
-from common.utils import get_logger, get_object_or_none, is_uuid, ssh_key_gen
-from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
+from common.utils import get_logger, ssh_key_gen
+from common.permissions import (
+    PermissionsMixin, IsOrgAdmin, IsValidUser,
+    UserCanUpdatePassword, UserCanUpdateSSHKey,
+    CanUpdateDeleteUser,
+)
 from orgs.utils import current_org
 from .. import forms
 from ..models import User, UserGroup
@@ -46,9 +39,7 @@ from ..signals import post_user_create
 
 __all__ = [
     'UserListView', 'UserCreateView', 'UserDetailView',
-    'UserUpdateView',
-    'UserGrantedAssetView',
-    'UserExportView',  'UserBulkImportView', 'UserProfileView',
+    'UserUpdateView', 'UserGrantedAssetView', 'UserProfileView',
     'UserProfileUpdateView', 'UserPasswordUpdateView',
     'UserPublicKeyUpdateView', 'UserBulkUpdateView',
     'UserPublicKeyGenerateView',
@@ -96,7 +87,7 @@ class UserCreateView(PermissionsMixin, SuccessMessageMixin, CreateView):
         user.created_by = self.request.user.username or 'System'
         user.save()
         if current_org and current_org.is_real():
-            user.orgs.add(current_org.id)
+            user.related_user_orgs.add(current_org.id)
         post_user_create.send(self.__class__, user=user)
         return super().form_valid(form)
 
@@ -134,19 +125,6 @@ class UserUpdateView(PermissionsMixin, SuccessMessageMixin, UpdateView):
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
-
-    def form_valid(self, form):
-        password = form.cleaned_data.get('password')
-        if not password:
-            return super().form_valid(form)
-
-        is_ok = check_password_rules(password)
-        if not is_ok:
-            form.add_error(
-                "password", _("* Your password does not meet the requirements")
-            )
-            return self.form_invalid(form)
-        return super().form_valid(form)
 
     def get_form_kwargs(self):
         kwargs = super(UserUpdateView, self).get_form_kwargs()
@@ -212,156 +190,21 @@ class UserDetailView(PermissionsMixin, DetailView):
             'action': _('User detail'),
             'groups': groups,
             'unblock': is_need_unblock(key_block),
+            'can_update': CanUpdateDeleteUser.has_update_object_permission(
+                self.request, self, user
+            ),
+            'can_delete': CanUpdateDeleteUser.has_delete_object_permission(
+                self.request, self, user
+            ),
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        org_users = current_org.get_org_users().values_list('id', flat=True)
+        org_users = current_org.get_org_members().values_list('id', flat=True)
         queryset = queryset.filter(id__in=org_users)
         return queryset
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class UserExportView(View):
-    def get(self, request):
-        fields = [
-            User._meta.get_field(name)
-            for name in [
-                'id', 'name', 'username', 'email', 'role',
-                'wechat', 'phone', 'is_active', 'comment',
-            ]
-        ]
-        spm = request.GET.get('spm', '')
-        users_id = cache.get(spm, [])
-        filename = 'users-{}.csv'.format(
-            timezone.localtime(timezone.now()).strftime('%Y-%m-%d_%H-%M-%S')
-        )
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % filename
-        response.write(codecs.BOM_UTF8)
-        users = User.objects.filter(id__in=users_id)
-        writer = csv.writer(response, dialect='excel', quoting=csv.QUOTE_MINIMAL)
-
-        header = [field.verbose_name for field in fields]
-        header.append(_('User groups'))
-        writer.writerow(header)
-
-        for user in users:
-            groups = ','.join([group.name for group in user.groups.all()])
-            data = [getattr(user, field.name) for field in fields]
-            data.append(groups)
-            writer.writerow(data)
-
-        return response
-
-    def post(self, request):
-        try:
-            users_id = json.loads(request.body).get('users_id', [])
-        except ValueError:
-            return HttpResponse('Json object not valid', status=400)
-        spm = uuid.uuid4().hex
-        cache.set(spm, users_id, 300)
-        url = reverse('users:user-export') + '?spm=%s' % spm
-        return JsonResponse({'redirect': url})
-
-
-class UserBulkImportView(PermissionsMixin, JSONResponseMixin, FormView):
-    form_class = forms.FileForm
-    permission_classes = [IsOrgAdmin]
-
-    def form_invalid(self, form):
-        try:
-            error = form.errors.values()[-1][-1]
-        except Exception as e:
-            error = _('Invalid file.')
-        data = {
-            'success': False,
-            'msg': error
-        }
-        return self.render_json_response(data)
-
-    # todo: need be patch, method to long
-    def form_valid(self, form):
-        f = form.cleaned_data['file']
-        det_result = chardet.detect(f.read())
-        f.seek(0)  # reset file seek index
-        data = f.read().decode(det_result['encoding']).strip(codecs.BOM_UTF8.decode())
-        csv_file = StringIO(data)
-        reader = csv.reader(csv_file)
-        csv_data = [row for row in reader]
-        header_ = csv_data[0]
-        fields = [
-            User._meta.get_field(name)
-            for name in [
-                'id', 'name', 'username', 'email', 'role',
-                'wechat', 'phone', 'is_active', 'comment',
-            ]
-        ]
-        mapping_reverse = {field.verbose_name: field.name for field in fields}
-        mapping_reverse[_('User groups')] = 'groups'
-        attr = [mapping_reverse.get(n, None) for n in header_]
-        if None in attr:
-            data = {'valid': False,
-                    'msg': 'Must be same format as '
-                           'template or export file'}
-            return self.render_json_response(data)
-
-        created, updated, failed = [], [], []
-        for row in csv_data[1:]:
-            if set(row) == {''}:
-                continue
-            user_dict = dict(zip(attr, row))
-            id_ = user_dict.pop('id')
-            for k, v in user_dict.items():
-                if k in ['is_active']:
-                    if v.lower() == 'false':
-                        v = False
-                    else:
-                        v = bool(v)
-                elif k == 'groups':
-                    groups_name = v.split(',')
-                    v = UserGroup.objects.filter(name__in=groups_name)
-                else:
-                    continue
-                user_dict[k] = v
-            user = get_object_or_none(User, id=id_) if id_ and is_uuid(id_) else None
-            if not user:
-                try:
-                    with transaction.atomic():
-                        groups = user_dict.pop('groups')
-                        user = User.objects.create(**user_dict)
-                        user.groups.set(groups)
-                        created.append(user_dict['username'])
-                        post_user_create.send(self.__class__, user=user)
-                except Exception as e:
-                    failed.append('%s: %s' % (user_dict['username'], str(e)))
-            else:
-                for k, v in user_dict.items():
-                    if k == 'groups':
-                        user.groups.set(v)
-                        continue
-                    if v:
-                        setattr(user, k, v)
-                try:
-                    user.save()
-                    updated.append(user_dict['username'])
-                except Exception as e:
-                    failed.append('%s: %s' % (user_dict['username'], str(e)))
-
-        data = {
-            'created': created,
-            'created_info': 'Created {}'.format(len(created)),
-            'updated': updated,
-            'updated_info': 'Updated {}'.format(len(updated)),
-            'failed': failed,
-            'failed_info': 'Failed {}'.format(len(failed)),
-            'valid': True,
-            'msg': 'Created: {}. Updated: {}, Error: {}'.format(
-                len(created), len(updated), len(failed))
-        }
-        return self.render_json_response(data)
 
 
 class UserGrantedAssetView(PermissionsMixin, DetailView):
@@ -416,6 +259,7 @@ class UserPasswordUpdateView(PermissionsMixin, UpdateView):
     model = User
     form_class = forms.UserPasswordForm
     success_url = reverse_lazy('users:user-profile')
+    permission_classes = [IsValidUser, UserCanUpdatePassword]
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -435,12 +279,6 @@ class UserPasswordUpdateView(PermissionsMixin, UpdateView):
         return super().get_success_url()
 
     def form_valid(self, form):
-        if not self.request.user.can_update_password():
-            error = _("User auth from {}, go there change password").format(
-                self.request.source_display
-            )
-            form.add_error("password", error)
-            return self.form_invalid(form)
         password = form.cleaned_data.get('new_password')
         is_ok = check_password_rules(password)
         if not is_ok:
@@ -456,7 +294,7 @@ class UserPublicKeyUpdateView(PermissionsMixin, UpdateView):
     template_name = 'users/user_pubkey_update.html'
     model = User
     form_class = forms.UserPublicKeyForm
-    permission_classes = [IsValidUser]
+    permission_classes = [IsValidUser, UserCanUpdateSSHKey]
     success_url = reverse_lazy('users:user-profile')
 
     def get_object(self, queryset=None):

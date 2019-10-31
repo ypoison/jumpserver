@@ -5,8 +5,9 @@ class MailTestSerializer(serializers.Serializer):
     EMAIL_HOST = serializers.CharField(max_length=1024, required=True)
     EMAIL_PORT = serializers.IntegerField(default=25)
     EMAIL_HOST_USER = serializers.CharField(max_length=1024)
-    EMAIL_HOST_PASSWORD = serializers.CharField()
+    EMAIL_HOST_PASSWORD = serializers.CharField(required=False, allow_blank=True)
     EMAIL_FROM = serializers.CharField(required=False, allow_blank=True)
+    EMAIL_RECIPIENT = serializers.CharField(required=False, allow_blank=True)
     EMAIL_USE_SSL = serializers.BooleanField(default=False)
     EMAIL_USE_TLS = serializers.BooleanField(default=False)
 
@@ -21,4 +22,9 @@ class LDAPTestSerializer(serializers.Serializer):
     AUTH_LDAP_START_TLS = serializers.BooleanField(required=False)
 
 
+class LDAPUserSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    username = serializers.CharField()
+    email = serializers.CharField()
+    existing = serializers.BooleanField(read_only=True)
 

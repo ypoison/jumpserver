@@ -4,8 +4,8 @@
 from django.utils.translation import ugettext as _
 from django import forms
 
-from orgs.mixins import OrgModelForm
-from assets.models import SystemUser, Protocol
+from orgs.mixins.forms import OrgModelForm
+from assets.models import SystemUser
 
 from ..models import RemoteApp
 from .. import const
@@ -88,26 +88,17 @@ class RemoteAppCreateUpdateForm(RemoteAppTypeForms, OrgModelForm):
         # 过滤RDP资产和系统用户
         super().__init__(*args, **kwargs)
         field_asset = self.fields['asset']
-        field_asset.queryset = field_asset.queryset.filter(
-            protocols__name=Protocol.PROTOCOL_RDP
-        )
-        field_system_user = self.fields['system_user']
-        field_system_user.queryset = field_system_user.queryset.filter(
-            protocol=SystemUser.PROTOCOL_RDP
-        )
+        field_asset.queryset = field_asset.queryset.has_protocol('rdp')
 
     class Meta:
         model = RemoteApp
         fields = [
-            'name', 'asset', 'system_user', 'type', 'path', 'comment'
+            'name', 'asset', 'type', 'path', 'comment'
         ]
         widgets = {
             'asset': forms.Select(attrs={
                 'class': 'select2', 'data-placeholder': _('Asset')
             }),
-            'system_user': forms.Select(attrs={
-                'class': 'select2', 'data-placeholder': _('System user')
-            })
         }
 
     def _clean_params(self):

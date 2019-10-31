@@ -4,11 +4,11 @@
 from django.utils.translation import ugettext as _
 from rest_framework import serializers
 
+from common.serializers import AdaptedBulkListSerializer
+from orgs.mixins.serializers import BulkOrgResourceModelSerializer
 from ..models import AuthBook, Asset
 from ..backends import AssetUserManager
-from common.utils import validate_ssh_private_key
-from common.serializers import AdaptedBulkListSerializer
-from orgs.mixins import BulkOrgResourceModelSerializer
+from .base import ConnectivitySerializer, AuthSerializerMixin
 
 
 __all__ = [
@@ -23,23 +23,11 @@ class BasicAssetSerializer(serializers.ModelSerializer):
         fields = ['hostname', 'ip']
 
 
-class AssetUserSerializer(BulkOrgResourceModelSerializer):
+class AssetUserSerializer(AuthSerializerMixin, BulkOrgResourceModelSerializer):
     hostname = serializers.CharField(read_only=True, label=_("Hostname"))
     ip = serializers.CharField(read_only=True, label=_("IP"))
-    connectivity = serializers.CharField(read_only=True, label=_("Connectivity"))
+    connectivity = ConnectivitySerializer(read_only=True, label=_("Connectivity"))
 
-    password = serializers.CharField(
-        max_length=256, allow_blank=True, allow_null=True, write_only=True,
-        required=False, label=_('Password')
-    )
-    public_key = serializers.CharField(
-        max_length=4096, allow_blank=True, allow_null=True, write_only=True,
-        required=False, label=_('Public key')
-    )
-    private_key = serializers.CharField(
-        max_length=4096, allow_blank=True, allow_null=True, write_only=True,
-        required=False, label=_('Private key')
-    )
     backend = serializers.CharField(read_only=True, label=_("Backend"))
 
     class Meta:
@@ -56,27 +44,16 @@ class AssetUserSerializer(BulkOrgResourceModelSerializer):
         ]
         extra_kwargs = {
             'username': {'required': True},
+            'password': {'write_only': True},
+            'private_key': {'write_only': True},
+            'public_key': {'write_only': True},
         }
-
-    def validate_private_key(self, key):
-        password = self.initial_data.get("password")
-        valid = validate_ssh_private_key(key, password)
-        if not valid:
-            raise serializers.ValidationError(_("private key invalid"))
-        return key
 
     def create(self, validated_data):
-        kwargs = {
-            'name': validated_data.get('username'),
-            'username': validated_data.get('username'),
-            'asset': validated_data.get('asset'),
-            'comment': validated_data.get('comment', ''),
-            'org_id': validated_data.get('org_id', ''),
-            'password': validated_data.get('password'),
-            'public_key': validated_data.get('public_key'),
-            'private_key': validated_data.get('private_key')
-        }
-        instance = AssetUserManager.create(**kwargs)
+        if not validated_data.get("name") and validated_data.get("username"):
+            validated_data["name"] = validated_data["username"]
+        instance = AssetUserManager.create(**validated_data)
+        instance.set_version_and_latest()
         return instance
 
 
@@ -102,7 +79,7 @@ class AssetUserAuthInfoSerializer(serializers.ModelSerializer):
 
 
 class AssetUserPushSerializer(serializers.Serializer):
-    asset = serializers.PrimaryKeyRelatedField(queryset=Asset.objects.all(), label=_("Asset"))
+    asset = serializers.PrimaryKeyRelatedField(queryset=Asset.objects, label=_("Asset"))
     username = serializers.CharField(max_length=1024)
 
     def create(self, validated_data):
