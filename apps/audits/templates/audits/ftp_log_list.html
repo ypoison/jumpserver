@@ -11,6 +11,9 @@
         #search_btn {
             margin-bottom: 0;
         }
+        .form-control {
+            height: 30px;
+        }
     </style>
 {% endblock %}
 
@@ -109,11 +112,12 @@
     <script src="{% static 'js/plugins/datepicker/bootstrap-datepicker.js' %}"></script>
     <script>
         $(document).ready(function() {
-            $('table').DataTable({
+            $('#editable').DataTable({
                 "searching": false,
                 "paging": false,
                 "bInfo" : false,
-                "order": []
+                "order": [],
+                "columnDefs": [{"targets": 6, "orderable": false}]
             });
             $('.select2').select2({
                 dropdownAutoWidth: true,

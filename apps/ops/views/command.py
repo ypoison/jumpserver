@@ -5,7 +5,11 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.views.generic import ListView, TemplateView
 
+from common.permissions import (
+    PermissionsMixin, IsOrgAdmin,  IsValidUser, IsOrgAuditor
+)
 from common.mixins import DatetimeSearchMixin
+from orgs.utils import tmp_to_root_org
 from ..models import CommandExecution
 from ..forms import CommandExecutionForm
 
@@ -15,13 +19,14 @@ __all__ = [
 ]
 
 
-class CommandExecutionListView(DatetimeSearchMixin, ListView):
+class CommandExecutionListView(PermissionsMixin, DatetimeSearchMixin, ListView):
     template_name = 'ops/command_execution_list.html'
     model = CommandExecution
     paginate_by = settings.DISPLAY_PER_PAGE
     ordering = ('-date_created',)
     context_object_name = 'task_list'
     keyword = ''
+    permission_classes = [IsOrgAdmin | IsOrgAuditor]
 
     def _get_queryset(self):
         self.keyword = self.request.GET.get('keyword', '')
@@ -50,15 +55,22 @@ class CommandExecutionListView(DatetimeSearchMixin, ListView):
         return super().get_context_data(**kwargs)
 
 
-class CommandExecutionStartView(TemplateView):
+class CommandExecutionStartView(PermissionsMixin, TemplateView):
     template_name = 'ops/command_execution_create.html'
     form_class = CommandExecutionForm
+    permission_classes = [IsValidUser]
+
+    def get_permissions(self):
+        if not settings.SECURITY_COMMAND_EXECUTION:
+            return [IsOrgAdmin]
+        return super().get_permissions()
 
     def get_user_system_users(self):
-        from perms.utils import AssetPermissionUtil
+        from perms.utils import AssetPermissionUtilV2
         user = self.request.user
-        util = AssetPermissionUtil(user)
-        system_users = [s for s in util.get_system_users() if s.protocol == 'ssh']
+        with tmp_to_root_org():
+            util = AssetPermissionUtilV2(user)
+            system_users = util.get_system_users()
         return system_users
 
     def get_context_data(self, **kwargs):
@@ -67,7 +79,8 @@ class CommandExecutionStartView(TemplateView):
             'app': _('Ops'),
             'action': _('Command execution'),
             'form': self.get_form(),
-            'system_users': system_users
+            'system_users': system_users,
+            'ws_port': settings.CONFIG.WS_LISTEN_PORT
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

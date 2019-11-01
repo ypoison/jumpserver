@@ -36,3 +36,5 @@ xpack
 logs/*
 migrations/
 __pycache__
+### Vagrant ###
+.vagrant/

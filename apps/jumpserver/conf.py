@@ -193,8 +193,8 @@ class Config(dict):
         if self.root_path:
             filename = os.path.join(self.root_path, filename)
         try:
-            with open(filename) as f:
-                obj = yaml.load(f)
+            with open(filename, 'rt', encoding='utf8') as f:
+                obj = yaml.safe_load(f)
         except IOError as e:
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
                 return False
@@ -268,25 +268,48 @@ class Config(dict):
             rv[key] = v
         return rv
 
+    def convert_type(self, k, v):
+        default_value = self.defaults.get(k)
+        if default_value is None:
+            return v
+        tp = type(default_value)
+        # 对bool特殊处理
+        if tp is bool and isinstance(v, str):
+            if v in ("true", "True", "1"):
+                return True
+            else:
+                return False
+        if tp in [list, dict] and isinstance(v, str):
+            try:
+                v = json.loads(v)
+                return v
+            except json.JSONDecodeError:
+                return v
+
+        try:
+            if tp in [list, dict]:
+                v = json.loads(v)
+            else:
+                v = tp(v)
+        except Exception:
+            pass
+        return v
+
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, dict.__repr__(self))
 
     def __getitem__(self, item):
+        # 先从设置的来
         try:
             value = super().__getitem__(item)
         except KeyError:
             value = None
         if value is not None:
             return value
+        # 其次从环境变量来
         value = os.environ.get(item, None)
         if value is not None:
-            if value.isdigit():
-                value = int(value)
-            elif value.lower() == 'false':
-                value = False
-            elif value.lower() == 'true':
-                value = True
-            return value
+            return self.convert_type(item, value)
         return self.defaults.get(item)
 
     def __getattr__(self, item):
@@ -311,6 +334,8 @@ defaults = {
     'REDIS_PASSWORD': '',
     'REDIS_DB_CELERY': 3,
     'REDIS_DB_CACHE': 4,
+    'REDIS_DB_SESSION': 5,
+    'REDIS_DB_WS': 6,
     'CAPTCHA_TEST_MODE': None,
     'TOKEN_EXPIRATION': 3600 * 24,
     'DISPLAY_PER_PAGE': 25,
@@ -320,7 +345,9 @@ defaults = {
     'SESSION_COOKIE_AGE': 3600 * 24,
     'SESSION_EXPIRE_AT_BROWSER_CLOSE': False,
     'AUTH_OPENID': False,
-    'OTP_VALID_WINDOW': 0,
+    'AUTH_OPENID_IGNORE_SSL_VERIFICATION': True,
+    'AUTH_OPENID_SHARE_SESSION': True,
+    'OTP_VALID_WINDOW': 2,
     'OTP_ISSUER_NAME': 'Jumpserver',
     'EMAIL_SUFFIX': 'jumpserver.org',
     'TERMINAL_PASSWORD_AUTH': True,
@@ -331,7 +358,10 @@ defaults = {
     'TERMINAL_SESSION_KEEP_DURATION': 9999,
     'TERMINAL_HOST_KEY': '',
     'TERMINAL_TELNET_REGEX': '',
+    'TERMINAL_COMMAND_STORAGE': {},
     'SECURITY_MFA_AUTH': False,
+    'SECURITY_SERVICE_ACCOUNT_REGISTRATION': True,
+    'SECURITY_VIEW_AUTH_NEED_MFA': True,
     'SECURITY_LOGIN_LIMIT_COUNT': 7,
     'SECURITY_LOGIN_LIMIT_TIME': 30,
     'SECURITY_MAX_IDLE_TIME': 30,
@@ -345,8 +375,26 @@ defaults = {
     'RADIUS_SERVER': 'localhost',
     'RADIUS_PORT': 1812,
     'RADIUS_SECRET': '',
+    'AUTH_LDAP_SEARCH_PAGED_SIZE': 1000,
+    'AUTH_LDAP_SYNC_IS_PERIODIC': False,
+    'AUTH_LDAP_SYNC_INTERVAL': None,
+    'AUTH_LDAP_SYNC_CRONTAB': None,
+    'AUTH_LDAP_USER_LOGIN_ONLY_IN_USERS': False,
+    'AUTH_LDAP_OPTIONS_OPT_REFERRALS': -1,
     'HTTP_BIND_HOST': '0.0.0.0',
     'HTTP_LISTEN_PORT': 8080,
+    'WS_LISTEN_PORT': 8070,
+    'LOGIN_LOG_KEEP_DAYS': 90,
+    'ASSETS_PERM_CACHE_TIME': 3600*24,
+    'SECURITY_MFA_VERIFY_TTL': 3600,
+    'ASSETS_PERM_CACHE_ENABLE': False,
+    'SYSLOG_ADDR': '',  # '192.168.0.1:514'
+    'SYSLOG_FACILITY': 'user',
+    'PERM_SINGLE_ASSET_TO_UNGROUP_NODE': False,
+    'WINDOWS_SSH_DEFAULT_SHELL': 'cmd',
+    'FLOWER_URL': "127.0.0.1:5555",
+    'DEFAULT_ORG_SHOW_ALL_USERS': True,
+    'PERIOD_TASK_ENABLED': True,
 }
 
 
