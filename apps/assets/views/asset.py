@@ -13,6 +13,7 @@ from django.shortcuts import redirect
 from django.forms.formsets import formset_factory
 
 from common.utils import get_object_or_none, get_logger
+from django.contrib.auth.mixins import LoginRequiredMixin
 from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from common.const import KEY_CACHE_RESOURCES_ID
 from .. import forms

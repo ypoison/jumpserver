@@ -43,11 +43,6 @@ class AdminUserViewSet(OrgBulkModelViewSet):
     search_fields = filter_fields
     serializer_class = serializers.AdminUserSerializer
     permission_classes = (IsValidUser,)
-    pagination_class = LimitOffsetPagination
-
-    def get_queryset(self):
-        queryset = super().get_queryset().all()
-        return queryset
 
 
 class AdminUserAuthApi(generics.UpdateAPIView):
@@ -82,9 +77,8 @@ class AdminUserTestConnectiveApi(generics.RetrieveAPIView):
     """
     Test asset admin user assets_connectivity
     """
-    queryset = AdminUser.objects.all()
-    permission_classes = (IsValidUser,)
     model = AdminUser
+    permission_classes = (IsValidUser,)
     serializer_class = serializers.TaskIDSerializer
 
     def retrieve(self, request, *args, **kwargs):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 from django import forms
-from orgs.mixins import OrgModelForm
+from orgs.mixins.forms import OrgModelForm
 from ..models import App
 
 __all__ = ['AppForm',]

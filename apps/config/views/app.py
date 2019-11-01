@@ -5,7 +5,7 @@ from django.views.generic import TemplateView, CreateView, \
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 
-from common.permissions import AdminUserRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg
 

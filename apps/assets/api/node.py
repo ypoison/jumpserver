@@ -24,7 +24,7 @@ from common.utils import get_logger, get_object_or_none
 from common.tree import TreeNodeSerializer
 from orgs.mixins.api import OrgModelViewSet
 from orgs.mixins import generics
-from ..hands import IsValidUser
+from ..hands import IsOrgAdmin, IsValidUser
 from ..models import Node
 from ..tasks import (
     update_assets_hardware_info_util, test_asset_connectivity_util

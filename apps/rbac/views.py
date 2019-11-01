@@ -5,7 +5,7 @@ from django.views.generic import TemplateView, CreateView, \
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 
-from common.permissions import AdminUserRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin
 from common.const import create_success_msg
 
 from .models import Menu, Permission2User, Permission2Group
@@ -19,7 +19,8 @@ __all__ = (
     "UserListView",
 )
 
-class MenuListView(AdminUserRequiredMixin, TemplateView):
+class MenuListView(PermissionsMixin, TemplateView):
+    permission_classes = [IsOrgAdmin]
     template_name = 'rbac/menu_list.html'
 
     def get_context_data(self, **kwargs):
@@ -31,8 +32,9 @@ class MenuListView(AdminUserRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class MenuCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class MenuCreateView(PermissionsMixin, SuccessMessageMixin, CreateView):
     model = Menu
+    permission_classes = [IsOrgAdmin]
     template_name = 'rbac/menu_create_update.html'
     form_class = MenuCreateForm
     success_url = reverse_lazy('rbac:menu-list')
@@ -47,8 +49,9 @@ class MenuCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class MenuUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class MenuUpdateView(PermissionsMixin, SuccessMessageMixin, UpdateView):
     model = Menu
+    permission_classes = [IsOrgAdmin]
     template_name = 'rbac/menu_create_update.html'
     form_class = MenuUpdateForm
     success_url = reverse_lazy('rbac:menu-list')
@@ -62,7 +65,8 @@ class MenuUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class GroupListView(AdminUserRequiredMixin, TemplateView):
+class GroupListView(PermissionsMixin, TemplateView):
+    permission_classes = [IsOrgAdmin]
     template_name = 'rbac/user_group_list.html'
 
     def get_context_data(self, **kwargs):
@@ -73,7 +77,8 @@ class GroupListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class UserListView(AdminUserRequiredMixin, TemplateView):
+class UserListView(PermissionsMixin, TemplateView):
+    permission_classes = [IsOrgAdmin]
     template_name = 'rbac/user_list.html'
 
     def get_context_data(self, **kwargs):

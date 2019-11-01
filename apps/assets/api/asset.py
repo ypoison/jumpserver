@@ -6,7 +6,7 @@ import random
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from common.utils import get_logger, get_object_or_none
-from common.permissions import IsOrgAdmin, IsOrgAdminOrAppUser
+from common.permissions import IsOrgAdmin, IsOrgAdminOrAppUser, IsValidUser
 from orgs.mixins.api import OrgBulkModelViewSet
 from orgs.mixins import generics
 from ..models import Asset, Node
