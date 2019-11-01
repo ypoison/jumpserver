@@ -34,5 +34,10 @@ data/static
 docs/_build/
 xpack
 logs/*
+<<<<<<< HEAD
 migrations/
 __pycache__
+=======
+### Vagrant ###
+.vagrant/
+>>>>>>> pr/4

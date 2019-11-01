@@ -24,15 +24,7 @@
 <div class="wrapper wrapper-content">
    <div class="row">
        <div class="col-lg-3" id="split-left" style="padding-left: 3px">
-           <div class="ibox float-e-margins">
-               <div class="ibox-content mailbox-content" style="padding-top: 0;padding-left: 1px">
-                   <div class="file-manager ">
-                       <div id="assetTree" class="ztree">
-                       </div>
-                       <div class="clearfix"></div>
-                   </div>
-               </div>
-           </div>
+           {% include 'assets/_node_tree.html' %}
        </div>
        <div class="col-lg-9 animated fadeInRight" id="split-right">
            <div class="tree-toggle">
@@ -41,10 +33,14 @@
                </div>
            </div>
           <div class="mail-box-header">
-              <div class="uc pull-left m-r-5">
-                   <a class="btn btn-sm btn-primary btn-create-permission">
-                       {% trans "Create permission" %}
-                   </a>
+              <div class="btn-group uc pull-left m-r-5">
+                 <button class="btn btn-sm btn-primary btn-create-permission">
+                     {% trans "Create permission" %}
+                 </button>
+                 <button data-toggle="dropdown" class="btn btn-primary btn-sm dropdown-toggle"><span class="caret"></span></button>
+                 <ul class="dropdown-menu">
+                     <li><a class="refresh-asset-permission-cache" href="#">{% trans 'Refresh permission cache' %}</a></li>
+                 </ul>
               </div>
               <table class="table table-striped table-bordered table-hover" id="permission_list_table" style="width: 100%">
                   <thead>
@@ -86,7 +82,7 @@
 <script>
 var zTree, table, show = 0;
 
-function onSelected(event, treeNode) {
+function onNodeSelected(event, treeNode) {
     setCookie('node_selected', treeNode.id);
     var url = table.ajax.url();
     if (treeNode.meta.type === 'node') {
@@ -102,7 +98,7 @@ function onSelected(event, treeNode) {
 }
 
 
-function beforeAsync(treeId, treeNode) {
+function beforeNodeAsync(treeId, treeNode) {
     if (treeNode) {
         return treeNode.meta.type === 'node'
     }
@@ -130,6 +126,9 @@ function format(d) {
     if (d.system_users.length > 0) {
         data += makeLabel(["{% trans 'System user' %}", d.system_users.join(", ")])
     }
+    if (d.actions.length > 0) {
+        data += makeLabel(["{% trans 'Action' %}", d.actions.join(", ")])
+    }
     return data
 }
 
@@ -143,6 +142,7 @@ function initTable() {
                 $(td).html("<i class='fa fa-angle-right'></i>");
             }},
             {targets: 1, createdCell: function (td, cellData, rowData) {
+                cellData = htmlEscape(cellData);
                 var detail_btn = '<a href="{% url "perms:asset-permission-detail" pk=DEFAULT_PK %}">' + cellData + '</a>';
                 $(td).html(detail_btn.replace('{{ DEFAULT_PK }}', rowData.id));
             }},
@@ -174,22 +174,23 @@ function initTable() {
 				}
             }},
             {targets: 8, createdCell: function (td, cellData, rowData) {
+                var name = htmlEscape(rowData.name);
                 var update_btn = '<a href="{% url "perms:asset-permission-update" pk=DEFAULT_PK %}" class="btn btn-xs m-l-xs btn-info">{% trans "Update" %}</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 var del_btn = '<a class="btn btn-xs btn-danger m-l-xs btn-del" data-uid="{{ DEFAULT_PK }}" mark=1 data-name="99991938">{% trans "Delete" %}</a>'
                     .replace('{{ DEFAULT_PK }}', cellData)
-                    .replace('99991938', rowData.name);
+                    .replace('99991938', name);
                 if (rowData.inherit) {
                     del_btn = del_btn.replace("mark", "disabled")
                 }
 				$(td).html(update_btn + del_btn);
             }}
         ],
-        ajax_url: '{% url "api-perms:asset-permission-list" %}',
+        ajax_url: '{% url "api-perms:asset-permission-list" %}?display=1',
         columns: [
-            {data: "id"}, {data: "name"}, {data: "users"},
-            {data: "user_groups"}, {data: "assets"},
-            {data: "nodes"}, {data: "system_users"},
-            {data: "is_valid", orderable: false}, {data: "id", orderable: false}
+            {data: "id"}, {data: "name"}, {data: "users", orderable: false},
+            {data: "user_groups", orderable: false}, {data: "assets", orderable: false},
+            {data: "nodes", orderable: false}, {data: "system_users", orderable: false},
+            {data: "is_valid", orderable: false}, {data: "id", orderable: false, width: "100px"}
         ],
         select: {},
         op_html: $('#actions').html()
@@ -200,28 +201,12 @@ function initTable() {
 
 
 function initTree() {
-    var setting = {
-        view: {
-            dblClickExpand: false,
-            showLine: true
-        },
-        data: {
-            simpleData: {
-                enable: true
-            }
-        },
-        async: {
-			enable: true,
-			url: "{% url 'api-assets:node-children-tree' %}?assets=1",
-			autoParam:["id=key", "name=n", "level=lv"],
-            type: 'get'
-		},
-        callback: {
-            onSelected: onSelected,
-            beforeAsync: beforeAsync
-        }
-    };
-    zTree = $.fn.zTree.init($("#assetTree"), setting);
+    initNodeTree({
+        onSelected: onNodeSelected,
+        beforeAsync: beforeNodeAsync,
+        showMenu: false,
+        showAssets: true
+    })
 }
 
 function toggle() {
@@ -242,7 +227,6 @@ function toggle() {
 $(document).ready(function(){
     initTable();
     initTree();
-
 })
 .on('click', '.btn-del', function () {
     var $this = $(this);
@@ -252,19 +236,29 @@ $(document).ready(function(){
             .replace('{{ DEFAULT_PK }}', uid);
     objectDelete($this, name, the_url);
 })
+.on('click', '.refresh-asset-permission-cache', function () {
+    var the_url = "{% url 'api-perms:refresh-asset-permission-cache' %}";
+    requestApi({
+        url: the_url,
+        method: 'GET',
+        success_message: "{% trans 'Refresh success' %}"
+    });
+})
 .on('click', '.btn-create-permission', function () {
     var url = "{% url 'perms:asset-permission-create' %}";
-    var nodes = zTree.getSelectedNodes();
-    var _nodes = [];
-    var _assets = [];
-    $.each(nodes, function (id, node) {
-        if (node.meta.type === 'node') {
-            _nodes.push(node.meta.node.id)
-        } else {
-            _assets.push(node.meta.asset.id)
-        }
-    });
-    url += "?assets=" + _assets.join(",") + "&nodes=" + _nodes.join(",");
+    if (zTree) {
+        var nodes = zTree.getSelectedNodes();
+        var _nodes = [];
+        var _assets = [];
+        $.each(nodes, function (id, node) {
+            if (node.meta.type === 'node') {
+                _nodes.push(node.meta.node.id)
+            } else {
+                _assets.push(node.meta.asset.id)
+            }
+        });
+        url += "?assets=" + _assets.join(",") + "&nodes=" + _nodes.join(",");
+    }
     window.open(url, '_self');
 }).on('click', '.toggle', function (e) {
     e.preventDefault();
@@ -290,7 +284,6 @@ $(document).ready(function(){
             detailRows.push(tr.attr('id'));
         }
     }
-
 }).on('click', '#permission_list_table_filter input', function (e) {
     e.preventDefault();
     e.stopPropagation();

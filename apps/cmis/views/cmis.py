@@ -6,7 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy
 
-from common.permissions import AdminUserRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from common.const import create_success_msg
 
 from ..models import Account
@@ -17,8 +17,9 @@ __all__ = (
     "AccountListView", "AccountDetailView","AccountCreateView", "AccountUpdateView",
 )
 
-class AccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class AccountCreateView(PermissionsMixin, SuccessMessageMixin, CreateView):
     model = Account
+    permission_classes = [IsOrgAdmin]
     template_name = 'cmis/account_create_update.html'
     form_class = AccountForm
     success_url = reverse_lazy('cmis:account-list')
@@ -32,8 +33,9 @@ class AccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView)
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class AccountUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class AccountUpdateView(PermissionsMixin, SuccessMessageMixin, UpdateView):
     model = Account
+    permission_classes = [IsOrgAdmin]
     template_name = 'cmis/account_create_update.html'
     form_class = AccountForm
     success_url = reverse_lazy('cmis:account-list')
@@ -47,7 +49,8 @@ class AccountUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView)
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class AccountListView(AdminUserRequiredMixin, TemplateView):
+class AccountListView(PermissionsMixin, TemplateView):
+    permission_classes = [IsOrgAdmin]
     template_name = 'cmis/account_list.html'
 
     def get_context_data(self, **kwargs):
@@ -58,8 +61,9 @@ class AccountListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class AccountDetailView(AdminUserRequiredMixin, DetailView):
+class AccountDetailView(PermissionsMixin, DetailView):
     model = Account
+    permission_classes = [IsOrgAdmin]
     template_name = 'cmis/account_detail.html'
 
     def get_context_data(self, **kwargs):

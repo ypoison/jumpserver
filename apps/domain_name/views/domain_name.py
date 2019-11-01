@@ -7,7 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy, reverse
 
-from common.permissions import AdminUserRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from django.contrib.auth.mixins import LoginRequiredMixin
 from common.const import create_success_msg
 from common.utils import get_object_or_none
@@ -26,8 +26,9 @@ __all__ = (
 GetDomainName=DomainNameApi()
 
 
-class DomainNameAccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, CreateView):
+class DomainNameAccountCreateView(PermissionsMixin, SuccessMessageMixin, CreateView):
     model = Account
+    permission_classes = [IsOrgAdmin]
     template_name = 'domain_name/account_create_update.html'
     form_class = DomainNameAccountForm
     success_url = reverse_lazy('domain-name:account-list')
@@ -41,8 +42,9 @@ class DomainNameAccountCreateView(AdminUserRequiredMixin, SuccessMessageMixin, C
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameAccountUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, UpdateView):
+class DomainNameAccountUpdateView(PermissionsMixin, SuccessMessageMixin, UpdateView):
     model = Account
+    permission_classes = [IsOrgAdmin]
     template_name = 'domain_name/account_create_update.html'
     form_class = DomainNameAccountForm
     success_url = reverse_lazy('domain-name:account-list')
@@ -56,7 +58,8 @@ class DomainNameAccountUpdateView(AdminUserRequiredMixin, SuccessMessageMixin, U
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameAccountListView(AdminUserRequiredMixin, TemplateView):
+class DomainNameAccountListView(PermissionsMixin, TemplateView):
+    permission_classes = [IsOrgAdmin]
     template_name = 'domain_name/account_list.html'
 
     def get_context_data(self, **kwargs):
@@ -67,8 +70,9 @@ class DomainNameAccountListView(AdminUserRequiredMixin, TemplateView):
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
-class DomainNameAccountDetailView(AdminUserRequiredMixin, DetailView):
+class DomainNameAccountDetailView(PermissionsMixin, DetailView):
     model = DomainName
+    permission_classes = [IsOrgAdmin]
     template_name = 'domain_name/account_detail.html'
 
     def get_context_data(self, **kwargs):

@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse_lazy
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from common.const import create_success_msg, update_success_msg
 from ..models import Label
 from ..forms import LabelForm
@@ -20,6 +21,7 @@ __all__ = (
 
 class LabelListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/label_list.html'
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -30,18 +32,20 @@ class LabelListView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class LabelCreateView(LoginRequiredMixin, CreateView):
+class LabelCreateView(PermissionsMixin, CreateView):
     model = Label
     template_name = 'assets/label_create_update.html'
     form_class = LabelForm
     success_url = reverse_lazy('assets:label-list')
     success_message = create_success_msg
     disable_name = ['draw', 'search', 'limit', 'offset', '_']
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Create label'),
+            'type': 'create'
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -57,27 +61,30 @@ class LabelCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class LabelUpdateView(LoginRequiredMixin, UpdateView):
+class LabelUpdateView(PermissionsMixin, UpdateView):
     model = Label
     template_name = 'assets/label_create_update.html'
     form_class = LabelForm
     success_url = reverse_lazy('assets:label-list')
     success_message = update_success_msg
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Update label'),
+            'type': 'update'
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
 
-class LabelDetailView(LoginRequiredMixin, DetailView):
+class LabelDetailView(PermissionsMixin, DetailView):
     pass
 
 
-class LabelDeleteView(LoginRequiredMixin, DeleteView):
+class LabelDeleteView(PermissionsMixin, DeleteView):
     model = Label
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:label-list')
+    permission_classes = [IsOrgAdmin]

@@ -12,6 +12,7 @@ from common.const import create_success_msg, update_success_msg
 from .. import forms
 from ..models import AdminUser, Node
 from django.contrib.auth.mixins import LoginRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin
 
 __all__ = [
     'AdminUserCreateView', 'AdminUserDetailView',
@@ -19,10 +20,11 @@ __all__ = [
     'AdminUserUpdateView', 'AdminUserAssetsView',
 ]
 
-
+ 
 class AdminUserListView(LoginRequiredMixin, TemplateView):
     model = AdminUser
     template_name = 'assets/admin_user_list.html'
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -41,11 +43,13 @@ class AdminUserCreateView(LoginRequiredMixin,
     template_name = 'assets/admin_user_create_update.html'
     success_url = reverse_lazy('assets:admin-user-list')
     success_message = create_success_msg
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
-            'action': _('Create admin user')
+            'action': _('Create admin user'),
+            "type": "create"
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -57,11 +61,13 @@ class AdminUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'assets/admin_user_create_update.html'
     success_url = reverse_lazy('assets:admin-user-list')
     success_message = update_success_msg
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Update admin user'),
+            "type": "update"
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -72,12 +78,12 @@ class AdminUserDetailView(LoginRequiredMixin, DetailView):
     template_name = 'assets/admin_user_detail.html'
     context_object_name = 'admin_user'
     object = None
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Admin user detail'),
-            'nodes': Node.objects.all()
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -88,21 +94,20 @@ class AdminUserAssetsView(LoginRequiredMixin, SingleObjectMixin, ListView):
     template_name = 'assets/admin_user_assets.html'
     context_object_name = 'admin_user'
     object = None
+    permission_classes = [IsOrgAdmin]
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(queryset=AdminUser.objects.all())
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        self.queryset = self.object.asset_set.all()
+        self.queryset = self.object.assets.all()
         return self.queryset
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Admin user detail'),
-            "total_amount": len(self.queryset),
-            'unreachable_amount': len([asset for asset in self.queryset if asset.connectivity is False])
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -112,5 +117,6 @@ class AdminUserDeleteView(LoginRequiredMixin, DeleteView):
     model = AdminUser
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:admin-user-list')
+    permission_classes = [IsOrgAdmin]
 
 

@@ -7,7 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from common.permissions import AdminUserRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from common.const import create_success_msg
 
 from assets.models import Node
@@ -105,7 +105,8 @@ class WEBConfigBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVie
         return super().get_context_data(**kwargs)
 
 
-class AppListView(AdminUserRequiredMixin, TemplateView):
+class AppListView(PermissionsMixin, TemplateView):
+    permission_classes = [IsOrgAdmin]
     template_name = 'config/app_list.html'
 
     def get_context_data(self, **kwargs):

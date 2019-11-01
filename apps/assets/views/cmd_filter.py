@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, reverse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 from common.const import create_success_msg, update_success_msg
 from ..models import CommandFilter, CommandFilterRule, SystemUser
 from ..forms import CommandFilterForm, CommandFilterRuleForm
@@ -24,6 +25,7 @@ __all__ = (
 
 class CommandFilterListView(LoginRequiredMixin, TemplateView):
     template_name = 'assets/cmd_filter_list.html'
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -40,11 +42,13 @@ class CommandFilterCreateView(LoginRequiredMixin, CreateView):
     form_class = CommandFilterForm
     success_url = reverse_lazy('assets:cmd-filter-list')
     success_message = create_success_msg
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Create command filter'),
+            'type': 'create'
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -56,11 +60,13 @@ class CommandFilterUpdateView(LoginRequiredMixin, UpdateView):
     form_class = CommandFilterForm
     success_url = reverse_lazy('assets:cmd-filter-list')
     success_message = update_success_msg
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
             'app': _('Assets'),
             'action': _('Update command filter'),
+            'type': 'update'
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -69,6 +75,7 @@ class CommandFilterUpdateView(LoginRequiredMixin, UpdateView):
 class CommandFilterDetailView(LoginRequiredMixin, DetailView):
     model = CommandFilter
     template_name = 'assets/cmd_filter_detail.html'
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         system_users_remain = SystemUser.objects\
@@ -87,6 +94,7 @@ class CommandFilterRuleListView(LoginRequiredMixin, SingleObjectMixin, TemplateV
     template_name = 'assets/cmd_filter_rule_list.html'
     model = CommandFilter
     object = None
+    permission_classes = [IsValidUser]
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(queryset=self.model.objects.all())
@@ -108,6 +116,7 @@ class CommandFilterRuleCreateView(LoginRequiredMixin, CreateView):
     form_class = CommandFilterRuleForm
     success_message = create_success_msg
     cmd_filter = None
+    permission_classes = [IsValidUser]
 
     def get_success_url(self):
         return reverse('assets:cmd-filter-rule-list', kwargs={
@@ -130,6 +139,7 @@ class CommandFilterRuleCreateView(LoginRequiredMixin, CreateView):
             'app': _('Assets'),
             'action': _('Create command filter rule'),
             'object': self.cmd_filter,
+            'request_type': 'create'
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
@@ -141,6 +151,7 @@ class CommandFilterRuleUpdateView(LoginRequiredMixin, UpdateView):
     form_class = CommandFilterRuleForm
     success_message = create_success_msg
     cmd_filter = None
+    permission_classes = [IsValidUser]
 
     def get_success_url(self):
         return reverse('assets:cmd-filter-rule-list', kwargs={
@@ -163,6 +174,8 @@ class CommandFilterRuleUpdateView(LoginRequiredMixin, UpdateView):
             'app': _('Assets'),
             'action': _('Update command filter rule'),
             'object': self.cmd_filter,
+            'rule': self.get_object(),
+            'request_type': 'update'
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)

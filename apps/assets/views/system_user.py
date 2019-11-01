@@ -11,6 +11,7 @@ from common.const import create_success_msg, update_success_msg
 from ..forms import SystemUserForm
 from ..models import SystemUser, Node, CommandFilter
 from django.contrib.auth.mixins import LoginRequiredMixin
+from common.permissions import PermissionsMixin, IsOrgAdmin
 
 
 __all__ = [
@@ -20,8 +21,9 @@ __all__ = [
 ]
 
 
-class SystemUserListView(LoginRequiredMixin, TemplateView):
+class SystemUserListView(PermissionsMixin, TemplateView):
     template_name = 'assets/system_user_list.html'
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -38,6 +40,7 @@ class SystemUserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'assets/system_user_create.html'
     success_url = reverse_lazy('assets:system-user-list')
     success_message = create_success_msg
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -54,6 +57,7 @@ class SystemUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'assets/system_user_update.html'
     success_url = reverse_lazy('assets:system-user-list')
     success_message = update_success_msg
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -64,38 +68,40 @@ class SystemUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().get_context_data(**kwargs)
 
 
-class SystemUserDetailView(LoginRequiredMixin, DetailView):
+class SystemUserDetailView(PermissionsMixin, DetailView):
     template_name = 'assets/system_user_detail.html'
     context_object_name = 'system_user'
     model = SystemUser
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
+        cmd_filters_remain = CommandFilter.objects.exclude(system_users=self.object)
         context = {
             'app': _('Assets'),
             'action': _('System user detail'),
-            'cmd_filters_remain': CommandFilter.objects.exclude(system_users=self.object)
+            'cmd_filters_remain': cmd_filters_remain,
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
 
 
-class SystemUserDeleteView(LoginRequiredMixin, DeleteView):
+class SystemUserDeleteView(PermissionsMixin, DeleteView):
     model = SystemUser
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:system-user-list')
+    permission_classes = [IsOrgAdmin]
 
 
-class SystemUserAssetView(LoginRequiredMixin, DetailView):
+class SystemUserAssetView(PermissionsMixin, DetailView):
     model = SystemUser
-    template_name = 'assets/system_user_asset.html'
+    template_name = 'assets/system_user_assets.html'
     context_object_name = 'system_user'
+    permission_classes = [IsOrgAdmin]
 
     def get_context_data(self, **kwargs):
-        nodes_remain = sorted(Node.objects.exclude(systemuser=self.object), reverse=True)
         context = {
             'app': _('assets'),
             'action': _('System user asset'),
-            'nodes_remain': nodes_remain
         }
         kwargs.update(context)
         return super().get_context_data(**kwargs)
