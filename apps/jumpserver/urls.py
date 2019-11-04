@@ -24,6 +24,7 @@ api_v1 = [
    path('authentication/', include('authentication.urls.api_urls', namespace='api-auth')),
    path('common/', include('common.urls.api_urls', namespace='api-common')),
    path('applications/', include('applications.urls.api_urls', namespace='api-applications')),
+   
    path('domain-name/', include('domain_name.urls.api_urls', namespace='api-domain-name')),
    path('config/', include('config.urls.api_urls', namespace='api-config')),
    path('cmis/', include('cmis.urls.api_urls', namespace='api-cmis')),
