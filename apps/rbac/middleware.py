@@ -97,7 +97,7 @@ def format_url(path, method):
 
 class UserAuth(MiddlewareMixin):
     def process_request(self, request):
-
+        return None
         path = request.path
         user = request.user
         method = request.method
