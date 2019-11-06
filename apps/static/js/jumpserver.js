@@ -153,8 +153,6 @@ function activeNav() {
     }
     else if (resource === 'user-asset'){
         $("#" + resource).addClass('active');
-    }
-    else {
     } else {
         $("#" + app).addClass('active');
         $('#' + app + ' #' + resource).addClass('active');

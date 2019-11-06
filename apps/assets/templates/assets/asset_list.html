@@ -524,7 +524,7 @@ $(document).ready(function(){
         return
     }
     var data = {"code": code};
-    APIUpdateAttr({
+    requestApi({
         url: url,
         body: JSON.stringify(data),
         method: "PATCH",
