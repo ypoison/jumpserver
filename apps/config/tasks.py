@@ -67,7 +67,6 @@ def save_config(**req):
     req['platform'] = req.pop('pf_code')
     req['node_ip'] = node_asset.ip
     add_web_config = webconfig.add(**req)
-    add_web_config = {'code':1}
     if not add_web_config['code']:
         config_record.comment = 'error:{}'.format(add_web_config['msg'])
         config_record.save()

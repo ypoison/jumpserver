@@ -73,14 +73,18 @@ $(document).ready(function() {
         ele: $('#group_list_table'),
         buttons: [],
         columnDefs: [
-            {
-                targets: 3, createdCell: function (td, cellData, rowData) {
-                    var update_btn = '<a class="btn-perms-edit btn btn-xs btn-info" data-id="{{ DEFAULT_PK }}" data-name=' + rowData.name + '>编辑</a>';
-                    $(td).html(update_btn.replace('{{ DEFAULT_PK }}', cellData))
+            {targets: 2, createdCell: function (td, cellData, rowData) {
+                var html = createPopover(cellData);
+                $(td).html(html);
                 }
-            }
+            },
+            {targets: 3, createdCell: function (td, cellData, rowData) {
+                var update_btn = '<a class="btn-perms-edit btn btn-xs btn-info" data-id="{{ DEFAULT_PK }}" data-name=' + rowData.name + '>编辑</a>';
+                $(td).html(update_btn.replace('{{ DEFAULT_PK }}', cellData))
+                }
+            },
         ],
-        ajax_url: '{% url "api-users:user-group-list" %}',
+        ajax_url: '{% url "api-users:user-group-list" %}?display=1',
         columns: [{
             data: function () {
                 return ""

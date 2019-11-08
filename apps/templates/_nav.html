@@ -59,6 +59,7 @@
 {% endif %}
 
 {# cmis #}
+{% if request.user.can_admin_current_org %}
 <li id="cmis">
     <a>
         <i class="fa fa-inbox" style="width: 14px"></i> <span class="nav-label">云管中心</span><span class="fa arrow"></span>
@@ -69,6 +70,7 @@
         <li id="cdn"><a href="{% url 'cmis:cdn-list' %}">CDN</a></li>
     </ul>
 </li>
+{% endif %}
 
 {# Applications #}
 {% if request.user.can_admin_current_org and LICENSE_VALID %}
@@ -161,6 +163,8 @@
     </li>
 {% endif %}
 
+{# Domain Name #}
+{% if request.user.can_admin_current_org %}
 <li id="domain-name">
     <a href="#">
         <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">域名管理</span><span class="fa arrow"></span>
@@ -172,6 +176,10 @@
         <li id="account"><a href="{% url 'domain-name:account-list' %}">账号管理</a></li>
     </ul>
 </li>
+{% endif %}
+
+{# Config #}
+{% if request.user.can_admin_current_org %}
 <li id="config">
     <a href="#">
         <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">配置管理</span><span class="fa arrow"></span>
@@ -183,6 +191,7 @@
         <li id="app"><a href="{% url 'config:app-list' %}">应用配置</a></li>
     </ul>
 </li>
+{% endif %}
 
 {# X-Pack #}
 {% if request.user.can_admin_current_org and XPACK_PLUGINS %}
