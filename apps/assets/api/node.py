@@ -160,6 +160,7 @@ class NodeChildrenAsTreeApi(NodeChildrenApi):
       }
     ]
     """
+    permission_classes = (IsValidUser,)
     model = Node
     serializer_class = TreeNodeSerializer
     http_method_names = ['get']

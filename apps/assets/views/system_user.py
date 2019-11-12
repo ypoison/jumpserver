@@ -11,7 +11,7 @@ from common.const import create_success_msg, update_success_msg
 from ..forms import SystemUserForm
 from ..models import SystemUser, Node, CommandFilter
 from django.contrib.auth.mixins import LoginRequiredMixin
-from common.permissions import PermissionsMixin, IsOrgAdmin
+from common.permissions import PermissionsMixin, IsOrgAdmin, IsValidUser
 
 
 __all__ = [
@@ -23,7 +23,7 @@ __all__ = [
 
 class SystemUserListView(PermissionsMixin, TemplateView):
     template_name = 'assets/system_user_list.html'
-    permission_classes = [IsOrgAdmin]
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -40,7 +40,7 @@ class SystemUserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'assets/system_user_create.html'
     success_url = reverse_lazy('assets:system-user-list')
     success_message = create_success_msg
-    permission_classes = [IsOrgAdmin]
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -57,7 +57,7 @@ class SystemUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'assets/system_user_update.html'
     success_url = reverse_lazy('assets:system-user-list')
     success_message = update_success_msg
-    permission_classes = [IsOrgAdmin]
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
@@ -72,7 +72,7 @@ class SystemUserDetailView(PermissionsMixin, DetailView):
     template_name = 'assets/system_user_detail.html'
     context_object_name = 'system_user'
     model = SystemUser
-    permission_classes = [IsOrgAdmin]
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         cmd_filters_remain = CommandFilter.objects.exclude(system_users=self.object)
@@ -89,14 +89,14 @@ class SystemUserDeleteView(PermissionsMixin, DeleteView):
     model = SystemUser
     template_name = 'delete_confirm.html'
     success_url = reverse_lazy('assets:system-user-list')
-    permission_classes = [IsOrgAdmin]
+    permission_classes = [IsValidUser]
 
 
 class SystemUserAssetView(PermissionsMixin, DetailView):
     model = SystemUser
     template_name = 'assets/system_user_assets.html'
     context_object_name = 'system_user'
-    permission_classes = [IsOrgAdmin]
+    permission_classes = [IsValidUser]
 
     def get_context_data(self, **kwargs):
         context = {
