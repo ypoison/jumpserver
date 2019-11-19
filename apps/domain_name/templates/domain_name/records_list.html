@@ -107,7 +107,7 @@ function initTable() {
         ],
         ajax_url: '{% url "api-domain-name:records-list" %}?domain_name={{ object.id }}',
         columns: [
-            {data: "id"}, {data: "type" }, {data: 'rr'}, {data: 'line'},
+            {data: "id"}, {data: "type" }, {data: 'rr'}, {data: 'line_display'},
             {data: "value"}, {data: "ttl" }, {data: "status" }, {data: "comment" }, {data: "id"}
 
         ],
