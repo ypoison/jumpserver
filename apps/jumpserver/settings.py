@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'config.apps.ConfigConfig',
     'cmis.apps.CMisConfig',
     'rbac.apps.RBACConfig',
+    'backup.apps.BackupConfig',
 
     'rest_framework',
     'rest_framework_swagger',

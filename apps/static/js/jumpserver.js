@@ -260,13 +260,13 @@ function APIUpdateAttr(props) {
     $.ajax({
         url: props.url,
         type: props.method || "PATCH",
-        data: props.body,
+        data: props.body || props.data,
         contentType: props.content_type || "application/json; charset=utf-8",
         dataType: props.data_type || "json"
     }).done(function(data, textStatue, jqXHR) {
         if (flash_message) {
             var msg = "";
-            if (user_fail_message) {
+            if (user_success_message) {
                 msg = user_success_message;
             } else {
                 msg = default_success_message;
@@ -294,7 +294,6 @@ function APIUpdateAttr(props) {
             toastr.error(msg);
         }
         if (typeof props.error === 'function') {
-            console.log(jqXHR);
             return props.error(jqXHR.responseText, jqXHR.status);
         }
     });
@@ -402,6 +401,42 @@ function makeLabel(data) {
     return "<label class='detail-key'><b>" + data[0] + ": </b></label>" + data[1] + "</br>"
 }
 
+function parseTableFilter(value) {
+    var cleanValues = [];
+    var valuesArray = value.split(':');
+    for (var i=0; i<valuesArray.length; i++) {
+        var v = valuesArray[i].trim();
+        if (!v) {
+            continue
+        }
+        // 如果是最后一个元素，直接push，不需要再处理了, 因为最后一个肯定不是key
+        if (i === valuesArray.length -1) {
+            cleanValues.push(v);
+            continue
+        }
+        v = v.split(' ');
+        // 如果长度是1，直接push上
+        // 如果长度不是1，根据空格分隔后，最后面的是key
+        if (v.length === 1) {
+            cleanValues.push(v[0]);
+        } else {
+            var leaveData = v.slice(0, -1).join(' ').trim();
+            cleanValues.push(leaveData);
+            cleanValues.push(v.slice(-1)[0]);
+        }
+    }
+    var filter = {};
+    var key = '';
+    for (i=0; i<cleanValues.length; i++) {
+        if (i%2 === 0) {
+            key = cleanValues[i]
+        } else {
+            value = cleanValues[i];
+            filter[key] = value
+        }
+    }
+    return filter;
+}
 
 
 var jumpserver = {};
@@ -448,6 +483,7 @@ jumpserver.initDataTable = function (options) {
       {
           targets: 0,
           orderable: false,
+//            width: "20px",
           createdCell: function (td, cellData) {
               $(td).html('<input type="checkbox" class="text-center ipt_check" id=99991937>'.replace('99991937', cellData));
           }
@@ -464,6 +500,7 @@ jumpserver.initDataTable = function (options) {
         dom: options.dom || '<"#uc.pull-left">flt<"row m-t"<"col-md-8"<"#op.col-md-6"><"col-md-6 text-center"i>><"col-md-4"p>>',
         order: options.order || [],
         // select: options.select || 'multi',
+        searchDelay: 800,
         buttons: [],
         columnDefs: columnDefs,
         ajax: {
@@ -489,8 +526,10 @@ jumpserver.initDataTable = function (options) {
         $('[data-toggle="popover"]').popover({
             html: true,
             placement: 'bottom',
-            // trigger: 'hover',
+            trigger: 'click',
             container: 'body'
+        }).on('click', function (e) {
+            $('[data-toggle="popover"]').not(this).popover('hide');
         });
     });
     $('.ipt_check_all').on('click', function() {
@@ -522,6 +561,7 @@ jumpserver.initServerSideDataTable = function (options) {
   // options = {
   //    ele *: $('#dataTable_id'),
   //    ajax_url *: '{% url 'users:user-list-api' %}',
+    //    select_style: 'multi',
   //    columns *: [{data: ''}, ....],
   //    dom: 'fltip',
   //    i18n_url: '{% static "js/...../en-us.json" %}',
@@ -537,27 +577,49 @@ jumpserver.initServerSideDataTable = function (options) {
       {
           targets: 0,
           orderable: false,
+            width: "20px",
           createdCell: function (td, cellData) {
               $(td).html('<input type="checkbox" class="text-center ipt_check" id=99991937>'.replace('99991937', cellData));
           }
       },
-      {className: 'text-center', targets: '_all'}
-  ];
-  columnDefs = options.columnDefs ? options.columnDefs.concat(columnDefs) : columnDefs;
-  var select = {
-            style: 'multi',
-            selector: 'td:first-child'
-      };
-  var table = ele.DataTable({
+        {
+            targets: '_all',
+            className: 'text-center',
+            render: $.fn.dataTable.render.text()
+        }
+    ];
+    var select_style = options.select_style || 'multi';
+    columnDefs = options.columnDefs ? options.columnDefs.concat(columnDefs) : columnDefs;
+    var select = {
+        style: select_style,
+        selector: 'td:first-child'
+    };
+    var table = ele.DataTable({
         pageLength: options.pageLength || 15,
-        dom: options.dom || '<"#uc.pull-left">fltr<"row m-t"<"col-md-8"<"#op.col-md-6"><"col-md-6 text-center"i>><"col-md-4"p>>',
+        // dom: options.dom || '<"#uc.pull-left">fltr<"row m-t"<"col-md-8"<"#op.col-md-6"><"col-md-6 text-center"i>><"col-md-4"p>>',
+        dom: options.dom || '<"#uc.pull-left"><"pull-right"<"inline"l><"#fb.inline"><"inline"f><"#fa.inline">>tr<"row m-t"<"col-md-8"<"#op.col-md-6"><"col-md-6 text-center"i>><"col-md-4"p>>',
         order: options.order || [],
         buttons: [],
         columnDefs: columnDefs,
         serverSide: true,
         processing: true,
+        searchDelay: 800,
         ajax: {
             url: options.ajax_url ,
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (jqXHR.responseText && jqXHR.responseText.indexOf("%(value)s") !== -1 ) {
+                    return
+                }
+                var msg = gettext("Unknown error occur");
+                if (jqXHR.responseJSON) {
+                    if (jqXHR.responseJSON.error) {
+                        msg = jqXHR.responseJSON.error
+                    } else if (jqXHR.responseJSON.msg) {
+                        msg = jqXHR.responseJSON.msg
+                    }
+                }
+                alert(msg)
+            },
             data: function (data) {
                 delete data.columns;
                 if (data.length !== null){
@@ -569,23 +631,16 @@ jumpserver.initServerSideDataTable = function (options) {
                     delete data.start;
                 }
                 if (data.search !== null) {
-                    var search_val = data.search.value;
-                    var search_list = search_val.split(" ");
-                    var search_attr = {};
-                    var search_raw = [];
-
-                    search_list.map(function (val, index) {
-                       var kv = val.split(":");
-                       if (kv.length === 2) {
-                           search_attr[kv[0]] = kv[1]
-                       } else {
-                           search_raw.push(kv)
-                       }
-                    });
-                    data.search = search_raw.join("");
-                    $.each(search_attr, function (k, v) {
-                        data[k] = v
-                    })
+                    var searchValue = data.search.value;
+                    var searchFilter = parseTableFilter(searchValue);
+                    if (Object.keys(searchFilter).length === 0) {
+                        data.search = searchValue;
+                    } else {
+                        data.search = '';
+                        $.each(searchFilter, function (k, v) {
+                            data[k] = v
+                        })
+                    }
                 }
                 if (data.order !== null && data.order.length === 1) {
                     var col = data.order[0].column;
@@ -607,7 +662,7 @@ jumpserver.initServerSideDataTable = function (options) {
         columns: options.columns || [],
         select: options.select || select,
         language: jumpserver.language,
-        lengthMenu: [[15, 25, 50, 9999], [15, 25, 50, 'All']]
+        lengthMenu: options.lengthMenu || [[15, 25, 50, 9999], [15, 25, 50, 'All']]
     });
     table.selected = [];
     table.selected_rows = [];
@@ -618,9 +673,9 @@ jumpserver.initServerSideDataTable = function (options) {
         if (type === 'row') {
             var rows = table.rows(indexes).data();
             $.each(rows, function (id, row) {
-                table.selected_rows.push(row);
-                if (row.id && $.inArray(row.id, table.selected) === -1){
-                    table.selected.push(row.id)
+                if (row.id && $.inArray(row.id, table.selected) === -1) {
+                    table.selected.push(row.id);
+                    table.selected_rows.push(row);
                 }
             })
         }
@@ -634,14 +689,21 @@ jumpserver.initServerSideDataTable = function (options) {
                 if (row.id){
                     var index = table.selected.indexOf(row.id);
                     if (index > -1){
-                        table.selected.splice(index, 1)
+                        table.selected.splice(index, 1);
+                        table.selected_rows.splice(index, 1);
                     }
                 }
             })
         }
     }).on('draw', function(){
-        $('#op').html(options.op_html || '');
-        $('#uc').html(options.uc_html || '');
+        $('[data-toggle="popover"]').popover({
+            html: true,
+            placement: 'bottom',
+            trigger: 'click',
+            container: 'body'
+        }).on('click', function (e) {
+            $('[data-toggle="popover"]').not(this).popover('hide');
+        });
         var table_data = [];
         $.each(table.rows().data(), function (id, row) {
             if (row.id) {
@@ -655,9 +717,17 @@ jumpserver.initServerSideDataTable = function (options) {
                 table.rows(index).select()
             }
         });
+    }).on("init", function () {
+        $('#op').html(options.op_html || '');
+        $('#uc').html(options.uc_html || '');
+        $('#fb').html(options.fb_html || '');
+        $('#fa').html(options.fa_html || '');
     });
     var table_id = table.settings()[0].sTableId;
-    $('#' + table_id + ' .ipt_check_all').on('click', function() {
+    $('#' + table_id + ' .ipt_check_all').on('click', function () {
+        if (select_style !== 'multi') {
+            return
+        }
         if ($(this).prop("checked")) {
             $(this).closest('table').find('.ipt_check').prop('checked', true);
             table.rows({search:'applied', page:'current'}).select();
@@ -727,8 +797,7 @@ function createPopover(dataset, title, callback) {
         });
         dataset = new_dataset;
     }
-    var data_content = dataset.join("</br>");
-
+    var data_content = dataset.join("<br>");
     var html = "<a data-toggle='popover' data-content='" + data_content + "'>" + dataset.length + "</a>";
     return html;
 }

@@ -26,6 +26,7 @@ api_v1_patterns = [
         path('config/v1/', include('config.urls.api_urls', namespace='api-config')),
         path('cmis/v1/', include('cmis.urls.api_urls', namespace='api-cmis')),
         path('perms/rbac/v1/', include('rbac.urls.api_urls', namespace='api-rbac')),
+        path('backup/v1/', include('backup.urls.api_urls', namespace='api-backup')),
    ]))
 ]
 
@@ -50,6 +51,7 @@ app_view_patterns = [
     path('config/', include('config.urls.views_urls', namespace='config')),
     path('cmis/', include('cmis.urls.views_urls', namespace='cmis')),
     path('perms/rbac/', include('rbac.urls.views_urls', namespace='rbac')),
+    path('backup/', include('backup.urls.views_urls', namespace='backup')),
 ]
 
 

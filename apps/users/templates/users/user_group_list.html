@@ -22,7 +22,8 @@
 {% block content_bottom_left %}{% endblock %}
 {% block custom_foot_js %}
 <script>
-$(document).ready(function() {
+var groups_table = 0;
+function initTable() {
     var options = {
         ele: $('#group_list_table'),
         buttons: [],
@@ -33,6 +34,7 @@ $(document).ready(function() {
              }},
             {targets: 2, createdCell: function (td, cellData, rowData) {
                 var html = createPopover(cellData);
+                console.log(html)
                 $(td).html(html);
              }},
             {targets: 3, createdCell: function (td, cellData) {
@@ -58,7 +60,11 @@ $(document).ready(function() {
         order: [],
         op_html: $('#actions').html()
     };
-    jumpserver.initServerSideDataTable(options);
+    groups_table = jumpserver.initServerSideDataTable(options);
+    return groups_table
+}
+$(document).ready(function() {
+    initTable()
 
 }).on('click', '.btn_delete_user_group', function(){
     var $this = $(this);
