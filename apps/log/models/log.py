@@ -21,8 +21,8 @@ class Records(models.Model):
         return '{}{}'.format(self.path, self.name)
 
     class Meta:
-        verbose_name = '备份记录'
-        db_table = 'backup_records'
+        verbose_name = '日志记录'
+        db_table = 'log_records'
         unique_together = [('platform','path','name')]
 
 class RecordsTree(models.Model):
@@ -32,8 +32,8 @@ class RecordsTree(models.Model):
     date_create = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = '备份记录树'
-        db_table = 'backup_records_tree'
+        verbose_name = '日志记录树'
+        db_table = 'log_records_tree'
 
     @classmethod
     def get_tree_root(cls):
@@ -62,7 +62,6 @@ class RecordsTree(models.Model):
 
     def get_children(self):
         pattern = r'^{0}[A-Za-z0-9_-]+/$'
-        print(pattern.format(self.key))
         return self.__class__.objects.filter(
             key__regex=pattern.format(self.key)
         )

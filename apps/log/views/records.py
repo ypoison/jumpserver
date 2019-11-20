@@ -40,13 +40,13 @@ logger = get_logger(__file__)
 
 
 class RecordsView(LoginRequiredMixin, TemplateView):
-    template_name = 'backup/record_list.html'
+    template_name = 'log/record_list.html'
 
     def get_context_data(self, **kwargs):
         Node.root()
         context = {
-            'app': '备份管理',
-            'action': '备份记录',
+            'app': '日志管理',
+            'action': '日志记录',
             'labels': Label.objects.all().order_by('name'),
             'nodes': Node.objects.all().order_by('-key'),
         }

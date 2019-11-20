@@ -79,9 +79,9 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
 
         if req.get('ChargeType') == 'Dynamic':
             del req['Quantity']
-        if req.get('IsolationGroup', ''):
+        if req.pop('IsolationGroup', ''):
             data['IsolationGroup'] = req.get('IsolationGroup')
-        if req.get('Tag', ''):
+        if req.pop('Tag', ''):
             data['Tag'] = req.get('Tag')
         kw = {**req, **data}
         create_record = ChostCreateRecord.objects.create(
@@ -139,7 +139,7 @@ class CHostBulkCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
                     ImageId = image.get('id')
                     break
             if not ImageId:
-                form._errors[NON_FIELD_ERRORS] = form.error_class(['获取镜像信息失败,请检查该地区是否有改镜像。'])
+                form._errors[NON_FIELD_ERRORS] = form.error_class(['获取镜像信息失败,请检查该地区是否有该镜像。'])
                 return self.form_invalid(form)
         else:
             form._errors[NON_FIELD_ERRORS] = form.error_class(['获取镜像信息失败'])

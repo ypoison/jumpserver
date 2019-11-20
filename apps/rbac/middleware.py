@@ -11,7 +11,10 @@ from django.utils.deprecation import MiddlewareMixin
 from rbac.models import Menu, Permission2Group, Permission2User
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponse
+from django.core.cache import cache
+
 from common.utils import get_object_or_none
+from users.models import PrivateToken, User
 
 import re
 
@@ -32,6 +35,7 @@ white_list=[
     (r'^/api/audits/v1/ftp-log/$', ['GET','POST']),
 
     # 用户身份验证,
+    (r'^/api/users/v1/auth/$', ['GET', 'POST']),
     (r'^/users/logout/', ['GET']),
     (r'/users/profile/otp/enable/authentication/', ['GET', 'POST']),
     (r'/users/profile/otp/enable/install-app/', ['GET']),
@@ -97,14 +101,23 @@ def format_url(path, method):
 
 class UserAuth(MiddlewareMixin):
     def process_request(self, request):
-
+        #return None
         path = request.path
         user = request.user
         method = request.method
         referer = ''
+        auth_info = request.META.get('HTTP_AUTHORIZATION', '')
+        if auth_info and str(user) == 'AnonymousUser':
+            info_list = auth_info.split(' ')
+            auth_type = info_list[0]
+            key = info_list[1]
+            if auth_type == 'Token':
+                user = (get_object_or_none(PrivateToken, key=key).user)
+            elif auth_type == 'Bearer':
+                user_id = cache.get(key)
+                user = (get_object_or_none(User, id=user_id))
         if user.is_superuser:
             return None
-
         for per in white_list:
             regex = re.compile(
                 per[0],
@@ -112,6 +125,7 @@ class UserAuth(MiddlewareMixin):
             ret = regex.match(path)
             if ret and method in per[1]:
                 return None
+        
         if str(user) == 'AnonymousUser' and path != '/users/login/':
             return redirect('/users/login/')
         url_info = format_url(path, method)

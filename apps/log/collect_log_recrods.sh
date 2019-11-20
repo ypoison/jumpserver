@@ -14,4 +14,4 @@ done
 l=$(echo ${l}|sed 's/,$//')
 l='{"'platform'":"'${platform}'","'data'":['${l}']}'
 #echo ${l}
-curl -X POST -H 'Authorization: Token 700987c7e556d59521d61588881cbcc505a53ed2' -H "Content-Type:application/json" http://localhost/api/backup/v1/records/update/ -d ${l}
+curl -X POST -H 'Authorization: Token 700987c7e556d59521d61588881cbcc505a53ed2' -H "Content-Type:application/json" http://localhost/api/log/v1/records/update/ -d ${l}

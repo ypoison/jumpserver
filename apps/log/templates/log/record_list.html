@@ -70,12 +70,16 @@ function initTable() {
                 $(td).html(html);
              }},
             {targets: 4, createdCell: function (td, cellData, rowData) {
-                var update_btn = '<a href="{{ DEFAULT_PK }}" class="btn btn-xs btn-info">下载</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                if (cellData === 'None'){
+                    var update_btn = '<a href="{{ DEFAULT_PK }}" class="btn btn-xs btn-info" disabled>下载</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                } else{
+                    var update_btn = '<a href="{{ DEFAULT_PK }}" class="btn btn-xs btn-info">下载</a>'.replace("{{ DEFAULT_PK }}", cellData);
+                }
                 var del_btn = '<a class="btn btn-xs btn-default m-l-xs btn_asset_delete" data-uid="{{ DEFAULT_PK }}">共享</a>'.replace('{{ DEFAULT_PK }}', cellData);
                 $(td).html(update_btn + del_btn)
             }}
         ],
-        ajax_url: '{% url "api-backup:record-list" %}',
+        ajax_url: '{% url "api-log:record-list" %}',
         columns: [
             {data: "id"}, {data: "platform" }, {data: "name" },
             {data: "size"}, {data: "download_url", orderable: false }
@@ -95,7 +99,7 @@ function onSelected(event, treeNode) {
     console.log(url)
     url = setUrlParam(url, "show_current_asset", getCookie('show_current_asset'));
     console.log(url)
-    setCookie('backup_records_selected', treeNode.node_id);
+    setCookie('log_records_selected', treeNode.node_id);
     record_table.ajax.url(url);
     record_table.ajax.reload();
 }
@@ -104,9 +108,9 @@ function initTree() {
     if (zTree) {
         return
     }
-    var url = '{% url 'api-backup:records-platform-tree' %}';
-    //var showCurrentBackupRecords = getCookie('show_current_backup_records');
-    //if (!show_current_backup_records) {
+    var url = '{% url 'api-log:records-platform-tree' %}';
+    //var showCurrentlogRecords = getCookie('show_current_log_records');
+    //if (!show_current_log_records) {
     //    url += '1'
     //}
     var setting = {

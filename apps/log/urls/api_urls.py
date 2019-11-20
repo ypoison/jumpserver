@@ -4,7 +4,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 from .. import api
 
-app_name = 'backup'
+app_name = 'log'
 
 router = DefaultRouter()
 
