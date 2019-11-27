@@ -4,10 +4,36 @@
 
 {% block custom_head_css_js %}
     <link href="{% static 'css/plugins/ztree/awesomeStyle/awesome.css' %}" rel="stylesheet">
-{#    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">#}
     <script type="text/javascript" src="{% static 'js/plugins/ztree/jquery.ztree.all.min.js' %}"></script>
     <script src="{% static 'js/jquery.form.min.js' %}"></script>
-
+    <style type="text/css">
+        div#rMenu {
+            position:absolute;
+            visibility:hidden;
+            text-align: left;
+            {#top: 100%;#}
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            {#float: left;#}
+            padding: 0 0;
+            margin: 2px 0 0;
+            list-style: none;
+            background-clip: padding-box;
+         }
+        .dataTables_wrapper .dataTables_processing {
+            opacity: .9;
+            border: none;
+        }
+        div#rMenu li{
+            margin: 1px 0;
+            cursor: pointer;
+            list-style: none outside none;
+         }
+        .dropdown a:hover {
+            background-color: #f1f1f1
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -38,6 +64,7 @@
                            <th class="text-center">平台</th>
                            <th class="text-center">{% trans 'name' %}</th>
                            <th class="text-center">大小</th>
+                           <th class="text-center">更新时间</th>
                            <th class="text-center">{% trans 'Action' %}</th>
                        </tr>
                    </thead>
@@ -48,7 +75,11 @@
        </div>
    </div>
 </div>
-
+<div id="rMenu">
+    <ul class="dropdown-menu">
+        <li id="menu_refresh_record" class="btn-refresh-record" tabindex="-1"><a><i class="fa fa-refresh"></i> 更新节点日志信息</a></li>
+    </ul>
+</div>
 {% endblock %}
 
 {% block custom_foot_js %}
@@ -69,25 +100,61 @@ function initTable() {
                 var html = "<a data-toggle='popover' data-content='" + data_content + "'>" + cellData + "</a>";
                 $(td).html(html);
              }},
-            {targets: 4, createdCell: function (td, cellData, rowData) {
+            {targets: 4, createdCell: function (td, cellData) {
+                $(td).html(formatUTC(cellData))
+            }},
+            {targets: 5, createdCell: function (td, cellData, rowData) {
                 if (cellData === 'None'){
                     var update_btn = '<a href="{{ DEFAULT_PK }}" class="btn btn-xs btn-info" disabled>下载</a>'.replace("{{ DEFAULT_PK }}", cellData);
                 } else{
                     var update_btn = '<a href="{{ DEFAULT_PK }}" class="btn btn-xs btn-info">下载</a>'.replace("{{ DEFAULT_PK }}", cellData);
                 }
-                var del_btn = '<a class="btn btn-xs btn-default m-l-xs btn_asset_delete" data-uid="{{ DEFAULT_PK }}">共享</a>'.replace('{{ DEFAULT_PK }}', cellData);
-                $(td).html(update_btn + del_btn)
+                assetid=rowData['log_asset_id']
+                recordid=rowData['id']
+                var share_btn = '<a class="btn btn-xs btn-default m-l-xs btn_share" data-assetid="'+ assetid +'" data-id="'+ recordid +'">共享</a>';
+                $(td).html(update_btn + share_btn)
             }}
         ],
-        ajax_url: '{% url "api-log:record-list" %}',
+        ajax_url: '{% url "api-log-mis:record-list" %}',
         columns: [
             {data: "id"}, {data: "platform" }, {data: "name" },
-            {data: "size"}, {data: "download_url", orderable: false }
+            {data: "size"}, {data: "date_updated"}, {data: "download_url", orderable: false }
         ],
         op_html: $('#actions').html()
     };
     record_table = jumpserver.initServerSideDataTable(options);
     return record_table
+}
+
+function OnRightClick(event, treeId, treeNode) {
+    if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0) {
+        zTree.cancelSelectedNode();
+        showRMenu("root", event.clientX, event.clientY);
+    } else if (treeNode && !treeNode.noR) {
+        zTree.selectNode(treeNode);
+        showRMenu("node", event.clientX, event.clientY);
+    }
+}
+
+function showRMenu(type, x, y) {
+    $("#rMenu ul").show();
+    x -= 220;
+    x += document.body.scrollLeft;
+    y += document.body.scrollTop+document.documentElement.scrollTop;
+    rMenu.css({"top":y+"px", "left":x+"px", "visibility":"visible"});
+
+    $("body").bind("mousedown", onBodyMouseDown);
+}
+
+function hideRMenu() {
+    if (rMenu) rMenu.css({"visibility": "hidden"});
+    $("body").unbind("mousedown", onBodyMouseDown);
+}
+
+function onBodyMouseDown(event){
+    if (!(event.target.id === "rMenu" || $(event.target).parents("#rMenu").length>0)) {
+        rMenu.css({"visibility" : "hidden"});
+    }
 }
 
 function onSelected(event, treeNode) {
@@ -96,9 +163,7 @@ function onSelected(event, treeNode) {
     zTree.expandNode(current_node, true);
     var url = record_table.ajax.url();
     url = setUrlParam(url, "tree_id", current_node_id);
-    console.log(url)
     url = setUrlParam(url, "show_current_asset", getCookie('show_current_asset'));
-    console.log(url)
     setCookie('log_records_selected', treeNode.node_id);
     record_table.ajax.url(url);
     record_table.ajax.reload();
@@ -108,7 +173,7 @@ function initTree() {
     if (zTree) {
         return
     }
-    var url = '{% url 'api-log:records-platform-tree' %}';
+    var url = '{% url 'api-log-mis:records-platform-tree' %}';
     //var showCurrentlogRecords = getCookie('show_current_log_records');
     //if (!show_current_log_records) {
     //    url += '1'
@@ -133,41 +198,42 @@ function initTree() {
             type: 'get'
 		},
         callback: {
+            onRightClick: OnRightClick,
             onSelected: onSelected,
         }
     };
 
     var zNodes = [];
     zTree = $.fn.zTree.init($("#recordTree"), setting, zNodes);
+    rMenu = $("#rMenu");
 }
 
 $(document).ready(function(){
     initTable();
     initTree();
 })
-
-.on('click', '.btn-refresh-hardware', function () {
-    var url = "{% url 'api-assets:node-refresh-hardware-info' pk=DEFAULT_PK %}";
-    var the_url = url.replace("{{ DEFAULT_PK }}", current_node_id);
+.on('click', '.btn_share', function () {
+    var $this = $(this);
+    var id = $this.data('id');
+    var assetid=$this.data('assetid');
+    var the_url = '{% url "api-log-mis:log-share" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", id);
     function success(data) {
-        rMenu.css({"visibility" : "hidden"});
         var task_id = data.task;
         var url = '{% url "ops:celery-task-log" pk=DEFAULT_PK %}'.replace("{{ DEFAULT_PK }}", task_id);
         window.open(url, '', 'width=800,height=600')
-    }
-    APIUpdateAttr({
+    };
+    var body = {
+        'assetid': assetid
+    };
+    DyAPIUpdateAttr({
         url: the_url,
-        method: "GET",
-        success: success,
-        flash_message: false
+        method: "POST",
+        body: JSON.stringify(body),
+        success:success
     });
-
 })
-.on('click', '.btn-test-connective', function () {
-    var url = "{% url 'api-assets:node-test-connective' pk=DEFAULT_PK %}";
-    if (!current_node_id) {
-        return null;
-    }
+.on('click', '.btn-refresh-record', function () {
+    var url = "{% url 'api-log-mis:node-refresh-record-info' pk=DEFAULT_PK %}";
     var the_url = url.replace("{{ DEFAULT_PK }}", current_node_id);
     function success(data) {
         rMenu.css({"visibility" : "hidden"});

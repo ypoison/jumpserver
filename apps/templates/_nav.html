@@ -123,12 +123,12 @@
         <li id="app"><a href="{% url 'config:app-list' %}">应用配置</a></li>
     </ul>
 </li>
-<li id="log">
+<li id="log-mis">
     <a href="#">
         <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">日志管理</span><span class="fa arrow"></span>
     </a>
     <ul class="nav nav-second-level">
-        <li id="records"><a href="{% url 'log:record-list' %}">日志记录</a></li>
+        <li id="records"><a href="{% url 'log-mis:record-list' %}">日志记录</a></li>
     </ul>
 </li>
 {% if XPACK_PLUGINS %}

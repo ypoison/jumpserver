@@ -12,11 +12,13 @@ from common.permissions import IsValidUser
 
 from ..models import Records, RecordsTree
 from .. import serializers
+from ..tasks import share_log_util, update_node_log_record_util
 
-from assets.models import Node
+from assets.models import Node, Asset
 
 logger = get_logger(__file__)
-__all__ = ['RecordsViewSet','RecordsUpdateApi', 'RecordsPlatformAsTreeApi']
+__all__ = ['RecordsViewSet','RecordsUpdateApi', 'RecordsPlatformAsTreeApi',
+            'ShareApi','RefreshNodeRecordInfoApi',]
 
 class RecordsViewSet(IDInFilterMixin, BulkModelViewSet):
     filter_fields = ('name','path')
@@ -32,8 +34,12 @@ class RecordsViewSet(IDInFilterMixin, BulkModelViewSet):
             return queryset
 
         record_tree = get_object_or_404(RecordsTree, id=tree_id)
+        record_filter = record_tree.key.split('/',1)
+        platform = record_filter[0]
+        path = record_filter[1]
         queryset = queryset.filter(
-            path=record_tree.key,
+            platform=platform,
+            path=path,
         )
         return queryset
 
@@ -63,14 +69,14 @@ class RecordsUpdateApi(APIView):
         if data:
             for d in data:
                 name = d.pop('name')
-                path = d.pop('path')
+                path = d.pop('path').split('/',1)[1]
     
                 if path not in path_list:
                     path_list.append(path)
     
                 Records.objects.update_or_create(platform=platform,name=name,path=path, defaults=d)
             for path in path_list:
-                the_tree_list = path.split('/')[1:-1]
+                the_tree_list = path.split('/')[:-1]
                 n = len(the_tree_list)
                 for i in range(n):
                     p = '/'.join(the_tree_list[:n])
@@ -110,3 +116,32 @@ class RecordsPlatformAsTreeApi(generics.ListAPIView):
             queryset = RecordsTree.get_tree_root()
         queryset = [node.as_tree_node(self.is_root) for node in queryset]
         return queryset
+
+
+class ShareApi(APIView):
+    """
+    Test asset admin user assets_connectivity
+    """
+    #queryset = Asset.objects.all()
+    permission_classes = (IsValidUser,)
+    #serializer_class = serializers.TaskIDSerializer
+
+    def post(self, request, *args, **kwargs):
+        record_id = kwargs.get('pk')
+        asset_id = request.data['assetid']
+        record = get_object_or_404(Records, pk=record_id)
+        asset = get_object_or_404(Asset, pk=asset_id)
+        task = share_log_util.delay(asset,record)
+        #task = share_log_util(asset,record)
+        return Response({"task": task.id})
+
+class RefreshNodeRecordInfoApi(APIView):
+    permission_classes = (IsValidUser,)
+    model = RecordsTree
+    def get(self, request, *args, **kwargs):
+        node_id = kwargs.get('pk')
+        node = get_object_or_404(self.model, id=node_id)
+        log_asset = node.get_asset()
+        task_name = "Update node log record: {}".format(node.key)
+        task = update_node_log_record_util.delay(log_asset, node.value, task_name)
+        return Response({"task": task.id})

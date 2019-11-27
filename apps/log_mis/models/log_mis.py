@@ -4,6 +4,9 @@
 import uuid
 
 from django.db import models
+from django.shortcuts import get_object_or_404
+
+from assets.models import Asset
 
 __all__ = ['Records', 'RecordsTree']
 
@@ -14,8 +17,7 @@ class Records(models.Model):
     path = models.CharField(max_length=128,verbose_name='路径')
     md5 = models.CharField(max_length=128,verbose_name='MD5')
     size = models.CharField(max_length=10,verbose_name='大小')
-    comment = models.TextField(max_length=60, null=True, blank=True, verbose_name='备注')
-
+    date_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return '{}{}'.format(self.path, self.name)
@@ -38,7 +40,6 @@ class RecordsTree(models.Model):
     @classmethod
     def get_tree_root(cls):
         root = cls.objects.filter(key__regex=r'^[A-Za-z0-9_-]+/$')
-        print(root)
         if root:
             return root
 
@@ -65,3 +66,8 @@ class RecordsTree(models.Model):
         return self.__class__.objects.filter(
             key__regex=pattern.format(self.key)
         )
+
+    def get_asset(self):
+        platform = self.key.split('/')[0]
+        log_asset = get_object_or_404(Asset, hostname='{}-Backup'.format(platform))
+        return log_asset
