@@ -79,10 +79,10 @@ class CHostCreateView(LoginRequiredMixin, SuccessMessageMixin, FormView):
 
         if req.get('ChargeType') == 'Dynamic':
             del req['Quantity']
-        if req.pop('IsolationGroup', ''):
-            data['IsolationGroup'] = req.get('IsolationGroup')
-        if req.pop('Tag', ''):
-            data['Tag'] = req.get('Tag')
+        if not req.get('IsolationGroup', ''):
+            req.pop('IsolationGroup')
+        if not req.get('Tag', ''):
+            req.pop('Tag')
         kw = {**req, **data}
         create_record = ChostCreateRecord.objects.create(
             region=kw['Region'],
