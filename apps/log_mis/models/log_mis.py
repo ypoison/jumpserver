@@ -67,7 +67,10 @@ class RecordsTree(models.Model):
             key__regex=pattern.format(self.key)
         )
 
+    def get_platform(self):
+        return self.key.split('/')[0]
+
     def get_asset(self):
-        platform = self.key.split('/')[0]
+        platform = self.get_platform()
         log_asset = get_object_or_404(Asset, hostname='{}-Backup'.format(platform))
         return log_asset

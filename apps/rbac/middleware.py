@@ -134,11 +134,11 @@ class UserAuth(MiddlewareMixin):
             return redirect('/users/login/')
         url_info = format_url(path, method)
         if url_info:
-            user_menu_perms = get_object_or_none(Permission2User, target=request.user, menu__url=url_info['url'])
+            user_menu_perms = get_object_or_none(Permission2User, target=user, menu__url=url_info['url'])
             if user_menu_perms:
                 if url_info['action'] in user_menu_perms.action_list:
                     return None
-            for group in request.user.groups.all():
+            for group in user.groups.all():
                 group_menu_perms = get_object_or_none(Permission2Group, target=group, menu__url=url_info['url'])
                 if group_menu_perms:
                     if url_info['action'] in group_menu_perms.action_list:
@@ -155,13 +155,13 @@ class UserAuth(MiddlewareMixin):
                     referer_url = '/terminal/web-terminal/'
                 referer_url_info = format_url(referer_url, 'GET')
                 if referer_url_info:
-                    user_menu_perms = get_object_or_none(Permission2User, target=request.user,menu__url=referer_url_info['url'])
+                    user_menu_perms = get_object_or_none(Permission2User, target=user,menu__url=referer_url_info['url'])
                     if user_menu_perms:
 
                         if url_info['url'] in user_menu_perms.menu.assist_url_list:
                             if url_info['action'] in user_menu_perms.action_list:
                                 return None
-                    for group in request.user.groups.all():
+                    for group in user.groups.all():
                         group_menu_perms = get_object_or_none(Permission2Group, target=group,menu__url=referer_url_info['url'])
                         if group_menu_perms:
                             if url_info['url'] in group_menu_perms.menu.assist_url_list:

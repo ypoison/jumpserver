@@ -25,7 +25,7 @@ class RecordsSerializer(serializers.ModelSerializer):
             #node_id = get_object_or_none(Node,key__regex='^{0}:[0-9]+$'.format(platform.key), value='games').id
             #log_asset = get_object_or_none(Asset, nodes__id=node_id, hostname='{}-{}'.format(pf_code, game.name))
             log_asset = get_object_or_none(Asset, hostname='{}-Backup'.format(node_code))
-            return 'http://{}/log-mis/{}'.format(log_asset.public_ip,str(obj))
+            return 'http://{}:81/logmis/{}'.format(log_asset.public_ip,str(obj))
         except:
             return 'None'
     @staticmethod

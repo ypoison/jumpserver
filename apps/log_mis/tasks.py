@@ -6,12 +6,12 @@ def share_log_util(asset,record):
     from ops.inventory import JMSInventory
     from ops.ansible.runner import CommandRunner
     from assets.models import SystemUser
-    run_as = SystemUser.objects.get(username='app')
+    run_as = SystemUser.objects.get(name='%s-app' % record.platform)
     print('-'*10 + ' ' + 'Task start' + ' ' + '-'*10)
     inventory = JMSInventory([asset], run_as=run_as)
     runner = CommandRunner(inventory)
     try:
-        cmd = 'scp -P 1932 /data/backup/%s 35.220.239.195:/home/devadmin/logs' % str(record)
+        cmd = 'scp -P 1932 /data/backup/%s devadmin@35.220.239.195:/home/devadmin/logs' % str(record)
         result = runner.execute(cmd, 'all')
         result = result.results_command
     except Exception as e:
@@ -22,16 +22,19 @@ def share_log_util(asset,record):
     return True, ""
 
 @shared_task
-def update_node_log_record_util(asset, node, task_name):
+def update_node_log_record_util(node, task_name):
     from ops.inventory import JMSInventory
     from ops.ansible.runner import CommandRunner
     from assets.models import SystemUser
-    run_as = SystemUser.objects.get(username='app')
+
+    asset = node.get_asset()
+    platform = node.get_platform()
+    run_as = SystemUser.objects.get(name='%s-app' % platform)
     print('-'*10 + ' ' + task_name + ' ' + '-'*10)
     inventory = JMSInventory([asset], run_as=run_as)
     runner = CommandRunner(inventory)
     try:
-        cmd = '/data/scripts/Rsync_log.sh %s' % str(node)
+        cmd = '/data/scripts/Rsync_log.sh %s' % str(node.value)
         result = runner.execute(cmd, 'all')
         result = result.results_command
     except Exception as e:
@@ -40,4 +43,3 @@ def update_node_log_record_util(asset, node, task_name):
 
     print('-'*10 + ' ' + 'Task end' + ' ' + '-'*10)
     return True, ""
-

@@ -132,7 +132,6 @@ class ShareApi(APIView):
         record = get_object_or_404(Records, pk=record_id)
         asset = get_object_or_404(Asset, pk=asset_id)
         task = share_log_util.delay(asset,record)
-        #task = share_log_util(asset,record)
         return Response({"task": task.id})
 
 class RefreshNodeRecordInfoApi(APIView):
@@ -143,5 +142,5 @@ class RefreshNodeRecordInfoApi(APIView):
         node = get_object_or_404(self.model, id=node_id)
         log_asset = node.get_asset()
         task_name = "Update node log record: {}".format(node.key)
-        task = update_node_log_record_util.delay(log_asset, node.value, task_name)
+        task = update_node_log_record_util.delay(node, task_name)
         return Response({"task": task.id})
