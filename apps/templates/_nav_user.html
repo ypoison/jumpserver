@@ -8,6 +8,12 @@
         <div class="rect5"></div>
     </div>
 </div>
+<li id="dashboard">
+    <a href="{% url 'dashboard' %}">
+        <i class="fa fa-dashboard" style="width: 14px"></i> <span class="nav-label">{% trans 'Dashboard' %}</span>
+        <span class="label label-info pull-right"></span>
+    </a>
+</li>
 <li id="user-asset">
     <a href="{% url 'assets:user-asset-list' %}">
         <i class="fa fa-files-o" style="width: 14px"></i><span class="nav-label">{% trans 'My assets' %}</span><span class="label label-info pull-right"></span>

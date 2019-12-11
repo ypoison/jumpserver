@@ -31,10 +31,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
-        if not request.user.is_org_admin:
-            return redirect('assets:user-asset-list')
-        if not current_org or not current_org.can_admin_by(request.user):
-            return redirect('orgs:switch-a-org')
+        #if not request.user.is_org_admin:
+        #    return redirect('assets:user-asset-list')
+        #if not current_org or not current_org.can_admin_by(request.user):
+        #    return redirect('orgs:switch-a-org')
         return super(IndexView, self).dispatch(request, *args, **kwargs)
 
     @staticmethod

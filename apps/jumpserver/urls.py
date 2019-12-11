@@ -27,6 +27,7 @@ api_v1_patterns = [
         path('cmis/v1/', include('cmis.urls.api_urls', namespace='api-cmis')),
         path('perms/rbac/v1/', include('rbac.urls.api_urls', namespace='api-rbac')),
         path('log-mis/v1/', include('log_mis.urls.api_urls', namespace='api-log-mis')),
+        path('online/v1/', include('online.urls.api_urls', namespace='api-online')),
    ]))
 ]
 
@@ -52,6 +53,7 @@ app_view_patterns = [
     path('cmis/', include('cmis.urls.views_urls', namespace='cmis')),
     path('perms/rbac/', include('rbac.urls.views_urls', namespace='rbac')),
     path('log-mis/', include('log_mis.urls.views_urls', namespace='log-mis')),
+    path('online/', include('online.urls.views_urls', namespace='online')),
 ]
 
 
@@ -71,6 +73,8 @@ urlpatterns = [
     path('settings/', include('common.urls.view_urls', namespace='settings')),
     path('common/', include('common.urls.view_urls', namespace='common')),
     # path('api/v2/', include(api_v2_patterns)),
+
+    path('dashboard/system/', IndexView.as_view(), name='dashboard'),
 
     # External apps url
     path('captcha/', include('captcha.urls')),

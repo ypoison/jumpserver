@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'cmis.apps.CMisConfig',
     'rbac.apps.RBACConfig',
     'log_mis.apps.LogMisConfig',
+    'online.apps.OnlineConfig',
 
     'rest_framework',
     'rest_framework_swagger',

@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="panel-options">
+                    <ul class="nav nav-tabs">
+                        <li>
+                            <a href="{% url 'index' %}" class="text-center"><i class="fa fa-laptop"></i> 系统仪表盘 </a>
+                        </li>
+                        <li class="active">
+                            <a href="{% url 'online:dashboard' %}" class="text-center"><i class="fa fa-laptop"></i> 应用仪表盘 </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-success pull-right">Platform</span>
+                    <h5>平台总数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins"><a href="#">{{ platforms_count }}</a></h1>
+                    <small>All platform</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-info pull-right">Games</span>
+                    <h5>游戏总数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins"><a href="#">{{ games_count }}</a></h1>
+                    <small>All games</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">Online</span>
+                    <h5>在线数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins"><a href="#"></span>{{ online_user_count }}</a></h1>
+                    <small>Online</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-danger pull-right"> </span>
+                    <h5> </h5>
+
+                </div>
+                <div class="ibox-content">
+                        <h1 class="no-margins"><a href="#"> </a></h1>
+                    <small> </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3 border-bottom white-bg dashboard-header" style="margin-left:15px;height: 346px">
+            <ul class="nav nav-pills">
+                <li class="dropdown">
+                    <a id="select" class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding:0px;color:#322929">
+                        全部
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a id="all">全部</a>
+                        </li>
+                        {% for app in all_platform %}
+                        <li>
+                            <a id="{{ app.code }}">{{ app.value }}</a>
+                        </li>
+                        {%endfor%}
+                    </ul>
+                </li>
+            </ul>
+            <!--<div id="p_pie" style="height:300px;"></div>-->
+
+                <h2>平台在线数统计</h2>
+                <small> </small>
+                <ul id="top5" class="list-group clear-list m-t">
+                <h2>Top5</h2>
+                    {% for platform in top_platform %}
+                        <li class="list-group-item fist-item">
+                            <span class="pull-right">
+                                <span class="text-info">{{ platform.1 }}</span>在线
+                            </span>
+                            <span class="label ">{{ forloop.counter }}</span> <a  href="#">{{ platform.0 }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-sm-9 border-bottom white-bg dashboard-header" style="margin-left:-15px;height: 346px">
+                <div id="p_bar" style="height:346px;"></div>
+            </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_foot_js %}
+<script src="{% static 'js/plugins/echarts/echarts.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    require.config({
+        paths: {
+            'echarts': '/static/js/plugins/echarts/chart/',
+            'echarts/chart/bar': '/static/js/plugins/echarts/chart/bar',
+            'echarts/chart/line': '/static/js/plugins/echarts/chart/line'
+        }
+    });
+    require(
+        [
+            'echarts',
+            'echarts/chart/bar',
+            'echarts/chart/line'
+        ],
+        function (ec) {
+            platform_bar = ec.init(document.getElementById('p_bar'));
+            option = {
+                color: ['#3398DB'],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                //legend: {
+                //    data: ['物理机', 'VM']
+                //},
+            
+                //calculable: true,
+                grid: { // 控制图的大小，调整下面这些值就可以，
+                //  x: 40,
+                //  x2: 100,
+                    y2: 90,// y2可以控制 X轴跟Zoom控件之间的间隔，避免以为倾斜后造成 label重叠到zoom上
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        axisLabel:{interval:0,
+                                   rotate:-30
+                        },
+                        data: {{ platforms|safe }},
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value'
+                    }
+                ],
+                series: [
+                    {
+                        name: '最新在线数',
+                        type: 'bar',
+                        data: {{ bar_count|safe }}
+                    }
+                ]
+            }
+            platform_bar.setOption(option);
+        }
+    );
+
+    function barGetOption(xAxis, yAxis) {
+        var option = {
+            color: ['#3398DB'],
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+
+            grid: {
+                    y2: 90
+                },
+
+            xAxis: [
+                {
+                    type: 'category',
+                        axisLabel:{interval:0,
+                                   rotate:-30
+                        },
+                    data: xAxis,
+                }
+            ],
+
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: '最新在线数',
+                    type: 'line',
+                    data: yAxis,
+                }
+            ]
+        };
+        return option;
+    }
+    $(".dropdown-menu li a").click(function(){
+        var id = $(this).attr('id')
+        $("#select").html($(this).text()+'<b class="caret"></b>')
+        var the_url = "{% url 'api-online:dashboard-update' %}"
+
+        function success(data) {
+            platform_bar.setOption(barGetOption(data.xAxis, data.yAxis),true);
+            var li = ''
+            $.each(data.top,function(index,val){
+                index += 1
+                li += '<li class="list-group-item fist-item">\
+                <span class="pull-right"><span class="text-info">'+ val[1] +'</span>在线\
+                </span>\
+                <span class="label ">'+ index +'</span> <a  href="#">'+ val[0] +'</a></li>'
+            })
+            $("#top5").html(
+            '<h2>Top5</h2>' + li
+            );
+        }
+        
+        var body = {
+            'id': id
+        };
+        DyAPIUpdateAttr({
+            url: the_url,
+            method: "POST",
+            body: JSON.stringify(body),
+            success:success
+        });
+    });
+});
+    
+</script>
+
+{% endblock %}

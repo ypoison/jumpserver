@@ -76,6 +76,9 @@ def format_url(path, method):
             {
                 'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/))(?:[0-9a-z-]{36}|\d{1,4})(?:/refresh/$)',
                 'formatting_url': '%s/%s', 'method':['GET',]},
+            {
+                'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/))(?:update/$)',
+                'formatting_url': '%s/%s', 'method':['POST',]},
             {'rule': r'((?:/[0-9a-z-]*)+(?:(?:/[0-9a-z-]*){1,4}))+(?:/password|/pubkey)(?:/update/$)', 'formatting_url': '%s/', 'method':['PUT', 'PATCH','GET','POST']},
             {
                 'rule': r'(/[a-z-]*/[a-z-]*/)(?:(?:record/|gateway/)?)(?:[0-9a-z-]{36}|\d{1,4})(?:(?:/[a-z-]*/)?)(?:(?:[0-9a-z-]{36}|\d{1,4})?)(?:(?:/update|/rule|/user|/asset)?)(?:/$)',
