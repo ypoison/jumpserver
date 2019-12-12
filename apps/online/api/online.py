@@ -29,6 +29,6 @@ class OnlineNumberUpdateApi(APIView):
         platform_info = get_object_or_none(Node, code=platform)
         if not platform_info:
             return Response({"code": 0, "msg": "检查是否存在'{}'此平台！".format(platform)})
-        a=Online.objects.update_or_create(**req)
-        LatestOnline.objects.update_or_create(platform=req['platform'], defaults={'online_num':req['online_num']})
+        Online.objects.update_or_create(**req)
+        LatestOnline.objects.update_or_create(platform=req['platform'],date_updated=datetime.date.today(), defaults={'online_num':req['online_num']})
         return Response({"code": 1, "msg": "ok"}) 

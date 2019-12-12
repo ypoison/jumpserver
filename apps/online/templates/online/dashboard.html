@@ -71,7 +71,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-3 border-bottom white-bg dashboard-header" style="margin-left:15px;height: 346px">
+        <div class="col-sm-3 border-bottom white-bg dashboard-header" style="margin-left:15px;height: 367px">
             <ul class="nav nav-pills">
                 <li class="dropdown">
                     <a id="select" class="dropdown-toggle" data-toggle="dropdown" href="#" style="padding:0px;color:#322929">
@@ -106,8 +106,8 @@
                     {% endfor %}
                 </ul>
             </div>
-            <div class="col-sm-9 border-bottom white-bg dashboard-header" style="margin-left:-15px;height: 346px">
-                <div id="p_bar" style="height:346px;"></div>
+            <div class="col-sm-9 border-bottom white-bg dashboard-header" style="margin-left:-15px;height: 367px">
+                <div id="p_line" style="height:346px;"></div>
             </div>
 
     </div>
@@ -122,99 +122,79 @@ $(document).ready(function(){
     require.config({
         paths: {
             'echarts': '/static/js/plugins/echarts/chart/',
-            'echarts/chart/bar': '/static/js/plugins/echarts/chart/bar',
             'echarts/chart/line': '/static/js/plugins/echarts/chart/line'
         }
     });
     require(
         [
             'echarts',
-            'echarts/chart/bar',
             'echarts/chart/line'
         ],
         function (ec) {
-            platform_bar = ec.init(document.getElementById('p_bar'));
+            platform_bar = ec.init(document.getElementById('p_line'));
             option = {
-                color: ['#3398DB'],
-                tooltip: {
+                tooltip : {
                     trigger: 'axis',
-                    axisPointer: {
-                        type: 'shadow'
+                },
+                backgroundColor: '#fff',
+                legend: {
+                    data:{{ legend|safe }},
+                },
+                toolbox: {
+                    show : false,
+                    feature: {
+                        magicType : {show: true, type: ['line', 'bar']}
                     }
                 },
-                //legend: {
-                //    data: ['物理机', 'VM']
-                //},
-            
-                //calculable: true,
-                grid: { // 控制图的大小，调整下面这些值就可以，
-                //  x: 40,
-                //  x2: 100,
-                    y2: 90,// y2可以控制 X轴跟Zoom控件之间的间隔，避免以为倾斜后造成 label重叠到zoom上
-                },
-                xAxis: [
+                calculable : true,
+                xAxis : [
                     {
-                        type: 'category',
-                        axisLabel:{interval:0,
-                                   rotate:-30
-                        },
-                        data: {{ platforms|safe }},
+                        type : 'category',
+                        boundaryGap : false,
+                        data : {{ xAxis|safe }}
                     }
                 ],
-                yAxis: [
+                yAxis : [
                     {
-                        type: 'value'
+                        type : 'value'
                     }
                 ],
-                series: [
-                    {
-                        name: '最新在线数',
-                        type: 'bar',
-                        data: {{ bar_count|safe }}
-                    }
-                ]
-            }
+                series : {{ series|safe }}
+            };
             platform_bar.setOption(option);
         }
     );
 
-    function barGetOption(xAxis, yAxis) {
+    function lineGetOption(legend, xAxis, series) {
         var option = {
-            color: ['#3398DB'],
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'shadow'
-                }
-            },
-
-            grid: {
-                    y2: 90
+                tooltip : {
+                    trigger: 'axis',
                 },
-
-            xAxis: [
-                {
-                    type: 'category',
-                        axisLabel:{interval:0,
-                                   rotate:-30
-                        },
-                    data: xAxis,
-                }
-            ],
-
-            yAxis: [
-                {
-                    type: 'value'
-                }
-            ],
-            series: [
-                {
-                    name: '最新在线数',
-                    type: 'line',
-                    data: yAxis,
-                }
-            ]
-        };
+                backgroundColor: '#fff',
+                legend: {
+                    data:legend,
+                },
+                toolbox: {
+                    show : false,
+                    feature: {
+                        magicType : {show: true, type: ['line', 'bar']}
+                    }
+                },
+                calculable : true,
+                xAxis : [
+                    {
+                        type : 'category',
+                        boundaryGap : false,
+                        data : xAxis
+                    }
+                ],
+                yAxis : [
+                    {
+                        type : 'value'
+                    }
+                ],
+                series : series
+            };
         return option;
     }
     $(".dropdown-menu li a").click(function(){
@@ -223,7 +203,7 @@ $(document).ready(function(){
         var the_url = "{% url 'api-online:dashboard-update' %}"
 
         function success(data) {
-            platform_bar.setOption(barGetOption(data.xAxis, data.yAxis),true);
+            platform_bar.setOption(lineGetOption(data.legend, data.xAxis, data.series),true);
             var li = ''
             $.each(data.top,function(index,val){
                 index += 1

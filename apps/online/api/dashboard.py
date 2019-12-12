@@ -20,23 +20,30 @@ class DashboardUpdateApi(APIView):
     permission_classes = (IsValidUser,)
 
     @staticmethod
-    def get_bar(platform_code):
+    def get_line(platform_code):
+        dates, legend, data = DashboardView().get_legend()
         time_list = []
-        bar_count = []
-        ret_dict = {}
-        online_data = Online.objects.filter(platform=platform_code, time__gte=datetime.date.today()).order_by('time')
-        for p in online_data:
-            time = p.time.astimezone(timezone(settings.TIME_ZONE)).strftime("%H")
-            ret_dict[time] = p.online_num
-        for t,c in ret_dict.items():
-            time_list.append(t)
-            bar_count.append(c)
-        return (time_list,bar_count)
+        for h in range(24):
+            time_list.append(h)
+            for date in dates:
+                start = date.replace(hour=h, minute=0,second=0,microsecond=0)
+                stop = date.replace(hour=h, minute=59,second=59,microsecond=999999)
+                online_data = Online.objects.filter(platform=platform_code, time__range=[start,stop]).order_by('-time')
+                if online_data:
+                    online_num = online_data[0].online_num
+                else:
+                    online_num = 0
+                data[str(date.date())].append(online_num)
+        series = []
+        for date,online_num_list in data.items():
+            series.append({'name':date,'type':'line','itemStyle': {'normal': {'areaStyle': {'type': 'default'}}},'data':online_num_list})
+        return (legend, time_list, series)
 
     @staticmethod
     def get_top(platform_code):
         ret_dict = {}
-        online_data = Online.objects.filter(platform=platform_code, time__gte=datetime.date.today()).order_by('-online_num')[:5]
+        today = datetime.datetime.now(timezone(settings.TIME_ZONE)).date()
+        online_data = Online.objects.filter(platform=platform_code, time__gte=today).order_by('-online_num')[:5]
         for p in online_data:
             time = p.time.astimezone(timezone(settings.TIME_ZONE)).strftime("%H")
             ret_dict[time] = p.online_num
@@ -49,13 +56,14 @@ class DashboardUpdateApi(APIView):
         if platform_code == 'all':
             dashboard_view = DashboardView()
             top = dashboard_view.get_top_platform()
-            platforms, bar_count = dashboard_view.get_bar()
+            legend, xAxis, series = dashboard_view.get_line()
         else:
-            platforms, bar_count = self.get_bar(platform_code)
+            legend, xAxis, series  = self.get_line(platform_code)
             top = self.get_top(platform_code)
         context = {
-            'xAxis': platforms,
-            'yAxis':bar_count,
+            'legend': legend,
+            'xAxis': xAxis,
+            'series': series,
             'top': top,
             }
 

@@ -28,7 +28,7 @@ class LatestOnline(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     platform = models.CharField(max_length=20, verbose_name='平台')
     online_num = models.IntegerField(verbose_name='在线数')
-    date_updated = models.DateTimeField(auto_now=True)
+    date_updated = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return '{}:{}'.format(self.platform, self.online_num)
@@ -36,7 +36,7 @@ class LatestOnline(models.Model):
     class Meta:
         verbose_name = '最新在线人数'
         db_table = 'online_latest_number'
-        unique_together = [('platform',)]
+        unique_together = [('platform', 'date_updated')]
 
     @property
     def get_platform_value(self):
