@@ -9,10 +9,10 @@
                 <div class="panel-options">
                     <ul class="nav nav-tabs">
                         <li>
-                            <a href="{% url 'index' %}" class="text-center"><i class="fa fa-laptop"></i> 系统仪表盘 </a>
+                            <a href="{% url 'dashboard-system' %}" class="text-center"><i class="fa fa-laptop"></i> 系统仪表盘 </a>
                         </li>
                         <li class="active">
-                            <a href="{% url 'online:dashboard' %}" class="text-center"><i class="fa fa-laptop"></i> 应用仪表盘 </a>
+                            <a href="{% url 'dashboard-online' %}" class="text-center"><i class="fa fa-laptop"></i> 应用仪表盘 </a>
                         </li>
                     </ul>
                 </div>
@@ -78,7 +78,7 @@
                         全部
                         <b class="caret"></b>
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu platform-menu">
                         <li>
                             <a id="all">全部</a>
                         </li>
@@ -150,6 +150,9 @@ $(document).ready(function(){
                 xAxis : [
                     {
                         type : 'category',
+                        axisLabel:{interval:0,
+                            rotate:-30
+                        },
                         boundaryGap : false,
                         data : {{ xAxis|safe }}
                     }
@@ -184,6 +187,9 @@ $(document).ready(function(){
                 xAxis : [
                     {
                         type : 'category',
+                        axisLabel:{interval:0,
+                            rotate:-30
+                        },
                         boundaryGap : false,
                         data : xAxis
                     }
@@ -197,7 +203,7 @@ $(document).ready(function(){
             };
         return option;
     }
-    $(".dropdown-menu li a").click(function(){
+    $(".platform-menu li a").click(function(){
         var id = $(this).attr('id')
         $("#select").html($(this).text()+'<b class="caret"></b>')
         var the_url = "{% url 'api-online:dashboard-update' %}"
@@ -221,9 +227,8 @@ $(document).ready(function(){
             'id': id
         };
         DyAPIUpdateAttr({
-            url: the_url,
-            method: "POST",
-            body: JSON.stringify(body),
+            url: the_url+'?id='+id,
+            method: "GET",
             success:success
         });
     });

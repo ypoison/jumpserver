@@ -50,8 +50,8 @@ class DashboardUpdateApi(APIView):
         top_platform_list = list((t,n) for t,n in ret_dict.items())
         return top_platform_list
 
-    def post(self, request, *args, **kwargs):
-        req = self.request.data
+    def get(self, request, *args, **kwargs):
+        req = self.request.GET
         platform_code = req['id']
         if platform_code == 'all':
             dashboard_view = DashboardView()

@@ -19,7 +19,8 @@ from ..check_gfw import CheckGFW
 logger = get_logger(__file__)
 __all__ = ['AccountViewSet', 'DomainNameViewSet', 'RecordsViewSet',
          'DomainNameNetAPIUpdateApi', 'DomainNameRecordUpdateApi', 
-         'DomainNameBeiAnCheckApi', 'DomainNameGFWCheckApi', 'RecordsNetAPIUpdateApi']
+         'DomainNameBeiAnCheckApi', 'DomainNameGFWCheckApi', 
+         'RecordsNetAPIUpdateApi', 'RecordCreateOrModifyApi']
 GetDomainName=DomainNameApi()
 BeiAnCheck=beian()
 GFWCheck = CheckGFW()
@@ -139,7 +140,7 @@ class RecordsViewSet(BulkModelViewSet):
         try:
             req = request.data.copy()
             domain_name = req.get('domain_name')
-            domain = DomainName.objects.get(domain_name=domain_name)
+            domain =  get_object_or_none(DomainName,domain_name=domain_name)
 
             req['domain_name'] = domain.id
             serializer = self.serializer_class(data=req)
@@ -186,6 +187,53 @@ class DomainNameRecordUpdateApi(generics.UpdateAPIView):
                 return Response({'error': set_status['message']}, status=400)
         else:
             return Response({'error': serializer.errors}, status=400)
+
+class RecordCreateOrModifyApi(generics.CreateAPIView):
+    permission_classes = (IsValidUser,)
+    serializer_class = serializers.RecordsSerializer
+
+    def create(self, request, *args, **kwargs):
+        try:
+            req = request.data.copy()
+            domain_name = req.get('domain_name')
+            type_choices = dict(Records.TYPE_CHOICES)
+            line_choices = dict(Records.LINE_CHOICES)
+            
+            domain = get_object_or_none(DomainName,domain_name=domain_name)
+            record_type = list (type_choices.keys()) [list (type_choices.values()).index (req['type'])]
+            record_line = list (line_choices.keys()) [list (line_choices.values()).index (req['line'])]
+
+            req['domain_name'] = domain.id
+            req['type'] = record_type
+            req['line'] = record_line
+
+            serializer = self.serializer_class(data=req)
+            if serializer.is_valid():
+                req['domain_name'] = domain
+                record = get_object_or_none(Records, domain_name=domain,type=req['type'],rr=req['rr'],line=req['line'])
+                if record:
+                    record.value =  req['value']
+                    update_record = GetDomainName.record_modify(record)
+                    if update_record['code']:
+                        record.save()
+                    else:
+                        return Response({'error': update_record['message']}, status=400)
+                else:
+                    record = Records(domain_name=domain,type=req['type'],rr=req['rr'],line=req['line'],value=req['value'])
+                    add_record = GetDomainName.record_create(record)
+                    if add_record['code']:
+                        add_record = add_record['message']
+                        record = record[0]
+                        record.record_id = add_record['RecordId']
+                        record.save()
+                    else:
+                        return Response({'error': add_record['message']}, status=400)
+                return Response({'msg': 'success'}, status=200)
+            else:
+                return Response({'error':serializer.errors}, status=400)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
 
 class RecordsNetAPIUpdateApi(APIView):
     permission_classes = ( IsValidUser,)

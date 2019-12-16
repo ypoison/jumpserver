@@ -58,7 +58,10 @@ def format_url(path, method):
             {'rule': r'(/api/ops/v1/command-executions/)', 'formatting_url': '%s', 'method':['POST']},
             {'rule': r'(/users/profile/)(?:otp/enable/bind/$)', 'formatting_url': '%s', 'method':['POST']},
             {'rule': r'(/[a-z-]*/[a-z-]*/)(?:import/)', 'formatting_url': '%s', 'method':['POST']},
-            {'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:create/[0-9a-z-/]*)(?:/$)','formatting_url': '%s/%s', 'method':['POST']},
+            {
+                'rule': r'(?:(?:/api)(/[0-9a-z-]*)(?:/v1/)([0-9a-z-]*/)(?:[0-9a-z-]*/){0,3})(?:create/[0-9a-z-/]*|modify_or_create)(?:/$)',
+                'formatting_url': '%s/%s', 'method':['POST']
+            },
             {'rule': r'(/(?:[a-z-]*/){1,4})(?:create/$)', 'formatting_url': '%s', 'method':['GET', 'POST']},
             {'rule': r'(/[0-9a-z-]*/[0-9a-z-]*)(?:/[0-9a-z-/]*/create/[0-9a-z-/]*)', 'formatting_url': '%s/', 'method':['GET','POST']},
         ),

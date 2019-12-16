@@ -9,6 +9,7 @@ from django.views.i18n import JavaScriptCatalog
 
 from .views import IndexView, LunaView, I18NView
 from .swagger import get_swagger_view
+from online.views import DashboardView
 
 
 api_v1_patterns = [
@@ -74,7 +75,8 @@ urlpatterns = [
     path('common/', include('common.urls.view_urls', namespace='common')),
     # path('api/v2/', include(api_v2_patterns)),
 
-    path('dashboard/system/', IndexView.as_view(), name='dashboard'),
+    path('dashboard/system/', IndexView.as_view(), name='dashboard-system'),
+    path('dashboard/online/', DashboardView.as_view(), name='dashboard-online'),
 
     # External apps url
     path('captcha/', include('captcha.urls')),

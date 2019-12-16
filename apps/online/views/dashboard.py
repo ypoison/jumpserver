@@ -25,8 +25,15 @@ logger = get_logger(__file__)
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'online/dashboard.html'
     days = 7
-    today = datetime.datetime.now(timezone(settings.TIME_ZONE)).replace(hour=0, minute=0,second=0,microsecond=0)
-    seven_day_latest_online = LatestOnline.objects.filter(date_updated__gte=today-datetime.timedelta(days=days))
+
+    @property
+    def today(self):
+        return datetime.datetime.now(timezone(settings.TIME_ZONE)).replace(hour=0, minute=0,second=0,microsecond=0)
+
+    @property
+    def seven_day_latest_online(self):
+        seven_day_latest_online = LatestOnline.objects.filter(date_updated__gte=self.today-datetime.timedelta(days=self.days))
+        return seven_day_latest_online
 
     @staticmethod
     def get_all_platform():
