@@ -69,6 +69,10 @@ class DomainNameApi:
                         line = 'unicom'
                     elif record['line_id'] == '10=2':
                         line = 'mobile'
+                    elif record['line_id'] == '3=0':
+                        line = 'oversea'
+                    elif record['line_id'] == '7=0':
+                        line = 'domestic'
                     if record['enabled'] == '1':
                         status = 'ENABLE'
                     else:

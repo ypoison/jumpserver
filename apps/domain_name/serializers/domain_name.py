@@ -23,7 +23,7 @@ class DomainNameSerializer(serializers.ModelSerializer):
 class RecordsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Records
-        fields = ['id','domain_name','type','rr','line','value','priority','ttl','status','locked','comment']
+        fields = ['id','domain_name','type','rr','line','line_display','value','priority','ttl','status','locked','comment']
 
 class RecordStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:

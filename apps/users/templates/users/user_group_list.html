@@ -59,6 +59,7 @@ function initTable() {
              }},
             {targets: 2, createdCell: function (td, cellData, rowData) {
                 var html = createPopover(cellData);
+                console.log(html)
                 $(td).html(html);
              }},
             {targets: 3, createdCell: function (td, cellData) {

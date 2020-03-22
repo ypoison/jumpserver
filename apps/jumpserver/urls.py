@@ -11,6 +11,7 @@ from django.views.i18n import JavaScriptCatalog
 from . import views
 from .celery_flower import celery_flower_view
 from .swagger import get_swagger_view
+from online.views import DashboardView
 
 api_v1 = [
    path('users/', include('users.urls.api_urls', namespace='api-users')),
@@ -29,6 +30,8 @@ api_v1 = [
    path('config/', include('config.urls.api_urls', namespace='api-config')),
    path('cmis/', include('cmis.urls.api_urls', namespace='api-cmis')),
    path('perms/rbac/', include('rbac.urls.api_urls', namespace='api-rbac')),
+   path('log-mis/', include('log_mis.urls.api_urls', namespace='api-log-mis')),
+   path('online/', include('online.urls.api_urls', namespace='api-online')),
 ]
 
 api_v2 = [
@@ -51,6 +54,8 @@ app_view_patterns = [
     path('config/', include('config.urls.views_urls', namespace='config')),
     path('cmis/', include('cmis.urls.views_urls', namespace='cmis')),
     path('perms/rbac/', include('rbac.urls.views_urls', namespace='rbac')),
+    path('log-mis/', include('log_mis.urls.views_urls', namespace='log-mis')),
+    path('online/', include('online.urls.views_urls', namespace='online')),
 
     path('applications/', include('applications.urls.views_urls', namespace='applications')),
     re_path(r'flower/(?P<path>.*)', celery_flower_view, name='flower-view'),
@@ -80,6 +85,9 @@ urlpatterns = [
     re_path('ws/.*', views.WsView.as_view(), name='ws-view'),
     path('i18n/<str:lang>/', views.I18NView.as_view(), name='i18n-switch'),
     path('settings/', include('settings.urls.view_urls', namespace='settings')),
+
+    path('dashboard/system/', IndexView.as_view(), name='dashboard-system'),
+    path('dashboard/online/', DashboardView.as_view(), name='dashboard-online'),
 
     # External apps url
     path('captcha/', include('captcha.urls')),

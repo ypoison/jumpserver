@@ -75,6 +75,8 @@ INSTALLED_APPS = [
     'config.apps.ConfigConfig',
     'cmis.apps.CMisConfig',
     'rbac.apps.RBACConfig',
+    'log_mis.apps.LogMisConfig',
+    'online.apps.OnlineConfig',
 
     'applications.apps.ApplicationsConfig',
     'rest_framework',

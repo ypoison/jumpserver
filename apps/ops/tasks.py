@@ -140,3 +140,19 @@ def add_m(x):
         s.append(add.s(i))
     res = chain(*tuple(s))()
     return res
+
+@shared_task
+@register_as_period_task(interval=3600*24)
+def clean_log_mis_and_online_record():
+    logger.debug("Start clean task log mis and online")
+    import datetime
+    from pytz import timezone
+
+    from log_mis.models import Records
+    from online.models import LatestOnline, Online
+
+    today = datetime.datetime.now(timezone(settings.TIME_ZONE)).replace(hour=0, minute=0,second=0,microsecond=0)
+
+    Records.objects.filter(date_updated__lt=today-datetime.timedelta(days=7)).delete()
+    Online.objects.filter(date_updated__lt=today-datetime.timedelta(days=7)).delete()
+    LatestOnline.objects.filter(date_updated__lt=today-datetime.timedelta(days=7)).delete()

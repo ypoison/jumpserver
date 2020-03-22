@@ -8,6 +8,12 @@
         <div class="rect5"></div>
     </div>
 </div>
+<li id="dashboard">
+    <a href="{% url 'dashboard-system' %}">
+        <i class="fa fa-dashboard" style="width: 14px"></i> <span class="nav-label">{% trans 'Dashboard' %}</span>
+        <span class="label label-info pull-right"></span>
+    </a>
+</li>
 <li id="user-asset">
     <a href="{% url 'assets:user-asset-list' %}">
         <i class="fa fa-files-o" style="width: 14px"></i><span class="nav-label">{% trans 'My assets' %}</span><span class="label label-info pull-right"></span>
@@ -98,5 +104,13 @@
     </ul>
     <ul class="nav nav-second-level">
         <li id="app"><a href="{% url 'config:app-list' %}">应用配置</a></li>
+    </ul>
+</li>
+<li id="log-mis">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">日志管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="records"><a href="{% url 'log-mis:record-list' %}">日志记录</a></li>
     </ul>
 </li>

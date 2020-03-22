@@ -95,7 +95,8 @@ class Records(OrgModelMixin):
         ('telecom', '电信'),
         ('unicom', '联通'),
         ('mobile', '移动'),
-        ('oversea', '海外'),
+        ('domestic', '境内'),
+        ('oversea', '境外'),
         ('edu', '教育网'),
         ('drpeng', '鹏博士'),
         ('btvn', '广电网'),
@@ -120,3 +121,7 @@ class Records(OrgModelMixin):
 
     def __str__(self):
         return '%s.%s' % (self.rr, self.domain_name)
+
+    @property
+    def line_display(self):
+        return self.get_line_display()
