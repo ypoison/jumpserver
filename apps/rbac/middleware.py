@@ -14,7 +14,8 @@ from django.http import HttpResponse
 from django.core.cache import cache
 
 from common.utils import get_object_or_none
-from users.models import PrivateToken, User
+from users.models import User
+from authentication.models import PrivateToken
 
 import re
 
