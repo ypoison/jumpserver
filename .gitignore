@@ -34,10 +34,8 @@ data/static
 docs/_build/
 xpack
 logs/*
-<<<<<<< HEAD
-migrations/
+migrations/0*
 __pycache__
-=======
+
 ### Vagrant ###
 .vagrant/
->>>>>>> pr/4
