@@ -6,7 +6,8 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.views import APIView, Response
 from django.shortcuts import get_object_or_404
 
-from common.mixins import IDInFilterMixin
+from orgs.mixins.api import OrgBulkModelViewSet
+
 from common.utils import get_logger, get_object_or_none
 from common.permissions import IsValidUser
 
@@ -20,7 +21,7 @@ logger = get_logger(__file__)
 __all__ = ['RecordsViewSet','RecordsUpdateApi', 'RecordsPlatformAsTreeApi',
             'ShareApi','RefreshNodeRecordInfoApi',]
 
-class RecordsViewSet(IDInFilterMixin, BulkModelViewSet):
+class RecordsViewSet(OrgBulkModelViewSet):
     filter_fields = ('name','path')
     search_fields = filter_fields
     queryset = Records.objects.all()

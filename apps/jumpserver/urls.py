@@ -86,7 +86,7 @@ urlpatterns = [
     path('i18n/<str:lang>/', views.I18NView.as_view(), name='i18n-switch'),
     path('settings/', include('settings.urls.view_urls', namespace='settings')),
 
-    path('dashboard/system/', IndexView.as_view(), name='dashboard-system'),
+    path('dashboard/system/', views.IndexView.as_view(), name='dashboard-system'),
     path('dashboard/online/', DashboardView.as_view(), name='dashboard-online'),
 
     # External apps url
