@@ -61,7 +61,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         dates, legend, data = self.get_legend()
         platform_list = []
         p_code_list = []
-        for p_code in self.seven_day_latest_online.filter(date_updated=self.today-datetime.timedelta(days=1)):
+        for p_code in self.seven_day_latest_online.filter(date_updated=self.today) or self.seven_day_latest_online.filter(date_updated=self.today-datetime.timedelta(days=1)):
             p_code_list.append(p_code.platform)
             platform_list.append(p_code.get_platform_value)
 

@@ -21,30 +21,30 @@ import re
 
 white_list=[
     #xshell
-    (r'^/api/users/v1/auth/', ['GET']),
+    (r'^/api/v1/users/auth/', ['GET']),
 
     #luna,
     (r'^/[0-9a-z-/]*/terminal/[0-9a-z-/]*', ['POST','PATCH']),
-    (r'^/api/assets/v1/domain/[0-9a-z-]{36}/$', ['GET']),
-    (r'^/api/assets/v1/assets/[0-9a-z-]{36}/$', ['GET']),
-    (r'^/api/assets/v1/system-user/[0-9a-z-]{36}[/auth-info/$|/$]', ['GET']),
-    (r'^/api/perms/v1/asset-permission/user/validate/[0-9a-z-/]*', ['GET']),
-    (r'^/api/perms/v1/user/[0-9a-z-]{36}/nodes-assets/', ['GET']),
+    (r'^/api/v1/assets/domain/[0-9a-z-]{36}/$', ['GET']),
+    (r'^/api/v1/assets/assets/[0-9a-z-]{36}/$', ['GET']),
+    (r'^/api/v1/assets/system-user/[0-9a-z-]{36}[/auth-info/$|/$]', ['GET']),
+    (r'^/api/v1/perms/asset-permission/user/validate/[0-9a-z-/]*', ['GET']),
+    (r'^/api/v1/perms/user/[0-9a-z-]{36}/nodes-assets/', ['GET']),
 
     #ftp,
-    (r'^/api/perms/v1/user/[0-9a-z-]{36}/assets/$', ['GET']),
-    (r'^/api/audits/v1/ftp-log/$', ['GET','POST']),
+    (r'^/api/v1/perms/user/[0-9a-z-]{36}/assets/$', ['GET']),
+    (r'^/api/v1/audits/ftp-log/$', ['GET','POST']),
 
     # 用户身份验证,
-    (r'^/api/users/v1/auth/$', ['GET', 'POST']),
+    (r'^/api/v1/users/auth/$', ['GET', 'POST']),
     (r'^/users/logout/', ['GET']),
     (r'/users/profile/otp/enable/authentication/', ['GET', 'POST']),
     (r'/users/profile/otp/enable/install-app/', ['GET']),
     (r'^/users/first-login/$', ['GET', 'POST']),
 
-    (r'^/api/users/v1/profile/$', ['GET']),
+    (r'^/api/v1/users/profile/$', ['GET']),
     (r'^/ops/celery/task/[0-9a-z-]{36}/log/', ['GET']),
-    (r'^/api/ops/v1/celery/task/[0-9a-z-]{36}/log/', ['GET']),
+    (r'^/api/v1/ops/celery/task/[0-9a-z-]{36}/log/', ['GET']),
     (r'^/{1}$', ['GET']),
     (r'^/users/login/*', ['GET','POST']),
     (r'/admin/*', ['GET']),
@@ -56,7 +56,7 @@ white_list=[
 def format_url(path, method):
     rules = {
         'add': (
-            {'rule': r'(/api/ops/v1/command-executions/)', 'formatting_url': '%s', 'method':['POST']},
+            {'rule': r'(/api/v1/ops/command-executions/)', 'formatting_url': '%s', 'method':['POST']},
             {'rule': r'(/users/profile/)(?:otp/enable/bind/$)', 'formatting_url': '%s', 'method':['POST']},
             {'rule': r'(/[a-z-]*/[a-z-]*/)(?:import/)', 'formatting_url': '%s', 'method':['POST']},
             {

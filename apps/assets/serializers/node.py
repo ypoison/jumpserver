@@ -20,7 +20,7 @@ class NodeSerializer(BulkOrgResourceModelSerializer):
 
     class Meta:
         model = Node
-        only_fields = ['id', 'key', 'value', 'org_id']
+        only_fields = ['id', 'key', 'value', 'org_id', 'code']
         fields = only_fields + ['name', 'full_value']
         read_only_fields = ['key', 'org_id']
 
