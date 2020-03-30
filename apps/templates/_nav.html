@@ -72,6 +72,44 @@
 </li>
 {% endif %}
 
+{# Domain Name #}
+{% if request.user.can_admin_current_org %}
+<li id="domain-name">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">域名管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level active">
+        <li id="domain-name"><a href="{% url 'domain-name:domain-name-list' %}">域名列表</a></li>
+    </ul>
+    <ul class="nav nav-second-level active">
+        <li id="account"><a href="{% url 'domain-name:account-list' %}">账号管理</a></li>
+    </ul>
+</li>
+{% endif %}
+
+{# Config #}
+{% if request.user.can_admin_current_org %}
+<li id="config">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">配置管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="node-config"><a href="{% url 'config:node-config-list' %}">节点配置</a></li>
+    </ul>
+    <ul class="nav nav-second-level">
+        <li id="app"><a href="{% url 'config:app-list' %}">应用配置</a></li>
+    </ul>
+</li>
+<li id="log-mis">
+    <a href="#">
+        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">日志管理</span><span class="fa arrow"></span>
+    </a>
+    <ul class="nav nav-second-level">
+        <li id="records"><a href="{% url 'log-mis:record-list' %}">日志记录</a></li>
+    </ul>
+</li>
+{% endif %}
+
 {# Applications #}
 {% if request.user.can_admin_current_org and LICENSE_VALID %}
     <li id="applications">
@@ -161,44 +199,6 @@
             <li id="command-execution-log"><a href="{% url 'audits:command-execution-log-list' %}">{% trans 'Batch command' %}</a></li>
         </ul>
     </li>
-{% endif %}
-
-{# Domain Name #}
-{% if request.user.can_admin_current_org %}
-<li id="domain-name">
-    <a href="#">
-        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">域名管理</span><span class="fa arrow"></span>
-    </a>
-    <ul class="nav nav-second-level active">
-        <li id="domain-name"><a href="{% url 'domain-name:domain-name-list' %}">域名列表</a></li>
-    </ul>
-    <ul class="nav nav-second-level active">
-        <li id="account"><a href="{% url 'domain-name:account-list' %}">账号管理</a></li>
-    </ul>
-</li>
-{% endif %}
-
-{# Config #}
-{% if request.user.can_admin_current_org %}
-<li id="config">
-    <a href="#">
-        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">配置管理</span><span class="fa arrow"></span>
-    </a>
-    <ul class="nav nav-second-level">
-        <li id="node-config"><a href="{% url 'config:node-config-list' %}">节点配置</a></li>
-    </ul>
-    <ul class="nav nav-second-level">
-        <li id="app"><a href="{% url 'config:app-list' %}">应用配置</a></li>
-    </ul>
-</li>
-<li id="log-mis">
-    <a href="#">
-        <i class="fa fa-group" style="width: 14px"></i> <span class="nav-label">日志管理</span><span class="fa arrow"></span>
-    </a>
-    <ul class="nav nav-second-level">
-        <li id="records"><a href="{% url 'log-mis:record-list' %}">日志记录</a></li>
-    </ul>
-</li>
 {% endif %}
 
 {% if XPACK_PLUGINS %}
